@@ -1,0 +1,16 @@
+image: ghcr.io/cirruslabs/flutter:stable
+
+pipelines:
+  default:
+    - step:
+        name: Analyze & test
+        caches:
+          - flutter
+        script:
+          - flutter pub get
+          - flutter analyze
+          - flutter test
+
+definitions:
+  caches:
+    flutter: /sdks/flutter
