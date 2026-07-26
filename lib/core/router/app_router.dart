@@ -6,6 +6,7 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../network/auth_session_controller.dart';
 import 'app_routes.dart';
 
@@ -56,7 +57,7 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const _AuthenticatedHomeScreen(),
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );
@@ -65,14 +66,5 @@ GoRouter appRouter(Ref ref) {
 class GoRouterRefreshNotifier extends ChangeNotifier {
   GoRouterRefreshNotifier(Ref ref) {
     ref.listen(authSessionControllerProvider, (_, _) => notifyListeners());
-  }
-}
-
-class _AuthenticatedHomeScreen extends StatelessWidget {
-  const _AuthenticatedHomeScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Sesion iniciada')));
   }
 }
