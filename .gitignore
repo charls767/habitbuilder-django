@@ -1,47 +1,54 @@
-# Miscellaneous
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Riverpod / build_runner generated code — regenerate with:
+#   dart run build_runner build
+**/*.g.dart
+**/*.freezed.dart
+
+# Platform runner build artifacts (the android/, ios/, web/, etc. runner
+# folders themselves — generated once via `flutter create`, see README.md —
+# are meant to be committed like in any other Flutter project).
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/.gradle/
+/ios/Pods/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/.last_build_id
+**/doc/api/
+
+# Tooling and local state
 *.class
-*.log
 *.pyc
 *.swp
-.DS_Store
 .buildlog/
 .history
 .svn/
 migrate_working_dir/
 Thumbs.db
 .env
+app.*.symbols
+app.*.map.json
 
-# IntelliJ related
+# IDE
+.idea/
+.vscode/
 *.iml
 *.ipr
 *.iws
-.idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# Node (mock server tooling)
+node_modules/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-
-# Generated code
-**/*.g.dart
-**/*.freezed.dart
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# Misc
+*.log
+.DS_Store
