@@ -4,9 +4,7 @@ import 'package:habitbuilder_mobile/app.dart';
 
 void main() {
   testWidgets('app boots and shows the scaffold placeholder', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: HabitBuilderApp()),
-    );
+    await tester.pumpWidget(const ProviderScope(child: HabitBuilderApp()));
 
     expect(find.textContaining('HabitBuilder'), findsWidgets);
   });
