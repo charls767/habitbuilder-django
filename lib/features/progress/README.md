@@ -1,5 +1,5 @@
 # progress
 
-Progress screen (streak, period selector, heatmap) and statistics screen with filters.
+Progress and statistics presentation/repository skeleton.
 
 Jira: epic `HBM-5`, tickets `HBM-17`, `HBM-18`.

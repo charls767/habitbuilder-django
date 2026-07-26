@@ -1,42 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-/// Placeholder root route — replaced by the real auth/home flow starting
-/// with the HBM-8 (registration/login) and HBM-1 epic tickets.
-final GoRouter _router = GoRouter(
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const _ScaffoldPlaceholder(),
-    ),
-  ],
-);
-
-class HabitBuilderApp extends StatelessWidget {
+class HabitBuilderApp extends ConsumerWidget {
   const HabitBuilderApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
       title: 'HabitBuilder',
-      theme: AppTheme.light,
-      routerConfig: _router,
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class _ScaffoldPlaceholder extends StatelessWidget {
-  const _ScaffoldPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('HabitBuilder — scaffold only, see Jira epic HBM-1'),
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
+      routerConfig: router,
     );
   }
 }
