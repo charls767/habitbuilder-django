@@ -4,8 +4,8 @@
 
 - **Milestone:** HabitBuilder Mobile - Phase 1
 - **Phase:** 1 of 1 - Identity, Profile & Contract Foundation
-- **Status:** Executing Wave 3
-- **Plans:** 2 of 3 executed
+- **Status:** Phase 1 complete; PRs open for review
+- **Plans:** 3 of 3 executed
 - **Last updated:** 2026-07-26
 - **Safety stash:** `stash@{0}` (`pre-phase-1-combined-worktree`)
 
@@ -28,6 +28,14 @@ Dart 3.12.2: `flutter analyze`, 12 pruebas, build web y smoke test de Prism
 pasaron. Esa evidencia orienta la reconstruccion, pero no completa ningun
 ticket hasta que exista aislamiento, cobertura por cambio y PR.
 
+## Delivery
+
+- HBM-7: PR #1, `HBM-9/scaffold-mock-server` -> `main`.
+- HBM-8: PR #2, `HBM-9/auth-screens` -> `HBM-9/scaffold-mock-server`.
+- HBM-9: PR #3, `HBM-9/profile-logout` -> `HBM-9/auth-screens`.
+- El stash combinado permanece intacto para proteger features fuera de Phase 1.
+
 ## Next Action
 
-Ejecutar `01-03-PLAN.md` en `HBM-9/profile-logout`, apilado sobre HBM-8.
+Revisar e integrar los PRs en orden #1, #2 y #3; retargetear los PRs apilados
+a `main` cuando se integren sus dependencias.
