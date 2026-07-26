@@ -40,7 +40,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02: HBM-8 - registro, login y recuperacion de contrasena.
+- [x] 01-02: HBM-8 - registro, login y recuperacion de contrasena.
 
 **Wave 3** *(blocked on Wave 2 completion)*
 

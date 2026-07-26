@@ -4,8 +4,8 @@
 
 - **Milestone:** HabitBuilder Mobile - Phase 1
 - **Phase:** 1 of 1 - Identity, Profile & Contract Foundation
-- **Status:** Executing Wave 2
-- **Plans:** 1 of 3 executed
+- **Status:** Executing Wave 3
+- **Plans:** 2 of 3 executed
 - **Last updated:** 2026-07-26
 - **Safety stash:** `stash@{0}` (`pre-phase-1-combined-worktree`)
 
@@ -30,4 +30,4 @@ ticket hasta que exista aislamiento, cobertura por cambio y PR.
 
 ## Next Action
 
-Ejecutar `01-02-PLAN.md` en `HBM-9/auth-screens`, apilado sobre HBM-7.
+Ejecutar `01-03-PLAN.md` en `HBM-9/profile-logout`, apilado sobre HBM-8.
