@@ -9,6 +9,8 @@ import 'package:habitbuilder_mobile/features/auth/domain/entities/usuario.dart';
 import 'package:habitbuilder_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:habitbuilder_mobile/features/auth/presentation/providers/auth_providers.dart';
 import 'package:habitbuilder_mobile/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usuario.dart';
+import 'package:habitbuilder_mobile/features/profile/presentation/providers/profile_providers.dart';
 
 void main() {
   testWidgets('login validates fields and opens the authenticated area', (
@@ -31,7 +33,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.loginCalls, 1);
-    expect(find.text('Sesion iniciada'), findsOneWidget);
+    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Camila'), findsWidgets);
   });
 
   testWidgets('login uses generic credentials and explicit suspension errors', (
@@ -219,12 +222,22 @@ Future<void> _pumpApp(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository),
         tokenStorageProvider.overrideWithValue(_MemoryTokenStorage()),
+        myProfileProvider.overrideWith((ref) async => _profileFixture),
       ],
       child: const HabitBuilderApp(),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+const _profileFixture = PerfilUsuario(
+  usuarioId: 'user-1',
+  nombreCompleto: 'Camila',
+  zonaHoraria: 'America/Bogota',
+  objetivoGeneral: 'Dormir mejor',
+  accessibility: AccessibilityPreferences.defaults(),
+  notifications: NotificationPreferences.defaults(),
+);
 
 class _FakeAuthRepository implements AuthRepository {
   Object? failure;
