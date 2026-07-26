@@ -1,74 +1,103 @@
-# HabitBuilder — Mobile
+# HabitBuilder Mobile
 
-Flutter app for **HabitBuilder**, a habit-tracking mobile app. Built for the *Calidad de Software 2025-2* course project (Prof. Albeiro Espinosa Bedoya).
+Flutter client for HabitBuilder. HBM-7 establishes the feature-first
+architecture, secure networking foundation and executable OpenAPI mock used by
+the identity and profile tickets.
 
-Companion repo: [habitbuilder-backend](https://bitbucket.org/habit_builder/habitbuilder-backend) (Spring Boot). Tickets: [Habit Builder Frontend](https://habitbuilder.atlassian.net/jira/software/projects/HBM/boards) (Jira, project `HBM`).
+## Requirements
 
-## Stack
+- Flutter 3.44.x with Dart 3.12+
+- Node.js 18+
 
-- **Flutter** (Dart SDK `^3.5.0`)
-- **Riverpod** (code-gen) for state management
-- **go_router** for navigation
-- **dio** for HTTP
-- **flutter_secure_storage** for the JWT access token (never `SharedPreferences`)
-- **flutter_local_notifications** + **timezone** for reminders (`TZDateTime`, never naive `DateTime`)
-- **freezed** / **json_serializable** for DTOs
-- **mocktail** for tests
+## Bootstrap
 
-## Architecture
+From PowerShell:
 
-Feature-first, with a thin `core/` for cross-cutting concerns:
-
-```
-lib/
-├── core/
-│   ├── network/    ApiClient (dio) — no auth interceptor yet, see HBM-8
-│   ├── storage/    SecureTokenStorage
-│   └── theme/      AppTheme, colors matching the course mockups
-├── features/
-│   ├── auth/       HBM-1 · HBM-8
-│   ├── profile/    HBM-1 · HBM-9
-│   ├── habits/     HBM-2 · HBM-10, HBM-11
-│   ├── goals/      HBM-2 · HBM-12
-│   ├── reminders/  HBM-3 · HBM-13, HBM-14
-│   ├── tracking/   HBM-4 · HBM-15, HBM-16 (offline-first — the "cannot fail" loop)
-│   └── progress/   HBM-5 · HBM-17, HBM-18
-├── app.dart        MaterialApp.router + go_router config
-└── main.dart        entrypoint
+```powershell
+.\scripts\bootstrap.ps1
 ```
 
-Each feature folder has its own short README pointing at its Jira epic/tickets — check there before starting one.
+The script validates Flutter 3.44.x, creates any missing native platform
+runners in a temporary directory, installs packages, runs Riverpod code
+generation, analyzes the project and executes the test suite.
 
-## ⚠️ One-time setup required
+Generated `*.g.dart` files are intentionally ignored. Regenerate them with:
 
-This project was scaffolded **without** the Flutter CLI available (not installed on the machine that generated it) — `pubspec.yaml`, `lib/`, and `test/` are hand-authored and correct, but the native platform runners are missing. Before you can `flutter run` this, do once per machine:
-
-```bash
-flutter create . --project-name habitbuilder_mobile --org com.habitbuilder
-flutter pub get
+```powershell
+dart run build_runner build
 ```
 
-`flutter create .` on an existing project only **adds** the missing `android/`, `ios/`, etc. folders — it will not touch `lib/`, `pubspec.yaml`, or anything already there.
+## Mock API
 
-## Running locally
+Install Prism and start the server:
 
-Point the app at your local backend or the OpenAPI mock server (Prism, see `HBB-7`/`HBM` setup tickets):
+```powershell
+npm install
+npm run mock:api
+```
 
-```bash
+In a second terminal:
+
+```powershell
+npm run mock:smoke
+```
+
+Both commands use `docs/openapi.yaml`. The smoke script covers the Phase 1
+authentication and profile contract without requiring the backend.
+
+## Run
+
+For web or Windows:
+
+```powershell
 flutter run --dart-define=API_BASE_URL=http://localhost:4010
 ```
 
-## Tests
+For an Android emulator:
 
-```bash
-flutter analyze
-flutter test
+```powershell
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4010
 ```
 
-## CI
+## Architecture
 
-`bitbucket-pipelines.yml` runs `flutter analyze` + `flutter test` on every push (using the community `cirruslabs/flutter` image — double-check it still resolves the first time the pipeline runs).
+```text
+lib/
+  core/
+    config/
+    network/
+    router/
+    storage/
+    theme/
+  features/
+    auth/
+    profile/
+    goals/
+    habits/
+    progress/
+    reminders/
+    tracking/
+```
 
-## Status
+Every feature boundary is organized as `domain`, `data` and `presentation`
+when implementation is introduced. HBM-7 only supplies the shared foundation;
+functional auth and profile code belongs to HBM-8 and HBM-9.
 
-Initial scaffold only — dependencies, folder structure, theme, and a placeholder screen. No real screens or logic yet; that starts with the tickets in Jira epic `HBM-1` (Identity, Profile & Contract Foundation).
+## Security
+
+- Access and refresh tokens are stored only with `flutter_secure_storage`.
+- The Dio interceptor attempts one refresh after a 401.
+- Failed refresh clears the local session.
+- HTTP logs omit headers, request bodies, response bodies and error payloads.
+- Secrets and credentials must never be committed or printed.
+
+## Changed-code coverage
+
+After `flutter test --coverage`, enforce the ticket gate with:
+
+```powershell
+node scripts/check-changed-coverage.mjs --base main --min 80
+```
+
+Generated files and declarative application bootstrap files are excluded; all
+remaining changed Dart logic is required to reach at least 80% line coverage.
