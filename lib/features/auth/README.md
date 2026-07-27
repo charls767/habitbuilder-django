@@ -1,5 +1,6 @@
 # auth
 
-Registration, login, password reset. Secure token storage via `core/storage/secure_token_storage.dart`.
+Registration, login and password reset with Riverpod controllers, Dio
+datasources and secure token storage.
 
 Jira: epic `HBM-1`, ticket `HBM-8`.

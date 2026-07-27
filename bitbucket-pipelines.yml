@@ -1,4 +1,4 @@
-image: ghcr.io/cirruslabs/flutter:stable
+image: ghcr.io/cirruslabs/flutter:3.44.0
 
 pipelines:
   default:
@@ -8,8 +8,11 @@ pipelines:
           - flutter
         script:
           - flutter pub get
+          - dart run build_runner build
           - flutter analyze
-          - flutter test
+          - flutter test --coverage
+          - node --test scripts/check-changed-coverage.test.mjs
+          - node scripts/check-changed-coverage.mjs --base origin/main --min 80
 
 definitions:
   caches:

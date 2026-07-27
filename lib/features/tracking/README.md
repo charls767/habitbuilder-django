@@ -1,6 +1,6 @@
 # tracking
 
-One-tap completion logging (done/partial/skipped) and the offline-first local-write-then-sync
-repository — this is the app's core "cannot fail" loop.
+Habit-completion logging presentation and repository skeleton. Offline-first
+sync remains scoped to the tracking epic.
 
 Jira: epic `HBM-4`, tickets `HBM-15`, `HBM-16`.
