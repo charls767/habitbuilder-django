@@ -8,7 +8,7 @@ Status: in progress
 | Jira | Branch | Coverage | Pull request | Status |
 | --- | --- | --- | --- | --- |
 | HBM-7 | `HBM-9/scaffold-mock-server` | 95.06% | [#1](https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/1) | PASS |
-| HBM-8 | `HBM-9/auth-screens` | pending | pending | pending |
+| HBM-8 | `HBM-9/auth-screens` | 92.42% | [#2](https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/2) | PASS |
 | HBM-9 | `HBM-9/profile-logout` | pending | pending | pending |
 
 ## HBM-7 Evidence
@@ -22,3 +22,12 @@ Status: in progress
 - Remote branch and PR exist.
 
 Final integrated verification will run after plans 01-02 and 01-03.
+
+## HBM-8 Evidence
+
+- 18 focused auth tests and 35 tests in the full suite pass.
+- Changed-code coverage against HBM-7 is 92.42% (390/422).
+- Registration consent, field errors, generic credentials, suspension and both
+  password-reset steps have automated coverage.
+- Analyze, web release build and Prism smoke pass.
+- Remote branch and stacked PR exist.
