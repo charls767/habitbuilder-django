@@ -9,7 +9,7 @@ el backend termina sus endpoints.
 
 ## Phases
 
-- [ ] **Phase 1: Identity, Profile & Contract Foundation** - Completar HBM-7, HBM-8 y HBM-9 con pruebas y PRs independientes.
+- [x] **Phase 1: Identity, Profile & Contract Foundation** - Completar HBM-7, HBM-8 y HBM-9 con pruebas y PRs independientes.
 
 ## Phase Details
 
@@ -44,7 +44,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03: HBM-9 - perfil, preferencias, accesibilidad y logout.
+- [x] 01-03: HBM-9 - perfil, preferencias, accesibilidad y logout.
 
 ## Definition of Done
 
@@ -56,4 +56,4 @@ queda registrada en `.planning/VERIFICATION.md`.
 
 | Phase | Plans Complete | Status | Completed |
 | --- | --- | --- | --- |
-| 1. Identity, Profile & Contract Foundation | 0/3 | Planned | - |
+| 1. Identity, Profile & Contract Foundation | 3/3 | Complete | 2026-07-26 |
