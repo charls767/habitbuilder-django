@@ -244,6 +244,41 @@ void main() {
       expect(find.text('Reintentar hábitos'), findsOneWidget);
     });
   });
+
+  testWidgets('goal list and detail fit a 320px viewport', (tester) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _ScreenGoalRepository(
+      goal: _goal(
+        descripcion: 'Rutina estable',
+        fechaObjetivo: DateTime(2026, 12, 31),
+        habitIds: const ['hab-1'],
+      ),
+    );
+
+    await _pump(
+      tester,
+      const GoalsListScreen(),
+      overrides: [
+        goalsListProvider.overrideWith((ref) async => [repository.goal]),
+      ],
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    await _pump(
+      tester,
+      const GoalDetailScreen(goalId: 'goal-1'),
+      overrides: [
+        goalRepositoryProvider.overrideWithValue(repository),
+        habitsListProvider.overrideWith((ref) async => [_habit()]),
+      ],
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pump(
