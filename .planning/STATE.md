@@ -25,7 +25,7 @@ Phase: 2 of 2 — Habits and Goals
 
 Plan: 3 of 3
 
-Status: Ejecución completa; PRs apilados en revisión
+Status: Ejecución completa; PR consolidado #7 en revisión
 
 Last activity: 2026-07-28 — HBM-10/11/12 implementados, verificados y enviados a revisión
 
@@ -57,13 +57,13 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 ### Pending Todos
 
-- Integrar backend PR #1 y los PRs mobile #4, #5 y #6 en ese orden.
-- Retargetear cada PR mobile a `main` cuando su dependencia anterior sea integrada.
+- Revisar e integrar el PR mobile #7 desde `HBM-12/goals-linking` hacia `main`.
 - Mover HBM-10/11/12 a `Listo` únicamente después de sus merges.
 
 ### Blockers/Concerns
 
-- Los PRs mobile están apilados; el orden de integración debe conservarse.
+- Los PRs #4/#5/#6 se cerraron como reemplazados; no deben reabrirse ni mezclarse.
+- HBB-16 ya está en backend `main` mediante los PR #7/#8; el PR backend #1 fue cerrado como obsoleto.
 - El worktree contiene una modificación ajena en `windows/flutter/generated_plugins.cmake`; permaneció intacta.
 - `stash@{0}` sigue presente y no fue aplicado, extraído ni eliminado.
 
@@ -80,6 +80,6 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 Last session: 2026-07-28
 
-Stopped at: Phase 2 ejecutada y enviada a revisión; pendiente integración de PRs
+Stopped at: Phase 2 ejecutada y enviada a revisión; pendiente integración del PR mobile #7
 
 Resume file: `.planning/phases/02-habits-goals/02-03-SUMMARY.md`

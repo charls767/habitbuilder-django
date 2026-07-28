@@ -16,7 +16,8 @@ tracking, check-ins, recordatorios ni reglas de autorización locales.
 ## Delivery
 
 - Branch: `HBM-10/habit-crud`
-- PR: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/4
+- PR original: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/4
+- PR de integración: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/7
 - Base: `main`
 - Jira: `En revisión`
 - Commits: `1de3ccf`, `1c7b180`, `56f7711`
@@ -33,5 +34,5 @@ tracking, check-ins, recordatorios ni reglas de autorización locales.
 ## Outcome
 
 HABIT-01, HABIT-02, HABIT-03, HABIT-07, QUALITY-07..12 y DELIVERY-04
-quedaron cubiertos. El ticket permanece en revisión hasta que el PR sea
-integrado.
+quedaron cubiertos. El PR original #4 fue cerrado como reemplazado; el ticket
+permanece en revisión hasta integrar el PR consolidado #7.

@@ -46,7 +46,7 @@ SHA-256 matched and the Phase 1 + habits/goals smoke passed.
 
 | Plan | Needs | Creates | Wave | Checkpoint |
 |------|-------|---------|------|------------|
-| 02-01 / HBM-10 | Phase 1; HBB-16 commit `6d12e8e`; concurrent owner handoffs | Habit contracts, CRUD UI, branch/PR/Jira evidence | 1 | None; auth gates are dynamic |
+| 02-01 / HBM-10 | Phase 1; official HBB-16 contract; concurrent owner handoffs | Habit contracts, CRUD UI, branch/PR/Jira evidence | 1 | None; auth gates are dynamic |
 | 02-02 / HBM-11 | 02-01 final pushed revision | Confirmed pause/complete/delete, branch/PR/Jira evidence | 2 | None; auth gates are dynamic |
 | 02-03 / HBM-12 | 02-02 final pushed revision | Goal contracts/UI/linking, branch/PR/Jira evidence | 3 | None; auth gates are dynamic |
 
@@ -128,8 +128,10 @@ Required gate sequence per ticket:
 
 ## Contract Decisions and Resolved Tensions
 
-- HBB-16 is satisfied by backend commit `6d12e8e` and PR #1. The mobile
-  contract is an identical executable copy and Prism smoke passes.
+- HBB-16 is satisfied by the official backend branch
+  `HBB-16/openapi-habitos-metas-contract`, merged through backend PR #7/#8.
+  The earlier backend PR #1 is obsolete and closed; the mobile executable
+  contract copy passes Prism smoke.
 - HBB-16's response schema includes a read-only derived goal field. Locked
   decision D-07 has authority over the mobile surface: `MetaDto` reads only
   id/name/description/date/status/habit ids, and domain/UI/tests contain no
@@ -169,7 +171,7 @@ Required gate sequence per ticket:
 | REQ | DELIVERY-05 | One HBM-11 branch/PR | 02-02 | COVERED | Exact branch, dynamic stack base, Jira flow |
 | REQ | DELIVERY-06 | One HBM-12 branch/PR | 02-03 | COVERED | Exact branch, dynamic stack base, Jira flow |
 | RESEARCH | — | No `02-RESEARCH.md` | 02-01..03 | N/A | Level 0: no new dependency; existing Phase 1 patterns and accepted OpenAPI fully determine implementation |
-| CONTEXT | Gate HBB-16 | Accepted CRUD/frequency/category/lifecycle/link contract and smoke | 02-01 | COVERED | Commit `6d12e8e`, PR #1, identical hash, passing smoke |
+| CONTEXT | Gate HBB-16 | Accepted CRUD/frequency/category/lifecycle/link contract and smoke | 02-01 | COVERED | Official backend PR #7/#8 merged; mobile contract copy and smoke passing |
 | CONTEXT | D-01 | Exactly 02-01 → 02-02 → 02-03 | All | COVERED | Waves 1/2/3 and explicit dependencies |
 | CONTEXT | D-02 | Exact branch names | All | COVERED | Branch contract in every plan |
 | CONTEXT | D-03 | One PR, atomic commits, evidence; stacking allowed | All | COVERED | Delivery task in every plan |

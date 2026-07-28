@@ -2,9 +2,9 @@
 
 **Gathered:** 2026-07-28
 
-**Status:** Ready for planning and execution; HBB-16 satisfied by backend
-commit `6d12e8e` and
-https://bitbucket.org/habit_builder/habitbuilder-backend/pull-requests/1
+**Status:** Executed and in review; HBB-16 satisfied by the official backend
+branch `HBB-16/openapi-habitos-metas-contract`, merged to `main` through PR
+#7/#8. The earlier backend PR #1 is obsolete and closed.
 
 <domain>
 
@@ -29,8 +29,9 @@ progreso, porcentajes, reportes ni lógica de negocio backend.
 ## Gate HBB-16
 
 HBB-16 es una precondición compartida y no un cuarto plan frontend. La
-precondición quedó satisfecha por el commit backend `6d12e8e` y su PR #1; antes
-de implementar 02-01 se conserva como gate de verificación que:
+precondición quedó satisfecha por la implementación oficial integrada mediante
+los PR backend #7/#8; antes de implementar 02-01 se conservó como gate de
+verificación que:
 
 1. `docs/openapi.yaml` contenga grupos de endpoints `habitos` y `metas`.
 2. El contrato defina CRUD, las tres variantes de frecuencia, categoría
