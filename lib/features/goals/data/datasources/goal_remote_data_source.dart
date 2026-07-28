@@ -63,7 +63,12 @@ class GoalRemoteDataSource {
     });
   }
 
-  Future<void> unlinkHabit(String goalId, String habitId) async {
-    await runApiCall(() => _dio.delete<void>('/goals/$goalId/habits/$habitId'));
+  Future<MetaDto> unlinkHabit(String goalId, String habitId) async {
+    return runApiCall(() async {
+      final response = await _dio.delete<Map<String, dynamic>>(
+        '/goals/$goalId/habits/$habitId',
+      );
+      return MetaDto.fromJson(response.data!);
+    });
   }
 }

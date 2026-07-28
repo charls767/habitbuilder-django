@@ -19,10 +19,6 @@ void main() {
         if (options.path == '/goals/goal-delete') {
           return ResponseBody.fromString('', 204);
         }
-        if (options.path == '/goals/goal-1/habits/habit-2' &&
-            options.method == 'DELETE') {
-          return ResponseBody.fromString('', 204);
-        }
         return _jsonResponse(options.method == 'POST' ? 201 : 200, _goalJson());
       });
     final source = GoalRemoteDataSource(dio);
@@ -43,13 +39,14 @@ void main() {
     );
     await source.deleteGoal('goal-delete');
     final linked = await source.linkHabit('goal-1', 'habit-2');
-    await source.unlinkHabit('goal-1', 'habit-2');
+    final unlinked = await source.unlinkHabit('goal-1', 'habit-2');
 
     expect(goals.single.id, 'goal-1');
     expect(goal.id, 'goal-1');
     expect(created.id, 'goal-1');
     expect(updated.id, 'goal-1');
     expect(linked.habitoIds, ['habit-1']);
+    expect(unlinked.habitoIds, ['habit-1']);
     expect(requests.map((request) => '${request.method} ${request.path}'), [
       'GET /goals',
       'GET /goals/goal-1',

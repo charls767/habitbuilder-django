@@ -188,7 +188,7 @@ await request(
 await request(
   '/goals/meta_001/habits/hab_001',
   {method: 'DELETE', headers: authenticated},
-  204,
+  200,
 );
 
 console.log('Prism smoke test: Phase 1 + habits lifecycle + goals linking OK');

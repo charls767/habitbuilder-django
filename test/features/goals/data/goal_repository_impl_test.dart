@@ -161,18 +161,13 @@ void main() {
   test('unlinks a habit and maps the authoritative returned goal', () async {
     when(
       () => remote.unlinkHabit('goal-1', 'habit-1'),
-    ).thenAnswer((_) async {});
-    when(
-      () => remote.getGoal('goal-1'),
     ).thenAnswer((_) async => _goalDto(habitoIds: const []));
 
     final goal = await repository.unlinkHabit('goal-1', 'habit-1');
 
     expect(goal.habitoIds, isEmpty);
-    verifyInOrder([
-      () => remote.unlinkHabit('goal-1', 'habit-1'),
-      () => remote.getGoal('goal-1'),
-    ]);
+    verify(() => remote.unlinkHabit('goal-1', 'habit-1')).called(1);
+    verifyNever(() => remote.getGoal(any()));
   });
 
   test('preserves normalized datasource errors unchanged', () async {
