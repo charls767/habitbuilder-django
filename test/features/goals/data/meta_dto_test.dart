@@ -110,7 +110,7 @@ Map<String, dynamic> _fullGoalJson() {
     'fechaObjetivo': '2026-12-31',
     'estado': 'lograda',
     'habitoIds': ['habit-1', 'habit-2'],
-    ['progreso', 'Porcentaje'].join(): 100,
+    'campoNoConsumido': 100,
     'fechaCreacion': '2026-07-01T10:00:00Z',
     'fechaActualizacion': '2026-07-28T11:30:00Z',
     'campoFuturo': {'ignorado': true},
