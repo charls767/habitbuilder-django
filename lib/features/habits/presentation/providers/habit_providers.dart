@@ -104,4 +104,51 @@ class HabitController extends _$HabitController {
     }
     return !state.hasError;
   }
+
+  Future<bool> pauseHabit(String habitId) {
+    return _mutateHabit(
+      habitId,
+      () =>
+          ref.read(habitRepositoryProvider).pauseHabit(habitId, DateTime.now()),
+    );
+  }
+
+  Future<bool> resumeHabit(String habitId) {
+    return _mutateHabit(
+      habitId,
+      () => ref.read(habitRepositoryProvider).resumeHabit(habitId),
+    );
+  }
+
+  Future<bool> completeHabit(String habitId) {
+    return _mutateHabit(
+      habitId,
+      () => ref.read(habitRepositoryProvider).completeHabit(habitId),
+    );
+  }
+
+  Future<bool> deleteHabit(String habitId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(habitRepositoryProvider).deleteHabit(habitId),
+    );
+    if (!state.hasError) {
+      ref.invalidate(habitsListProvider);
+      ref.invalidate(habitDetailProvider(habitId));
+    }
+    return !state.hasError;
+  }
+
+  Future<bool> _mutateHabit(
+    String habitId,
+    Future<Habito> Function() operation,
+  ) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(operation);
+    if (!state.hasError) {
+      ref.invalidate(habitsListProvider);
+      ref.invalidate(habitDetailProvider(habitId));
+    }
+    return !state.hasError;
+  }
 }

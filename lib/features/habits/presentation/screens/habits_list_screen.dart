@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/frecuencia.dart';
 import '../../domain/entities/habito.dart';
@@ -13,6 +14,7 @@ class HabitsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(habitsListProvider);
+    final controllerState = ref.watch(habitControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,6 +45,9 @@ class HabitsListScreen extends ConsumerWidget {
                     return _HabitCard(
                       habit: habit,
                       onEdit: () => context.push(AppRoutes.habitEdit(habit.id)),
+                      actionsEnabled: !controllerState.isLoading,
+                      onAction: (action) =>
+                          _confirmAndRun(context, ref, habit, action),
                     );
                   },
                 ),
@@ -55,6 +60,70 @@ class HabitsListScreen extends ConsumerWidget {
         onPressed: () => context.push(AppRoutes.habitCreate),
         tooltip: 'Crear hábito',
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Future<void> _confirmAndRun(
+    BuildContext context,
+    WidgetRef ref,
+    Habito habit,
+    _HabitAction action,
+  ) async {
+    final copy = _confirmationCopy(action, habit.nombre);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(copy.title),
+        content: Text(copy.message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: action == _HabitAction.delete
+                ? FilledButton.styleFrom(
+                    backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                    foregroundColor: Theme.of(
+                      dialogContext,
+                    ).colorScheme.onError,
+                  )
+                : null,
+            child: Text(copy.confirmLabel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final controller = ref.read(habitControllerProvider.notifier);
+    final success = switch (action) {
+      _HabitAction.pause => await controller.pauseHabit(habit.id),
+      _HabitAction.resume => await controller.resumeHabit(habit.id),
+      _HabitAction.complete => await controller.completeHabit(habit.id),
+      _HabitAction.delete => await controller.deleteHabit(habit.id),
+    };
+    if (!context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (success) {
+      messenger.showSnackBar(SnackBar(content: Text(copy.successMessage)));
+      return;
+    }
+    final error = ref.read(habitControllerProvider).error;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          error is ApiException
+              ? error.message
+              : 'No pudimos completar la acción. Intenta de nuevo.',
+        ),
+        action: SnackBarAction(
+          label: 'Reintentar',
+          onPressed: () => _confirmAndRun(context, ref, habit, action),
+        ),
       ),
     );
   }
@@ -101,10 +170,17 @@ class _ListHeader extends StatelessWidget {
 }
 
 class _HabitCard extends StatelessWidget {
-  const _HabitCard({required this.habit, required this.onEdit});
+  const _HabitCard({
+    required this.habit,
+    required this.onEdit,
+    required this.actionsEnabled,
+    required this.onAction,
+  });
 
   final Habito habit;
   final VoidCallback onEdit;
+  final bool actionsEnabled;
+  final ValueChanged<_HabitAction> onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -177,12 +253,92 @@ class _HabitCard extends StatelessWidget {
                 icon: const Icon(Icons.edit_outlined),
                 tooltip: 'Editar ${habit.nombre}',
               ),
+              PopupMenuButton<_HabitAction>(
+                enabled: actionsEnabled,
+                tooltip: 'Más acciones para ${habit.nombre}',
+                onSelected: onAction,
+                itemBuilder: (context) => [
+                  if (habit.estado == HabitoEstado.activo)
+                    const PopupMenuItem(
+                      value: _HabitAction.pause,
+                      child: ListTile(
+                        leading: Icon(Icons.pause_outlined),
+                        title: Text('Pausar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  if (habit.estado == HabitoEstado.pausado)
+                    const PopupMenuItem(
+                      value: _HabitAction.resume,
+                      child: ListTile(
+                        leading: Icon(Icons.play_arrow_outlined),
+                        title: Text('Reanudar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  if (habit.estado != HabitoEstado.completado)
+                    const PopupMenuItem(
+                      value: _HabitAction.complete,
+                      child: ListTile(
+                        leading: Icon(Icons.check_circle_outline),
+                        title: Text('Completar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  const PopupMenuItem(
+                    value: _HabitAction.delete,
+                    child: ListTile(
+                      leading: Icon(Icons.delete_outline),
+                      title: Text('Eliminar'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+enum _HabitAction { pause, resume, complete, delete }
+
+({String title, String message, String confirmLabel, String successMessage})
+_confirmationCopy(_HabitAction action, String habitName) {
+  return switch (action) {
+    _HabitAction.pause => (
+      title: '¿Pausar hábito?',
+      message:
+          '"$habitName" dejará de aparecer como activo. '
+          'Podrás reanudarlo cuando quieras.',
+      confirmLabel: 'Pausar',
+      successMessage: 'Hábito pausado.',
+    ),
+    _HabitAction.resume => (
+      title: '¿Reanudar hábito?',
+      message: '"$habitName" volverá a aparecer como activo.',
+      confirmLabel: 'Reanudar',
+      successMessage: 'Hábito reanudado.',
+    ),
+    _HabitAction.complete => (
+      title: '¿Completar hábito?',
+      message:
+          '"$habitName" quedará marcado como completado. '
+          'Esta acción representa que alcanzaste el objetivo del hábito.',
+      confirmLabel: 'Completar',
+      successMessage: 'Hábito completado.',
+    ),
+    _HabitAction.delete => (
+      title: '¿Eliminar hábito?',
+      message:
+          '"$habitName" se quitará de tu lista. Sus registros históricos '
+          'se conservarán cuando sean necesarios para reportes relacionados.',
+      confirmLabel: 'Eliminar',
+      successMessage: 'Hábito eliminado.',
+    ),
+  };
 }
 
 String _frequencyLabel(Frecuencia frequency) {

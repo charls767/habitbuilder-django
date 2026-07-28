@@ -129,6 +129,30 @@ await request(
   },
   400,
 );
+await request(
+  '/habits/hab_001/pause',
+  {
+    method: 'POST',
+    headers: authenticated,
+    body: JSON.stringify({fechaInicio: '2026-07-28'}),
+  },
+  200,
+);
+await request(
+  '/habits/hab_001/resume',
+  {method: 'POST', headers: authenticated},
+  200,
+);
+await request(
+  '/habits/hab_001/complete',
+  {method: 'POST', headers: authenticated},
+  200,
+);
+await request(
+  '/habits/hab_001',
+  {method: 'DELETE', headers: authenticated},
+  204,
+);
 await request('/goals', {headers: authenticated}, 200);
 
-console.log('Prism smoke test: Phase 1 + habits/goals OK');
+console.log('Prism smoke test: Phase 1 + habits lifecycle/goals OK');

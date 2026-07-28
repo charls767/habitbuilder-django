@@ -257,4 +257,7 @@ class _FakeHabitRepository implements HabitRepository {
 
   @override
   Future<void> deleteHabit(String habitId) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
