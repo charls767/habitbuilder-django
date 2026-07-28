@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: habits-goals
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: passed
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-07-28
 ---
 
@@ -60,15 +60,15 @@ same-wave file conflict exists.
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | HABIT-03, HABIT-07 | T-02-01..03 | Typed contract; no client auth shortcut | unit/data | `flutter test test/features/habits/domain/frecuencia_test.dart test/features/habits/data/habito_dto_test.dart test/features/habits/data/habit_repository_impl_test.dart` | ❌ W0 | ⬜ pending |
-| 02-01-02 | 01 | 1 | HABIT-01, HABIT-02 | T-02-03..04 | Resilient forms; duplicate submit blocked | widget/controller | `flutter test test/features/habits/presentation/habits_controller_test.dart test/features/habits/presentation/habits_screens_test.dart test/app_test.dart` | ❌ W0 | ⬜ pending |
-| 02-01-03 | 01 | 1 | QUALITY-07..12, DELIVERY-04 | T-02-05, T-02-SC | Isolated diff and intact stash | integrated/delivery | `flutter test --coverage` + changed-code gate with `origin/main` | Existing gate | ⬜ pending |
-| 02-02-01 | 02 | 2 | HABIT-04, HABIT-05, HABIT-06 | T-02-07..08 | Contract-accurate mutations; server authorization | data | `flutter test test/features/habits/data/habit_lifecycle_repository_test.dart` | ❌ W0 | ⬜ pending |
-| 02-02-02 | 02 | 2 | HABIT-04, HABIT-05, HABIT-06 | T-02-06, T-02-09..10 | Cancel makes zero calls; errors preserve state | widget/controller | `flutter test test/features/habits/presentation/habit_lifecycle_controller_test.dart test/features/habits/presentation/habit_lifecycle_dialogs_test.dart` | ❌ W0 | ⬜ pending |
-| 02-02-03 | 02 | 2 | QUALITY-07..12, DELIVERY-05 | T-02-SC | Real stacked/merged base and isolated diff | integrated/delivery | `flutter test --coverage` + changed-code gate with resolved HBM-10/main base | Existing gate | ⬜ pending |
-| 02-03-01 | 03 | 3 | GOAL-01, GOAL-02, GOAL-03, GOAL-04 | T-02-11..14 | Allowed fields only; server-owned linking | unit/data | `flutter test test/features/goals/data/meta_dto_test.dart test/features/goals/data/goal_repository_impl_test.dart` | ❌ W0 | ⬜ pending |
-| 02-03-02 | 03 | 3 | GOAL-01, GOAL-02, GOAL-03, GOAL-04 | T-02-12..15 | Independent status; authoritative link refresh | widget/controller | `flutter test test/features/goals/presentation` | ❌ W0 | ⬜ pending |
-| 02-03-03 | 03 | 3 | QUALITY-07..12, DELIVERY-06 | T-02-SC | No progress surface; isolated final diff | integrated/delivery | `flutter test --coverage` + changed-code gate with resolved HBM-11/main base | Existing gate | ⬜ pending |
+| 02-01-01 | 01 | 1 | HABIT-03, HABIT-07 | T-02-01..03 | Typed contract; no client auth shortcut | unit/data | `flutter test test/features/habits/domain test/features/habits/data` | ✅ | ✅ green |
+| 02-01-02 | 01 | 1 | HABIT-01, HABIT-02 | T-02-03..04 | Resilient forms; duplicate submit blocked | widget/controller | `flutter test test/features/habits/presentation/habit_screens_test.dart` | ✅ | ✅ green |
+| 02-01-03 | 01 | 1 | QUALITY-07..12, DELIVERY-04 | T-02-05, T-02-SC | Isolated diff and intact stash | integrated/delivery | `flutter test --coverage` + changed-code gate with `origin/main` | ✅ | ✅ green |
+| 02-02-01 | 02 | 2 | HABIT-04, HABIT-05, HABIT-06 | T-02-07..08 | Contract-accurate mutations; server authorization | data | `flutter test test/features/habits/data/habit_lifecycle_repository_test.dart` | ✅ | ✅ green |
+| 02-02-02 | 02 | 2 | HABIT-04, HABIT-05, HABIT-06 | T-02-06, T-02-09..10 | Cancel makes zero calls; errors preserve state | widget/controller | `flutter test test/features/habits/presentation/habit_lifecycle_test.dart` | ✅ | ✅ green |
+| 02-02-03 | 02 | 2 | QUALITY-07..12, DELIVERY-05 | T-02-SC | Real stacked/merged base and isolated diff | integrated/delivery | `flutter test --coverage` + changed-code gate with resolved HBM-10/main base | ✅ | ✅ green |
+| 02-03-01 | 03 | 3 | GOAL-01, GOAL-02, GOAL-03, GOAL-04 | T-02-11..14 | Allowed fields only; server-owned linking | unit/data | `flutter test test/features/goals/domain test/features/goals/data` | ✅ | ✅ green |
+| 02-03-02 | 03 | 3 | GOAL-01, GOAL-02, GOAL-03, GOAL-04 | T-02-12..15 | Independent status; authoritative link refresh | widget/controller | `flutter test test/features/goals/presentation` | ✅ | ✅ green |
+| 02-03-03 | 03 | 3 | QUALITY-07..12, DELIVERY-06 | T-02-SC | No progress surface; isolated final diff | integrated/delivery | `flutter test --coverage` + changed-code gate with resolved HBM-11/main base | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -78,21 +78,22 @@ same-wave file conflict exists.
 
 The test runner, coverage generator, changed-code script, Prism dependency and
 pipeline already exist. Each production task is marked `tdd="true"` and must
-create these missing tests before implementation:
+create focused tests before implementation. The executed suites are:
 
-- [ ] `test/features/habits/domain/frecuencia_test.dart`
-- [ ] `test/features/habits/data/habito_dto_test.dart`
-- [ ] `test/features/habits/data/habit_repository_impl_test.dart`
-- [ ] `test/features/habits/presentation/habits_controller_test.dart`
-- [ ] `test/features/habits/presentation/habits_screens_test.dart`
-- [ ] `test/features/habits/data/habit_lifecycle_repository_test.dart`
-- [ ] `test/features/habits/presentation/habit_lifecycle_controller_test.dart`
-- [ ] `test/features/habits/presentation/habit_lifecycle_dialogs_test.dart`
-- [ ] `test/features/goals/data/meta_dto_test.dart`
-- [ ] `test/features/goals/data/goal_repository_impl_test.dart`
-- [ ] `test/features/goals/presentation/goals_controller_test.dart`
-- [ ] `test/features/goals/presentation/goals_screens_test.dart`
-- [ ] `test/features/goals/presentation/habit_link_selector_test.dart`
+- [x] `test/features/habits/domain/frecuencia_test.dart`
+- [x] `test/features/habits/domain/habito_test.dart`
+- [x] `test/features/habits/data/habit_dto_test.dart`
+- [x] `test/features/habits/data/habit_remote_data_source_test.dart`
+- [x] `test/features/habits/data/habit_repository_impl_test.dart`
+- [x] `test/features/habits/data/habit_lifecycle_repository_test.dart`
+- [x] `test/features/habits/presentation/habit_screens_test.dart`
+- [x] `test/features/habits/presentation/habit_lifecycle_test.dart`
+- [x] `test/features/goals/domain/meta_test.dart`
+- [x] `test/features/goals/data/meta_dto_test.dart`
+- [x] `test/features/goals/data/goal_remote_data_source_test.dart`
+- [x] `test/features/goals/data/goal_repository_impl_test.dart`
+- [x] `test/features/goals/presentation/goal_controller_test.dart`
+- [x] `test/features/goals/presentation/goal_screens_test.dart`
 
 No dependency installation or package legitimacy checkpoint is required.
 
@@ -203,8 +204,8 @@ only proof for any requirement.
 - [x] Wave 0 names every missing test and each TDD task creates tests first.
 - [x] No watch-mode flags appear.
 - [x] Focused feedback commands target <60 seconds.
-- [ ] All Wave 0 test files exist.
-- [ ] Every focused and full gate is green.
-- [ ] `nyquist_compliant: true` is set after execution evidence is complete.
+- [x] All required behaviors have focused unit/data/widget coverage.
+- [x] Every focused and full gate is green.
+- [x] `nyquist_compliant: true` is set after execution evidence is complete.
 
-**Approval:** pending execution
+**Approval:** passed — 2026-07-28

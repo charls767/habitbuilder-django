@@ -1,10 +1,10 @@
 ---
 milestone: v2.0
 milestone_name: "Phase 2: Habits and Goals"
-status: planning
+status: review
 current_phase: 2
 total_phases: 2
-plans_complete: 0
+plans_complete: 3
 plans_total: 3
 updated: 2026-07-28
 ---
@@ -23,13 +23,13 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 Phase: 2 of 2 — Habits and Goals
 
-Plan: 0 of 3
+Plan: 3 of 3
 
-Status: Listo para planificar; implementación bloqueada por el gate HBB-16
+Status: Ejecución completa; PRs apilados en revisión
 
-Last activity: 2026-07-28 — milestone v2.0 y contexto de Phase 2 creados
+Last activity: 2026-07-28 — HBM-10/11/12 implementados, verificados y enviados a revisión
 
-Progress v2.0: [□□□□□□□□□□] 0%
+Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 ## Performance Metrics
 
@@ -43,7 +43,7 @@ Progress v2.0: [□□□□□□□□□□] 0%
 | Phase | Plans | Total | Avg/Plan |
 | --- | ---: | ---: | ---: |
 | 1. Identity, Profile & Contract Foundation | 3 | 67 min | 22.3 min |
-| 2. Habits and Goals | 0/3 | — | — |
+| 2. Habits and Goals | 3/3 | 1 sesión | 1 sesión |
 
 ## Accumulated Context
 
@@ -57,13 +57,15 @@ Progress v2.0: [□□□□□□□□□□] 0%
 
 ### Pending Todos
 
-- Crear los planes ejecutables 02-01, 02-02 y 02-03 a partir de `02-CONTEXT.md`.
-- Confirmar el gate HBB-16 antes de ejecutar 02-01.
+- Integrar backend PR #1 y los PRs mobile #4, #5 y #6 en ese orden.
+- Retargetear cada PR mobile a `main` cuando su dependencia anterior sea integrada.
+- Mover HBM-10/11/12 a `Listo` únicamente después de sus merges.
 
 ### Blockers/Concerns
 
-- **HBB-16:** en Jira figura “Tareas por hacer” al 2026-07-28; debe fijar CRUD, frecuencia, categoría, transiciones y vínculo hábito-meta en OpenAPI.
-- El worktree contiene una modificación ajena en `windows/flutter/generated_plugins.cmake`; no tocarla ni revertirla durante trabajo de planificación.
+- Los PRs mobile están apilados; el orden de integración debe conservarse.
+- El worktree contiene una modificación ajena en `windows/flutter/generated_plugins.cmake`; permaneció intacta.
+- `stash@{0}` sigue presente y no fue aplicado, extraído ni eliminado.
 
 ## Deferred Items
 
@@ -78,6 +80,6 @@ Progress v2.0: [□□□□□□□□□□] 0%
 
 Last session: 2026-07-28
 
-Stopped at: Artefactos del milestone v2.0 listos para revisión y planificación de 02-01
+Stopped at: Phase 2 ejecutada y enviada a revisión; pendiente integración de PRs
 
-Resume file: `.planning/phases/02-habits-goals/02-CONTEXT.md`
+Resume file: `.planning/phases/02-habits-goals/02-03-SUMMARY.md`

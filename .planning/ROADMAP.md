@@ -11,7 +11,7 @@ no añade un plan frontend.
 ## Milestones
 
 - ✅ **v1.0 Identity, Profile & Contract Foundation** — Phase 1 completada el 2026-07-26.
-- 📋 **v2.0 Phase 2: Habits and Goals** — Phase 2 planificada.
+- 🔎 **v2.0 Phase 2: Habits and Goals** — ejecución completa, PRs en revisión.
 
 ## Phases
 
@@ -64,21 +64,21 @@ Plans:
 
 **Precondition / gate (no es un plan):**
 
-- [ ] HBB-16: contrato `habitos`/`metas` acordado en `docs/openapi.yaml` y cargado por Prism.
+- [x] HBB-16: contrato `habitos`/`metas` acordado en `docs/openapi.yaml` y cargado por Prism.
 
 Plans:
 
 **Wave 1**
 
-- [ ] 02-01: HBM-10 — CRUD de hábitos, frecuencia, categoría y campo de meta.
+- [x] 02-01: HBM-10 — CRUD de hábitos, frecuencia, categoría y campo de meta.
 
 **Wave 2** *(depends on 02-01)*
 
-- [ ] 02-02: HBM-11 — confirmaciones de pausa, finalización y eliminación.
+- [x] 02-02: HBM-11 — confirmaciones de pausa, finalización y eliminación.
 
 **Wave 3** *(depends on 02-02)*
 
-- [ ] 02-03: HBM-12 — metas, estados y vínculo/desvínculo con hábitos.
+- [x] 02-03: HBM-12 — metas, estados y vínculo/desvínculo con hábitos.
 
 **UI hint**: yes
 
@@ -105,4 +105,4 @@ El gate de cobertura se ejecuta además por ticket con
 | Phase | Milestone | Plans Complete | Status | Completed |
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
-| 2. Habits and Goals | v2.0 | 0/3 | Not started — gated by HBB-16 | - |
+| 2. Habits and Goals | v2.0 | 3/3 | In review — execution complete | - |
