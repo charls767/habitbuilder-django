@@ -7,6 +7,8 @@ import 'package:habitbuilder_mobile/core/theme/app_theme.dart';
 import 'package:habitbuilder_mobile/features/auth/domain/entities/usuario.dart';
 import 'package:habitbuilder_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:habitbuilder_mobile/features/auth/presentation/providers/auth_providers.dart';
+import 'package:habitbuilder_mobile/features/habits/domain/entities/habito.dart';
+import 'package:habitbuilder_mobile/features/habits/presentation/providers/habit_providers.dart';
 import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usuario.dart';
 import 'package:habitbuilder_mobile/features/profile/domain/repositories/profile_repository.dart';
 import 'package:habitbuilder_mobile/features/profile/presentation/providers/profile_providers.dart';
@@ -165,10 +167,13 @@ Future<void> _pumpFullApp(
         profileRepositoryProvider.overrideWithValue(profileRepository),
         authRepositoryProvider.overrideWithValue(authRepository),
         tokenStorageProvider.overrideWithValue(storage),
+        habitsListProvider.overrideWith((ref) async => const <Habito>[]),
       ],
       child: const HabitBuilderApp(),
     ),
   );
+  await tester.pumpAndSettle();
+  await tester.tap(find.byTooltip('Abrir perfil'));
   await tester.pumpAndSettle();
 }
 

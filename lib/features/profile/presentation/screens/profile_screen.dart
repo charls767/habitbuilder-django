@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../domain/entities/perfil_usuario.dart';
 import '../providers/profile_providers.dart';
 
@@ -139,6 +141,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: AppBar(
         title: const Text('Perfil'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.checklist_outlined),
+            tooltip: 'Ir a hábitos',
+            onPressed: () => context.go(AppRoutes.habits),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',

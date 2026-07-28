@@ -6,6 +6,8 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/habits/presentation/screens/habit_form_screen.dart';
+import '../../features/habits/presentation/screens/habits_list_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../network/auth_session_controller.dart';
 import 'app_routes.dart';
@@ -56,7 +58,20 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
-        path: AppRoutes.home,
+        path: AppRoutes.habits,
+        builder: (context, state) => const HabitsListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.habitCreate,
+        builder: (context, state) => const HabitFormScreen(),
+      ),
+      GoRoute(
+        path: '/habits/:habitId/edit',
+        builder: (context, state) =>
+            HabitFormScreen(habitId: state.pathParameters['habitId']!),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
       ),
     ],
