@@ -21,6 +21,11 @@ class HabitsListScreen extends ConsumerWidget {
         title: const Text('Hábitos del día'),
         actions: [
           IconButton(
+            onPressed: () => context.go(AppRoutes.goals),
+            icon: const Icon(Icons.flag_outlined),
+            tooltip: 'Abrir metas',
+          ),
+          IconButton(
             onPressed: () => context.go(AppRoutes.profile),
             icon: const Icon(Icons.person_outline),
             tooltip: 'Abrir perfil',

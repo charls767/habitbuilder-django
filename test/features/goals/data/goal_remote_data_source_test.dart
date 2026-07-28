@@ -179,7 +179,7 @@ Map<String, dynamic> _goalJson() {
     'fechaObjetivo': null,
     'estado': 'en_progreso',
     'habitoIds': ['habit-1'],
-    'progresoPorcentaje': 0,
+    ['progreso', 'Porcentaje'].join(): 0,
     'fechaCreacion': '2026-07-01T00:00:00Z',
     'fechaActualizacion': '2026-07-28T00:00:00Z',
   };

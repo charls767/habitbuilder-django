@@ -154,5 +154,41 @@ await request(
   204,
 );
 await request('/goals', {headers: authenticated}, 200);
+await request(
+  '/goals',
+  {
+    method: 'POST',
+    headers: authenticated,
+    body: JSON.stringify({
+      nombre: 'Dormir mejor',
+      descripcion: 'Consolidar una rutina nocturna',
+      fechaObjetivo: '2026-12-31',
+      habitoIds: ['hab_001'],
+    }),
+  },
+  201,
+);
+await request(
+  '/goals/meta_001',
+  {
+    method: 'PATCH',
+    headers: authenticated,
+    body: JSON.stringify({
+      nombre: 'Dormir mejor cada noche',
+      estado: 'pausada',
+    }),
+  },
+  200,
+);
+await request(
+  '/goals/meta_001/habits/hab_001',
+  {method: 'PUT', headers: authenticated},
+  200,
+);
+await request(
+  '/goals/meta_001/habits/hab_001',
+  {method: 'DELETE', headers: authenticated},
+  204,
+);
 
-console.log('Prism smoke test: Phase 1 + habits lifecycle/goals OK');
+console.log('Prism smoke test: Phase 1 + habits lifecycle + goals linking OK');

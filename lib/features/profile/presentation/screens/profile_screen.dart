@@ -142,6 +142,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('Perfil'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.flag_outlined),
+            tooltip: 'Ir a metas',
+            onPressed: () => context.go(AppRoutes.goals),
+          ),
+          IconButton(
             icon: const Icon(Icons.checklist_outlined),
             tooltip: 'Ir a hábitos',
             onPressed: () => context.go(AppRoutes.habits),
