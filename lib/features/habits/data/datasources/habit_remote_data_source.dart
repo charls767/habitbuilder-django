@@ -70,7 +70,49 @@ class HabitRemoteDataSource {
     });
   }
 
+  Future<HabitoDto> pauseHabit(
+    String habitId,
+    DateTime fechaInicio, {
+    DateTime? fechaFin,
+  }) async {
+    return runApiCall(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/habits/$habitId/pause',
+        data: {
+          'fechaInicio': _formatDate(fechaInicio),
+          if (fechaFin != null) 'fechaFin': _formatDate(fechaFin),
+        },
+      );
+      return HabitoDto.fromJson(response.data!);
+    });
+  }
+
+  Future<HabitoDto> resumeHabit(String habitId) async {
+    return runApiCall(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/habits/$habitId/resume',
+      );
+      return HabitoDto.fromJson(response.data!);
+    });
+  }
+
+  Future<HabitoDto> completeHabit(String habitId) async {
+    return runApiCall(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/habits/$habitId/complete',
+      );
+      return HabitoDto.fromJson(response.data!);
+    });
+  }
+
   Future<void> deleteHabit(String habitId) async {
     await runApiCall(() => _dio.delete<void>('/habits/$habitId'));
   }
+}
+
+String _formatDate(DateTime date) {
+  final year = date.year.toString().padLeft(4, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '$year-$month-$day';
 }

@@ -41,5 +41,15 @@ abstract interface class HabitRepository {
     Frecuencia? frecuencia,
   });
 
+  Future<Habito> pauseHabit(
+    String habitId,
+    DateTime fechaInicio, {
+    DateTime? fechaFin,
+  });
+
+  Future<Habito> resumeHabit(String habitId);
+
+  Future<Habito> completeHabit(String habitId);
+
   Future<void> deleteHabit(String habitId);
 }

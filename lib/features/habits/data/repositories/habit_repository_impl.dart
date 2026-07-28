@@ -87,5 +87,31 @@ class HabitRepositoryImpl implements HabitRepository {
   }
 
   @override
+  Future<Habito> pauseHabit(
+    String habitId,
+    DateTime fechaInicio, {
+    DateTime? fechaFin,
+  }) async {
+    final dto = await _remote.pauseHabit(
+      habitId,
+      fechaInicio,
+      fechaFin: fechaFin,
+    );
+    return dto.toEntity();
+  }
+
+  @override
+  Future<Habito> resumeHabit(String habitId) async {
+    final dto = await _remote.resumeHabit(habitId);
+    return dto.toEntity();
+  }
+
+  @override
+  Future<Habito> completeHabit(String habitId) async {
+    final dto = await _remote.completeHabit(habitId);
+    return dto.toEntity();
+  }
+
+  @override
   Future<void> deleteHabit(String habitId) => _remote.deleteHabit(habitId);
 }
