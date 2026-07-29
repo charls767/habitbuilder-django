@@ -18,8 +18,9 @@ recordatorios ni superficie o cálculo de métricas derivadas.
 - Branch: `HBM-12/goals-linking`
 - PR original: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/6
 - PR de integración: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/7
+- PR de alineación final CU-001/CU-002: https://bitbucket.org/habit_builder/habitbuilder-mobile/pull-requests/8
 - Base final: `main`
-- Jira: `En revisión`
+- Jira: `Listo`
 - Commits: `e906e01`, `9e39cd2`, `fa181ef`, `2231b64`, `51bf4a0`
 
 ## Verification
@@ -40,8 +41,10 @@ recordatorios ni superficie o cálculo de métricas derivadas.
 ## Outcome
 
 GOAL-01, GOAL-02, GOAL-03, GOAL-04, QUALITY-07..12 y DELIVERY-06 quedaron
-cubiertos. La ejecución de Phase 2 está completa. Los PR mobile #4, #5 y #6
-fueron cerrados como reemplazados; la integración se realiza exclusivamente
-con el PR mobile #7 desde `HBM-12/goals-linking` hacia `main`. El contrato
-oficial HBB-16 ya está en backend `main` mediante los PR backend #7 y #8; el PR
-backend #1 fue cerrado como obsoleto.
+cubiertos. La ejecución de Phase 2 está completa e integrada. Los PR mobile
+#4, #5 y #6 fueron cerrados como reemplazados; la integración se realizó con
+el PR mobile #7 desde `HBM-12/goals-linking` hacia `main`, seguida por la
+alineación final de acceso en el PR #8. HBM-10, HBM-11, HBM-12 y la épica
+HBM-2 quedaron en `Listo`. El contrato oficial HBB-16 ya está en backend
+`main` mediante los PR backend #7 y #8; el PR backend #1 fue cerrado como
+obsoleto.
