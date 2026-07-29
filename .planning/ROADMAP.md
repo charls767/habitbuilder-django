@@ -72,7 +72,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 03-01: HBM-13 — baseline, tooling fail-closed y contrato Prism.
+- [x] 03-01: HBM-13 — baseline, tooling fail-closed y contrato Prism.
 
 **Wave 2** *(depends on 03-01)*
 
@@ -199,4 +199,4 @@ real de su PR.
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
 | 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |
-| 3. Reminders | v3.0 | 0/8 | Planned | - |
+| 3. Reminders | v3.0 | 1/8 | In Progress | - |

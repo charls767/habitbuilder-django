@@ -8,7 +8,7 @@
 
 ### Recordatorios
 
-- [ ] **REMINDER-01**: La persona puede listar, crear y editar varios recordatorios de un hábito con mensaje, hora en formato 24 h y al menos un día activo.
+- [x] **REMINDER-01**: La persona puede listar, crear y editar varios recordatorios de un hábito con mensaje, hora en formato 24 h y al menos un día activo.
 - [ ] **REMINDER-02**: Cada ocurrencia se calcula con `TZDateTime` en la zona IANA guardada en el perfil, nunca con un `DateTime` local ingenuo.
 - [ ] **REMINDER-03**: La UI impide crear o reactivar recordatorios cuando el hábito está pausado o completado y explica el motivo sin fingir éxito.
 - [ ] **REMINDER-04**: La persona puede desactivar y reactivar un recordatorio sin perder mensaje, hora ni días configurados.
@@ -18,10 +18,10 @@
 
 - [ ] **QUALITY-13**: HBM-13 incluye pruebas unitarias de dominio/data y pruebas widget de listado, formulario, estados y elegibilidad.
 - [ ] **QUALITY-14**: HBM-14 incluye pruebas deterministas del cálculo de próximas ocurrencias y del puerto de scheduling sin depender del plugin nativo.
-- [ ] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra su SHA inmutable de inicio; el gate falla si un Dart modificado/no excluido falta en LCOV o si hay cero líneas medibles.
-- [ ] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
+- [x] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra su SHA inmutable de inicio; el gate falla si un Dart modificado/no excluido falta en LCOV o si hay cero líneas medibles.
+- [x] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
 - [ ] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
-- [ ] **QUALITY-18**: Prism carga el contrato de recordatorios y un helper autocontenido inicia el mock, espera readiness, ejecuta smoke de listar/crear/editar/desactivar y mata exactamente su proceso en `finally`.
+- [x] **QUALITY-18**: Prism carga el contrato de recordatorios y un helper autocontenido inicia el mock, espera readiness, ejecuta smoke de listar/crear/editar/desactivar y mata exactamente su proceso en `finally`.
 
 ### Entrega
 
