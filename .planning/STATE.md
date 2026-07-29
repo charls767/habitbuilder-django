@@ -1,11 +1,11 @@
 ---
-milestone: v2.0
-milestone_name: "Phase 2: Habits and Goals"
-status: complete
-current_phase: 2
-total_phases: 2
-plans_complete: 3
-plans_total: 3
+milestone: v3.0
+milestone_name: "Phase 3: Reminders"
+status: discussing
+current_phase: 3
+total_phases: 3
+plans_complete: 0
+plans_total: 2
 updated: 2026-07-28
 ---
 
@@ -17,19 +17,19 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 **Core value:** Una persona puede convertir una intención personal en hábitos y metas organizados, administrarlos con claridad y conservar el control de sus datos.
 
-**Current focus:** Phase 2 cerrada; listo para definir el siguiente milestone.
+**Current focus:** Phase 3 — Reminders.
 
 ## Current Position
 
-Phase: 2 of 2 — Habits and Goals
+Phase: 3 of 3 — Reminders
 
-Plan: 3 of 3
+Plan: discusión previa a 03-01
 
-Status: Completada e integrada a `main`
+Status: Discusión y planificación en curso
 
-Last activity: 2026-07-28 — PRs mobile #7/#8 fusionados; HBM-1/2/10/11/12 en `Listo`
+Last activity: 2026-07-28 — alcance HBM-13/14 y dependencias HBB-23/24/27 levantados desde Jira
 
-Progress v2.0: [■■■■■■■■■■] 100% de ejecución
+Progress v3.0: [□□□□□□□□□□] 0% de ejecución
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 | --- | ---: | ---: | ---: |
 | 1. Identity, Profile & Contract Foundation | 3 | 67 min | 22.3 min |
 | 2. Habits and Goals | 3/3 | 1 sesión | 1 sesión |
+| 3. Reminders | 0/2 | En curso | - |
 
 ## Accumulated Context
 
@@ -54,10 +55,15 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 - HBM-12 no incluye cálculo, métricas ni visualización de progreso.
 - Cada ticket exige una rama, un PR, pruebas unitarias/widget y >=80% changed-code coverage.
 - `stash@{0}` (`pre-phase-1-combined-worktree`) es solo referencia: no hacer `pop` ni aplicarlo completo.
+- Phase 3 ejecuta HBM-13 antes de HBM-14.
+- La zona horaria del perfil es la fuente canónica para scheduling.
+- Backend se ejecutará en orden HBB-23 → HBB-24 → HBB-27.
 
 ### Pending Todos
 
-- Definir el alcance y los tickets del siguiente milestone antes de iniciar otra fase.
+- Capturar contexto y planes 03-01/03-02.
+- Implementar HBM-13 y luego HBM-14.
+- Integrar HBB-23, HBB-24 y HBB-27 en el orden contractual.
 
 ### Blockers/Concerns
 
@@ -79,6 +85,6 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 Last session: 2026-07-28
 
-Stopped at: Phase 2 integrada y cerrada en Bitbucket, Jira y evidencia GSD
+Stopped at: Phase 3 en discusión y planificación
 
-Resume file: `.planning/phases/02-habits-goals/02-03-SUMMARY.md`
+Resume file: `.planning/phases/03-reminders/03-CONTEXT.md`

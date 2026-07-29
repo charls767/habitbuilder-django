@@ -1,10 +1,66 @@
-# Requisitos: HabitBuilder Mobile — v2.0 Phase 2: Habits and Goals
+# Requisitos: HabitBuilder Mobile — v3.0 Phase 3: Reminders
 
 **Definidos:** 2026-07-28
 
 **Valor central:** Una persona puede convertir una intención personal en hábitos y metas organizados, administrarlos con claridad y conservar el control de sus datos.
 
-## Requisitos v2.0
+## Requisitos v3.0
+
+### Recordatorios
+
+- [ ] **REMINDER-01**: La persona puede listar, crear y editar varios recordatorios de un hábito con mensaje, hora en formato 24 h y al menos un día activo.
+- [ ] **REMINDER-02**: Cada ocurrencia se calcula con `TZDateTime` en la zona IANA guardada en el perfil, nunca con un `DateTime` local ingenuo.
+- [ ] **REMINDER-03**: La UI impide crear o reactivar recordatorios cuando el hábito está pausado o completado y explica el motivo sin fingir éxito.
+- [ ] **REMINDER-04**: La persona puede desactivar y reactivar un recordatorio sin perder mensaje, hora ni días configurados.
+- [ ] **REMINDER-05**: El scheduler gestiona permisos Android/iOS, exact alarm con fallback, reprogramación tras reinicio y el límite de 64 pendientes de iOS.
+
+### Calidad
+
+- [ ] **QUALITY-13**: HBM-13 incluye pruebas unitarias de dominio/data y pruebas widget de listado, formulario, estados y elegibilidad.
+- [ ] **QUALITY-14**: HBM-14 incluye pruebas deterministas del cálculo de próximas ocurrencias y del puerto de scheduling sin depender del plugin nativo.
+- [ ] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra la base real de su PR.
+- [ ] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
+- [ ] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
+- [ ] **QUALITY-18**: Prism carga el contrato de recordatorios y el smoke cubre listar, crear, editar y desactivar.
+
+### Entrega
+
+- [ ] **DELIVERY-07**: HBM-13 se entrega en `HBM-13/reminder-ui`, con commits atómicos, pruebas y PR propio.
+- [ ] **DELIVERY-08**: HBM-14 parte del `main` que contiene HBM-13 y se entrega en `HBM-14/local-notifications`, con pruebas y PR propio.
+
+## Sincronización HBB-23
+
+El contrato compartido debe definir varios recordatorios por hábito, mensaje,
+hora `HH:mm`, días ISO 1..7, estado activo y operaciones de listado, creación,
+edición y eliminación. HBB-23 formaliza además un puerto `NotificationSender`
+sin elegir proveedor concreto. El cierre exige que mobile y backend compartan
+la misma forma contractual.
+
+## Fuera de alcance v3.0
+
+| Funcionalidad | Razón |
+| --- | --- |
+| Push remoto y campañas | Phase 3 programa notificaciones locales del dispositivo. |
+| Snooze, geofencing y reglas contextuales | Son capacidades nuevas no descritas por HBM-13/14. |
+| Tracking, rachas y progreso | Pertenecen a fases posteriores. |
+| Estadísticas de entrega o apertura | Requieren telemetría fuera del alcance actual. |
+
+## Trazabilidad v3.0
+
+| Requisito | Jira | Fase | Plan | Estado |
+| --- | --- | --- | --- | --- |
+| REMINDER-01 | HBM-13 | Phase 3 | 03-01 | Pendiente |
+| REMINDER-02 | HBM-14 | Phase 3 | 03-02 | Pendiente |
+| REMINDER-03 | HBM-13/HBM-14 | Phase 3 | 03-01..02 | Pendiente |
+| REMINDER-04 | HBM-13 | Phase 3 | 03-01 | Pendiente |
+| REMINDER-05 | HBM-14 | Phase 3 | 03-02 | Pendiente |
+| QUALITY-13 | HBM-13 | Phase 3 | 03-01 | Pendiente |
+| QUALITY-14 | HBM-14 | Phase 3 | 03-02 | Pendiente |
+| QUALITY-15..18 | HBM-13/14 | Phase 3 | 03-01..02 | Pendiente |
+| DELIVERY-07 | HBM-13 | Phase 3 | 03-01 | Pendiente |
+| DELIVERY-08 | HBM-14 | Phase 3 | 03-02 | Pendiente |
+
+## Historia validada v2.0
 
 ### Hábitos
 
@@ -97,4 +153,4 @@ PROFILE-01..05, QUALITY-01..06 y DELIVERY-01..03. La evidencia permanece en
 `.planning/phases/01-identity-profile-contract-foundation/`.
 
 ---
-*Última actualización: 2026-07-28 al crear la trazabilidad del milestone v2.0.*
+*Última actualización: 2026-07-28 al crear la trazabilidad del milestone v3.0.*

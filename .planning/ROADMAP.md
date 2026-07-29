@@ -3,20 +3,21 @@
 ## Overview
 
 v1.0 entregó identidad, sesión y perfil sobre una base Flutter y OpenAPI
-verificable. v2.0 continúa con una única fase coherente: primero CRUD y
-clasificación de hábitos, luego sus transiciones confirmadas y finalmente metas
-con vínculos a hábitos. HBB-16 desbloquea la ejecución al fijar el contrato, pero
-no añade un plan frontend.
+verificable. v2.0 añadió hábitos y metas. v3.0 incorpora recordatorios por
+hábito en dos pasos: primero su gestión visible y luego la programación local
+con zona horaria, permisos y reprogramación confiable.
 
 ## Milestones
 
 - ✅ **v1.0 Identity, Profile & Contract Foundation** — Phase 1 completada el 2026-07-26.
 - ✅ **v2.0 Phase 2: Habits and Goals** — completada el 2026-07-28.
+- 🚧 **v3.0 Phase 3: Reminders** — en ejecución.
 
 ## Phases
 
 - [x] **Phase 1: Identity, Profile & Contract Foundation** - Base Flutter, autenticación y perfil entregados en HBM-7/8/9.
 - [x] **Phase 2: Habits and Goals** - Hábitos, transiciones confirmadas y metas vinculadas en HBM-10/11/12.
+- [ ] **Phase 3: Reminders** - Gestión de recordatorios y notificaciones locales confiables en HBM-13/14.
 
 ## Phase Details
 
@@ -41,6 +42,48 @@ Plans:
 - [x] 01-01: HBM-7 — scaffold feature-first, red segura y mock server.
 - [x] 01-02: HBM-8 — registro, login y recuperación de contraseña.
 - [x] 01-03: HBM-9 — perfil, preferencias y logout.
+
+**UI hint**: yes
+
+### Phase 3: Reminders
+
+**Goal**: Una persona autenticada puede configurar recordatorios para sus
+hábitos activos y recibir notificaciones locales interpretadas en la zona
+horaria de su perfil, incluso después de reinicios y bajo restricciones del
+sistema operativo.
+
+**Depends on**: Phase 2; forma contractual de HBB-23 acordada para
+`recordatorios` y `NotificationSender`.
+
+**Requirements**: REMINDER-01, REMINDER-02, REMINDER-03, REMINDER-04,
+REMINDER-05, QUALITY-13, QUALITY-14, QUALITY-15, QUALITY-16, QUALITY-17,
+QUALITY-18, DELIVERY-07, DELIVERY-08
+
+**Success Criteria** (what must be TRUE):
+
+  1. La persona puede listar, crear y editar varios recordatorios por hábito con mensaje, hora, días activos y estado.
+  2. Crear o reactivar queda bloqueado para hábitos pausados o completados sin perder la configuración existente.
+  3. La programación usa `TZDateTime` en la zona horaria del perfil, gestiona permisos Android/iOS y se restaura tras reinicio.
+  4. La lógica de elegibilidad y cálculo de próximas ocurrencias se prueba sin depender del framework nativo de notificaciones.
+  5. HBM-13 se integra antes de abrir HBM-14; ambos superan 80% de changed-code coverage y todos los gates del repositorio.
+
+**Plans**: 2 plans in 2 waves
+
+Plans:
+
+**Wave 1**
+
+- [ ] 03-01: HBM-13 — listado, creación, edición y activación de recordatorios según CU-006.
+
+**Wave 2** *(depends on 03-01)*
+
+- [ ] 03-02: HBM-14 — scheduling local con zona horaria, permisos, exact alarm y reboot.
+
+**Canonical refs**:
+
+- `docs/openapi.yaml`
+- `C:/Users/USER/Desktop/DPPF/HabitBuilder - Mockups.html` — CU-006
+- Jira HBM-3, HBM-13, HBM-14 y HBB-23
 
 **UI hint**: yes
 
@@ -98,11 +141,28 @@ npm run mock:smoke
 El gate de cobertura se ejecuta además por ticket con
 `node scripts/check-changed-coverage.mjs --base <base-del-PR> --lcov coverage/lcov.info --min 80`.
 
+## Definition of Done v3.0
+
+Phase 3 termina cuando los planes 03-01 y 03-02 tienen `SUMMARY.md`, el
+contrato de recordatorios está sincronizado con HBB-23, la programación local
+está aislada detrás de un puerto testeable y la revisión integrada pasa:
+
+```text
+flutter analyze
+flutter test --coverage
+flutter build web --release
+npm run mock:smoke
+```
+
+Cada ticket debe superar además 80% de changed-code coverage contra la base
+real de su PR.
+
 ## Progress
 
-**Execution Order:** Phase 1 → gate HBB-16 → 02-01 → 02-02 → 02-03.
+**Execution Order:** Phase 1 → Phase 2 → 03-01 → 03-02.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
 | 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |
+| 3. Reminders | v3.0 | 0/2 | Discussing and planning | - |
