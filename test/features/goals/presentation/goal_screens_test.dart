@@ -36,7 +36,7 @@ void main() {
         ],
       );
 
-      expect(find.text('Metas'), findsOneWidget);
+      expect(find.text('Mis metas'), findsOneWidget);
       expect(find.text('Dormir mejor'), findsOneWidget);
       expect(find.text('En curso'), findsOneWidget);
       expect(find.text('31/12/2026'), findsOneWidget);
@@ -90,7 +90,7 @@ void main() {
       final repository = _ScreenGoalRepository();
       await _pumpForm(tester, repository);
 
-      await tester.tap(find.text('Crear meta'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pump();
       expect(find.text('Escribe un nombre para la meta'), findsOneWidget);
 
@@ -106,7 +106,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.widgetWithText(CheckboxListTile, 'Leer'));
       await tester.pump();
-      await tester.tap(find.text('Crear meta'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pumpAndSettle();
 
       expect(repository.createdName, 'Dormir profundamente');
@@ -142,7 +142,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.widgetWithText(CheckboxListTile, 'Caminar'));
       await tester.pump();
-      await tester.tap(find.text('Guardar cambios'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pumpAndSettle();
 
       expect(repository.updatedName, 'Descansar mejor');
@@ -166,7 +166,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Nombre'),
         'Conservar este texto',
       );
-      await tester.tap(find.text('Crear meta'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pumpAndSettle();
 
       expect(find.text('Conservar este texto'), findsOneWidget);

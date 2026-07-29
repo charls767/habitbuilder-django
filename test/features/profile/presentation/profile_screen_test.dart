@@ -93,7 +93,7 @@ void main() {
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
     expect(authRepository.logoutCalls, 0);
-    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Perfil'), findsWidgets);
 
     await tester.tap(logoutButton);
     await tester.pumpAndSettle();
@@ -122,7 +122,7 @@ void main() {
       _MemoryTokenStorage(accessToken: 'access'),
     );
 
-    final context = tester.element(find.text('Perfil'));
+    final context = tester.element(find.text('Perfil').first);
     expect(MediaQuery.textScalerOf(context).scale(10), 11.5);
     expect(
       Theme.of(context).colorScheme,
@@ -173,7 +173,7 @@ Future<void> _pumpFullApp(
     ),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.byTooltip('Abrir perfil'));
+  await tester.tap(find.text('Perfil').first);
   await tester.pumpAndSettle();
 }
 

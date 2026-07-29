@@ -65,7 +65,7 @@ void main() {
       final repository = _FakeHabitRepository();
       await _pumpForm(tester, repository);
 
-      await tester.tap(find.text('Crear hábito'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pump();
       expect(find.text('Escribe un nombre para el hábito'), findsOneWidget);
 
@@ -73,7 +73,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Nombre'),
         'Caminar',
       );
-      await tester.tap(find.text('Días'));
+      await tester.tap(find.text('Semanal'));
       await tester.pump();
       await tester.drag(find.byType(ListView), const Offset(0, -140));
       await tester.pump();
@@ -94,7 +94,7 @@ void main() {
       await tester.tap(find.text('Dormir mejor'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Crear hábito'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pumpAndSettle();
 
       expect(repository.createdName, 'Caminar');
@@ -124,7 +124,7 @@ void main() {
         find.widgetWithText(TextFormField, 'Nombre'),
         'Leer treinta minutos',
       );
-      await tester.tap(find.text('Guardar cambios'));
+      await tester.tap(find.widgetWithText(TextButton, 'Guardar'));
       await tester.pumpAndSettle();
 
       expect(repository.updatedHabitId, 'hab_1');

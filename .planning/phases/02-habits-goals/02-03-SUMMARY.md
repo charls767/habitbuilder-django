@@ -26,11 +26,13 @@ recordatorios ni superficie o cálculo de métricas derivadas.
 
 - 145 pruebas integradas: PASS
 - 47 pruebas enfocadas de metas: PASS
-- Changed-code coverage consolidada contra `origin/main`: 92.33%
+- Changed-code coverage consolidada contra `origin/main`: 92.05%
 - `flutter analyze`: PASS
 - Web release build: PASS
 - Prism goals/linking smoke: PASS
-- Layout de 320 px y revisión visual desktop: PASS
+- Layout de 320 px y revisión visual desktop contra
+  `HabitBuilder - Mockups.html`: PASS
+- Navegación inferior y formularios de hábitos/metas alineados al mockup: PASS
 - Escaneo de alcance excluido: PASS
 - `git diff --check`: PASS
 

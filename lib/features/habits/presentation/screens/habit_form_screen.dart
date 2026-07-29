@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/widgets/app_chrome.dart';
 import '../../domain/entities/categoria.dart';
 import '../../domain/entities/frecuencia.dart';
 import '../../domain/entities/habito.dart';
@@ -183,151 +184,158 @@ class _HabitFormScreenState extends ConsumerState<HabitFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Editar hábito' : 'Nuevo hábito'),
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          children: [
-            const _SectionHeading(
-              icon: Icons.edit_outlined,
-              title: 'Información',
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _nameController,
-              autofocus: !widget.isEditing,
-              maxLength: 120,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                hintText: 'Ej. Leer antes de dormir',
-              ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Escribe un nombre para el hábito'
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _descriptionController,
-              maxLength: 500,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                hintText: 'Opcional',
-                alignLabelWithHint: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _dateController,
-              readOnly: true,
-              onTap: _pickDate,
-              decoration: InputDecoration(
-                labelText: 'Fecha de inicio',
-                suffixIcon: IconButton(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_today_outlined),
-                  tooltip: 'Elegir fecha',
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-            const _SectionHeading(icon: Icons.repeat, title: 'Frecuencia'),
-            const SizedBox(height: 12),
-            SegmentedButton<FrecuenciaTipo>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(
-                  value: FrecuenciaTipo.diaria,
-                  icon: Icon(Icons.today_outlined),
-                  label: Text('Diaria'),
-                ),
-                ButtonSegment(
-                  value: FrecuenciaTipo.diasSemana,
-                  icon: Icon(Icons.date_range_outlined),
-                  label: Text('Días'),
-                ),
-                ButtonSegment(
-                  value: FrecuenciaTipo.vecesPeriodo,
-                  icon: Icon(Icons.repeat_one),
-                  label: Text('Veces'),
-                ),
-              ],
-              selected: {_frequencyType},
-              onSelectionChanged: controllerState.isLoading
-                  ? null
-                  : (selection) =>
-                        setState(() => _frequencyType = selection.first),
-            ),
-            const SizedBox(height: 16),
-            if (_frequencyType == FrecuenciaTipo.diasSemana)
-              _WeekdayPicker(
-                selected: _weekdays,
-                onChanged: (days) => setState(() {
-                  _weekdays
-                    ..clear()
-                    ..addAll(days);
-                }),
-              ),
-            if (_frequencyType == FrecuenciaTipo.vecesPeriodo)
-              _TimesPerPeriodPicker(
-                times: _times,
-                period: _period,
-                onTimesChanged: (value) => setState(() => _times = value),
-                onPeriodChanged: (value) => setState(() => _period = value),
-              ),
-            const SizedBox(height: 28),
-            const _SectionHeading(icon: Icons.tune, title: 'Organización'),
-            const SizedBox(height: 12),
-            _CategoryField(
-              categories: categories,
-              value: _categoryId,
-              onChanged: (value) => setState(() => _categoryId = value),
-            ),
-            const SizedBox(height: 16),
-            _GoalField(
-              goals: goals,
-              value: _goalId,
-              onChanged: (value) => setState(() => _goalId = value),
-            ),
-          ],
+        leadingWidth: 84,
+        leading: TextButton(
+          onPressed: controllerState.isLoading
+              ? null
+              : () => Navigator.of(context).maybePop(),
+          child: const Text('Cancelar'),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-          child: FilledButton.icon(
+        actions: [
+          TextButton(
             onPressed: controllerState.isLoading ? null : _save,
-            icon: controllerState.isLoading
+            child: controllerState.isLoading
                 ? const SizedBox.square(
                     dimension: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.save_outlined),
-            label: Text(widget.isEditing ? 'Guardar cambios' : 'Crear hábito'),
+                : const Text('Guardar'),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: AppContent(
+        maxWidth: 640,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            children: [
+              const AppSectionLabel('Nombre del hábito'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _nameController,
+                autofocus: !widget.isEditing,
+                maxLength: 120,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                  hintText: 'Ej. Meditar al despertar',
+                  counterText: '',
+                ),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Escribe un nombre para el hábito'
+                    : null,
+              ),
+              const SizedBox(height: 20),
+              const AppSectionLabel('Descripción'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _descriptionController,
+                maxLength: 500,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  hintText: 'Añade una nota opcional',
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _CategoryField(
+                categories: categories,
+                value: _categoryId,
+                onChanged: (value) => setState(() => _categoryId = value),
+              ),
+              const SizedBox(height: 20),
+              const AppSectionLabel('Frecuencia'),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<FrecuenciaTipo>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(
+                      value: FrecuenciaTipo.diaria,
+                      label: Text('Diaria'),
+                    ),
+                    ButtonSegment(
+                      value: FrecuenciaTipo.diasSemana,
+                      label: Text('Semanal'),
+                    ),
+                    ButtonSegment(
+                      value: FrecuenciaTipo.vecesPeriodo,
+                      label: Text('Personal.'),
+                    ),
+                  ],
+                  selected: {_frequencyType},
+                  onSelectionChanged: controllerState.isLoading
+                      ? null
+                      : (selection) =>
+                            setState(() => _frequencyType = selection.first),
+                ),
+              ),
+              const SizedBox(height: 14),
+              if (_frequencyType == FrecuenciaTipo.diasSemana)
+                _WeekdayPicker(
+                  selected: _weekdays,
+                  onChanged: (days) => setState(() {
+                    _weekdays
+                      ..clear()
+                      ..addAll(days);
+                  }),
+                ),
+              if (_frequencyType == FrecuenciaTipo.vecesPeriodo)
+                _TimesPerPeriodPicker(
+                  times: _times,
+                  period: _period,
+                  onTimesChanged: (value) => setState(() => _times = value),
+                  onPeriodChanged: (value) => setState(() => _period = value),
+                ),
+              const SizedBox(height: 20),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final dateField = TextFormField(
+                    controller: _dateController,
+                    readOnly: true,
+                    onTap: _pickDate,
+                    decoration: InputDecoration(
+                      labelText: 'Fecha de inicio',
+                      suffixIcon: IconButton(
+                        onPressed: _pickDate,
+                        icon: const Icon(Icons.calendar_today_outlined),
+                        tooltip: 'Elegir fecha',
+                      ),
+                    ),
+                  );
+                  final goalField = _GoalField(
+                    goals: goals,
+                    value: _goalId,
+                    onChanged: (value) => setState(() => _goalId = value),
+                  );
+                  if (constraints.maxWidth < 360) {
+                    return Column(
+                      children: [
+                        dateField,
+                        const SizedBox(height: 12),
+                        goalField,
+                      ],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: dateField),
+                      const SizedBox(width: 12),
+                      Expanded(child: goalField),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 22),
-        const SizedBox(width: 10),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-      ],
     );
   }
 }
@@ -459,26 +467,30 @@ class _CategoryField extends StatelessWidget {
     final effectiveValue = categories.any((item) => item.id == value)
         ? value
         : null;
-    return DropdownButtonFormField<String?>(
-      key: ValueKey('category-$value-${categories.length}'),
-      initialValue: effectiveValue,
-      decoration: const InputDecoration(
-        labelText: 'Categoría',
-        prefixIcon: Icon(Icons.category_outlined),
-      ),
-      items: [
-        const DropdownMenuItem<String?>(
-          value: null,
-          child: Text('Sin categoría'),
-        ),
-        ...categories.map(
-          (category) => DropdownMenuItem<String?>(
-            value: category.id,
-            child: Text(category.nombre),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppSectionLabel('Categoría'),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('Sin categoría'),
+              selected: effectiveValue == null,
+              onSelected: (_) => onChanged(null),
+            ),
+            ...categories.map(
+              (category) => ChoiceChip(
+                label: Text(category.nombre),
+                selected: effectiveValue == category.id,
+                onSelected: (_) => onChanged(category.id),
+              ),
+            ),
+          ],
         ),
       ],
-      onChanged: onChanged,
     );
   }
 }
@@ -500,10 +512,7 @@ class _GoalField extends StatelessWidget {
     return DropdownButtonFormField<String?>(
       key: ValueKey('goal-$value-${goals.length}'),
       initialValue: effectiveValue,
-      decoration: const InputDecoration(
-        labelText: 'Meta relacionada',
-        prefixIcon: Icon(Icons.flag_outlined),
-      ),
+      decoration: const InputDecoration(labelText: 'Meta vinculada'),
       items: [
         const DropdownMenuItem<String?>(value: null, child: Text('Sin meta')),
         ...goals.map(

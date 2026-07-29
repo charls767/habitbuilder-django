@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_chrome.dart';
 import '../../../habits/domain/entities/habito.dart';
 import '../../../habits/presentation/providers/habit_providers.dart';
 import '../../domain/entities/meta.dart';
@@ -98,69 +100,165 @@ class _GoalDetailBody extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
-          Text(goal.nombre, style: Theme.of(context).textTheme.headlineSmall),
-          if (goal.descripcion case final description?) ...[
-            const SizedBox(height: 10),
-            Text(description),
-          ],
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 20,
-            runSpacing: 10,
-            children: [
-              _DetailValue(
-                icon: Icons.info_outline,
-                label: 'Estado',
-                value: goalStateLabel(goal.estado),
-              ),
-              if (goal.fechaObjetivo case final date?)
-                _DetailValue(
-                  icon: Icons.event_outlined,
-                  label: 'Fecha objetivo',
-                  value: formatGoalDate(date),
+      body: AppContent(
+        maxWidth: 640,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final title = Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: AppColors.mint,
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                              child: const Icon(
+                                Icons.track_changes_rounded,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                goal.nombre,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
+                            ),
+                          ],
+                        );
+                        final status = AppStatusPill(
+                          label: goalStateLabel(goal.estado),
+                          foreground: _goalStateColor(goal.estado),
+                          background: _goalStateBackground(goal.estado),
+                        );
+
+                        if (constraints.maxWidth < 360) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              title,
+                              const SizedBox(height: 12),
+                              status,
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            Expanded(child: title),
+                            const SizedBox(width: 12),
+                            status,
+                          ],
+                        );
+                      },
+                    ),
+                    if (goal.descripcion case final description?) ...[
+                      const SizedBox(height: 14),
+                      Text(description),
+                    ],
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 20,
+                      runSpacing: 10,
+                      children: [
+                        _DetailValue(
+                          icon: Icons.info_outline,
+                          label: 'Estado',
+                          value: goalStateLabel(goal.estado),
+                        ),
+                        if (goal.fechaObjetivo case final date?)
+                          _DetailValue(
+                            icon: Icons.event_outlined,
+                            label: 'Fecha objetivo',
+                            value: formatGoalDate(date),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Hábitos vinculados',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              FilledButton.tonalIcon(
-                onPressed: controller.isLoading || habitsState.isLoading
-                    ? null
-                    : () => _manageHabits(context, ref, allHabits),
-                icon: const Icon(Icons.link),
-                label: const Text('Gestionar'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (habitsState.hasError)
-            _HabitLoadError(onRetry: () => ref.invalidate(habitsListProvider))
-          else if (habitsState.isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (linked.isEmpty)
-            const _EmptyLinkedHabits()
-          else
-            ...linked.map(
-              (habit) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.checklist_outlined),
-                title: Text(habit.nombre),
-                subtitle: Text(_habitStateLabel(habit.estado)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push(AppRoutes.habitEdit(habit.id)),
               ),
             ),
-        ],
+            const SizedBox(height: 28),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final button = FilledButton.tonalIcon(
+                  onPressed: controller.isLoading || habitsState.isLoading
+                      ? null
+                      : () => _manageHabits(context, ref, allHabits),
+                  icon: const Icon(Icons.link),
+                  label: const Text('Gestionar'),
+                );
+                final title = Text(
+                  'Hábitos vinculados',
+                  style: Theme.of(context).textTheme.titleLarge,
+                );
+
+                if (constraints.maxWidth < 360) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      title,
+                      const SizedBox(height: 10),
+                      SizedBox(width: double.infinity, child: button),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: title),
+                    button,
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            if (habitsState.hasError)
+              _HabitLoadError(onRetry: () => ref.invalidate(habitsListProvider))
+            else if (habitsState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (linked.isEmpty)
+              const _EmptyLinkedHabits()
+            else
+              ...linked.map(
+                (habit) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Card(
+                    child: ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.mint,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.checklist_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      title: Text(habit.nombre),
+                      subtitle: Text(_habitStateLabel(habit.estado)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push(AppRoutes.habitEdit(habit.id)),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -323,5 +421,23 @@ String _habitStateLabel(HabitoEstado state) {
     HabitoEstado.activo => 'Activo',
     HabitoEstado.pausado => 'Pausado',
     HabitoEstado.completado => 'Completado',
+  };
+}
+
+Color _goalStateColor(MetaEstado state) {
+  return switch (state) {
+    MetaEstado.enProgreso => AppColors.primary,
+    MetaEstado.lograda => AppColors.success,
+    MetaEstado.pausada => const Color(0xFFB45309),
+    MetaEstado.cancelada => AppColors.danger,
+  };
+}
+
+Color _goalStateBackground(MetaEstado state) {
+  return switch (state) {
+    MetaEstado.enProgreso => AppColors.mint,
+    MetaEstado.lograda => const Color(0xFFDCFCE7),
+    MetaEstado.pausada => const Color(0xFFFFF3D6),
+    MetaEstado.cancelada => const Color(0xFFFEE2E2),
   };
 }

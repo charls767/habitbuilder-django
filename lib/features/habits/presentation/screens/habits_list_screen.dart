@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_chrome.dart';
 import '../../domain/entities/frecuencia.dart';
 import '../../domain/entities/habito.dart';
 import '../providers/habit_providers.dart';
@@ -19,42 +21,38 @@ class HabitsListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hábitos del día'),
-        actions: [
-          IconButton(
-            onPressed: () => context.go(AppRoutes.goals),
-            icon: const Icon(Icons.flag_outlined),
-            tooltip: 'Abrir metas',
-          ),
-          IconButton(
-            onPressed: () => context.go(AppRoutes.profile),
-            icon: const Icon(Icons.person_outline),
-            tooltip: 'Abrir perfil',
-          ),
-        ],
+        leading: const Icon(
+          Icons.local_fire_department_rounded,
+          color: AppColors.primary,
+        ),
       ),
       body: habits.when(
         data: (items) => items.isEmpty
             ? _EmptyHabits(onCreate: () => context.push(AppRoutes.habitCreate))
-            : RefreshIndicator(
-                onRefresh: () async => ref.refresh(habitsListProvider.future),
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-                  itemCount: items.length + 1,
-                  separatorBuilder: (_, index) =>
-                      SizedBox(height: index == 0 ? 16 : 10),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _ListHeader(count: items.length);
-                    }
-                    final habit = items[index - 1];
-                    return _HabitCard(
-                      habit: habit,
-                      onEdit: () => context.push(AppRoutes.habitEdit(habit.id)),
-                      actionsEnabled: !controllerState.isLoading,
-                      onAction: (action) =>
-                          _confirmAndRun(context, ref, habit, action),
-                    );
-                  },
+            : AppContent(
+                child: RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () async => ref.refresh(habitsListProvider.future),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+                    itemCount: items.length + 1,
+                    separatorBuilder: (_, index) =>
+                        SizedBox(height: index == 0 ? 18 : 12),
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _ListHeader(count: items.length);
+                      }
+                      final habit = items[index - 1];
+                      return _HabitCard(
+                        habit: habit,
+                        onEdit: () =>
+                            context.push(AppRoutes.habitEdit(habit.id)),
+                        actionsEnabled: !controllerState.isLoading,
+                        onAction: (action) =>
+                            _confirmAndRun(context, ref, habit, action),
+                      );
+                    },
+                  ),
                 ),
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -66,6 +64,7 @@ class HabitsListScreen extends ConsumerWidget {
         tooltip: 'Crear hábito',
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: const AppDestinationBar(selectedIndex: 0),
     );
   }
 
@@ -142,6 +141,15 @@ class _ListHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    const weekdays = [
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+      'Domingo',
+    ];
     const months = [
       'enero',
       'febrero',
@@ -161,13 +169,15 @@ class _ListHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${now.day} de ${months[now.month - 1]}',
-          style: Theme.of(context).textTheme.labelLarge,
+          '${weekdays[now.weekday - 1]}, ${now.day} de ${months[now.month - 1]}',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           count == 1 ? '1 hábito configurado' : '$count hábitos configurados',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
         ),
       ],
     );
@@ -189,38 +199,39 @@ class _HabitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final isPaused = habit.estado == HabitoEstado.pausado;
     final isCompleted = habit.estado == HabitoEstado.completado;
 
     return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         onTap: onEdit,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+          padding: const EdgeInsets.fromLTRB(14, 14, 6, 14),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? colors.tertiaryContainer
-                      : colors.secondaryContainer,
-                  borderRadius: BorderRadius.circular(8),
+                      ? const Color(0xFFDCFCE7)
+                      : isPaused
+                      ? const Color(0xFFFFF3D6)
+                      : AppColors.mint,
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(
                   isCompleted
-                      ? Icons.check
+                      ? Icons.task_alt_rounded
                       : isPaused
-                      ? Icons.pause
-                      : Icons.checklist,
+                      ? Icons.pause_rounded
+                      : Icons.checklist_rounded,
                   color: isCompleted
-                      ? colors.onTertiaryContainer
-                      : colors.onSecondaryContainer,
+                      ? AppColors.success
+                      : isPaused
+                      ? AppColors.warning
+                      : AppColors.primary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -239,24 +250,27 @@ class _HabitCard extends StatelessWidget {
                       _frequencyLabel(habit.frecuencia),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
                     ),
                     if (habit.estado != HabitoEstado.activo) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        isPaused ? 'Pausado' : 'Completado',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: isPaused ? colors.error : colors.tertiary,
-                            ),
+                      const SizedBox(height: 7),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: AppStatusPill(
+                          label: isPaused ? 'Pausado' : 'Completado',
+                          foreground: isPaused
+                              ? const Color(0xFFB45309)
+                              : AppColors.success,
+                          background: isPaused
+                              ? const Color(0xFFFFF3D6)
+                              : const Color(0xFFDCFCE7),
+                        ),
                       ),
                     ],
                   ],
                 ),
-              ),
-              IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Editar ${habit.nombre}',
               ),
               PopupMenuButton<_HabitAction>(
                 enabled: actionsEnabled,
@@ -376,7 +390,19 @@ class _EmptyHabits extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.checklist, size: 56),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.mint,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(
+                  Icons.checklist_rounded,
+                  size: 34,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tu lista está lista para empezar',

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_chrome.dart';
 import '../../../habits/domain/entities/habito.dart';
 import '../../../habits/presentation/providers/habit_providers.dart';
 import '../../domain/entities/meta.dart';
@@ -150,159 +152,162 @@ class _GoalFormScreenState extends ConsumerState<GoalFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Editar meta' : 'Nueva meta'),
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          children: [
-            const _SectionHeading(
-              icon: Icons.flag_outlined,
-              title: 'Información',
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _nameController,
-              autofocus: !widget.isEditing,
-              maxLength: 120,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                hintText: 'Ej. Dormir mejor',
-              ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Escribe un nombre para la meta'
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _descriptionController,
-              maxLength: 500,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                hintText: 'Opcional',
-                alignLabelWithHint: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _dateController,
-              readOnly: true,
-              onTap: _pickDate,
-              decoration: InputDecoration(
-                labelText: 'Fecha objetivo',
-                hintText: 'Opcional',
-                prefixIcon: const Icon(Icons.event_outlined),
-                suffixIcon: _targetDate == null
-                    ? IconButton(
-                        onPressed: _pickDate,
-                        icon: const Icon(Icons.calendar_today_outlined),
-                        tooltip: 'Elegir fecha',
-                      )
-                    : IconButton(
-                        onPressed: () => setState(() => _setDate(null)),
-                        icon: const Icon(Icons.clear),
-                        tooltip: 'Quitar fecha',
-                      ),
-              ),
-            ),
-            if (widget.isEditing) ...[
-              const SizedBox(height: 16),
-              DropdownButtonFormField<MetaEstado>(
-                initialValue: _state,
-                decoration: const InputDecoration(
-                  labelText: 'Estado',
-                  prefixIcon: Icon(Icons.info_outline),
-                ),
-                items: MetaEstado.values
-                    .map(
-                      (state) => DropdownMenuItem(
-                        value: state,
-                        child: Text(goalStateLabel(state)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: controllerState.isLoading
-                    ? null
-                    : (value) => setState(() => _state = value!),
-              ),
-            ],
-            const SizedBox(height: 28),
-            const _SectionHeading(
-              icon: Icons.link,
-              title: 'Hábitos vinculados',
-            ),
-            const SizedBox(height: 8),
-            if (habitsState.isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (habitsState.hasError)
-              OutlinedButton.icon(
-                onPressed: () => ref.invalidate(habitsListProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Reintentar hábitos'),
-              )
-            else if (habits.isEmpty)
-              const Text('Aún no tienes hábitos para vincular.')
-            else
-              ...habits.map(
-                (habit) => CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _selectedHabitIds.contains(habit.id),
-                  onChanged: controllerState.isLoading
-                      ? null
-                      : (checked) => setState(() {
-                          if (checked ?? false) {
-                            _selectedHabitIds.add(habit.id);
-                          } else {
-                            _selectedHabitIds.remove(habit.id);
-                          }
-                        }),
-                  title: Text(habit.nombre),
-                  subtitle:
-                      habit.metaId != null && habit.metaId != widget.goalId
-                      ? const Text('Se reasignará desde otra meta.')
-                      : null,
-                  secondary: const Icon(Icons.checklist_outlined),
-                ),
-              ),
-          ],
+        leadingWidth: 84,
+        leading: TextButton(
+          onPressed: controllerState.isLoading
+              ? null
+              : () => Navigator.of(context).maybePop(),
+          child: const Text('Cancelar'),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-          child: FilledButton.icon(
+        actions: [
+          TextButton(
             onPressed: controllerState.isLoading ? null : () => _save(original),
-            icon: controllerState.isLoading
+            child: controllerState.isLoading
                 ? const SizedBox.square(
                     dimension: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.save_outlined),
-            label: Text(widget.isEditing ? 'Guardar cambios' : 'Crear meta'),
+                : const Text('Guardar'),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: AppContent(
+        maxWidth: 640,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+            children: [
+              const AppSectionLabel('Nombre de la meta'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _nameController,
+                autofocus: !widget.isEditing,
+                maxLength: 120,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                  hintText: 'Ej. Dormir mejor',
+                  counterText: '',
+                ),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Escribe un nombre para la meta'
+                    : null,
+              ),
+              const SizedBox(height: 20),
+              const AppSectionLabel('Descripción'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _descriptionController,
+                maxLength: 500,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  hintText: 'Describe el resultado que quieres alcanzar',
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _dateController,
+                readOnly: true,
+                onTap: _pickDate,
+                decoration: InputDecoration(
+                  labelText: 'Fecha objetivo',
+                  hintText: 'Opcional',
+                  prefixIcon: const Icon(Icons.event_outlined),
+                  suffixIcon: _targetDate == null
+                      ? IconButton(
+                          onPressed: _pickDate,
+                          icon: const Icon(Icons.calendar_today_outlined),
+                          tooltip: 'Elegir fecha',
+                        )
+                      : IconButton(
+                          onPressed: () => setState(() => _setDate(null)),
+                          icon: const Icon(Icons.clear),
+                          tooltip: 'Quitar fecha',
+                        ),
+                ),
+              ),
+              if (widget.isEditing) ...[
+                const SizedBox(height: 16),
+                DropdownButtonFormField<MetaEstado>(
+                  initialValue: _state,
+                  decoration: const InputDecoration(
+                    labelText: 'Estado',
+                    prefixIcon: Icon(Icons.info_outline),
+                  ),
+                  items: MetaEstado.values
+                      .map(
+                        (state) => DropdownMenuItem(
+                          value: state,
+                          child: Text(goalStateLabel(state)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: controllerState.isLoading
+                      ? null
+                      : (value) => setState(() => _state = value!),
+                ),
+              ],
+              const SizedBox(height: 28),
+              const AppSectionLabel('Hábitos vinculados'),
+              const SizedBox(height: 10),
+              if (habitsState.isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (habitsState.hasError)
+                OutlinedButton.icon(
+                  onPressed: () => ref.invalidate(habitsListProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Reintentar hábitos'),
+                )
+              else if (habits.isEmpty)
+                const Text('Aún no tienes hábitos para vincular.')
+              else
+                ...habits.map(
+                  (habit) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Material(
+                      color: AppColors.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: const BorderSide(color: AppColors.border),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: CheckboxListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
+                        value: _selectedHabitIds.contains(habit.id),
+                        onChanged: controllerState.isLoading
+                            ? null
+                            : (checked) => setState(() {
+                                if (checked ?? false) {
+                                  _selectedHabitIds.add(habit.id);
+                                } else {
+                                  _selectedHabitIds.remove(habit.id);
+                                }
+                              }),
+                        title: Text(habit.nombre),
+                        subtitle:
+                            habit.metaId != null &&
+                                habit.metaId != widget.goalId
+                            ? const Text('Se reasignará desde otra meta.')
+                            : null,
+                        secondary: const Icon(
+                          Icons.checklist_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 22),
-        const SizedBox(width: 10),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-      ],
     );
   }
 }

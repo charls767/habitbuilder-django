@@ -98,6 +98,10 @@ reabre el gate contractual ya satisfecho.
   modificado contra la base real del PR, excluyendo generado.
 - **D-12:** Un ticket no termina hasta que pasan pruebas focalizadas, suite
   completa, analyze, web build, smoke Prism, push y PR.
+- **D-13:** `HabitBuilder - Mockups.html` es la referencia visual para los
+  flujos ya implementados. Se adopta su paleta verde/menta, superficies claras,
+  navegación inferior, tarjetas y formularios, sin adelantar progreso,
+  recordatorios, comunidad ni funciones administrativas.
 
 </decisions>
 
