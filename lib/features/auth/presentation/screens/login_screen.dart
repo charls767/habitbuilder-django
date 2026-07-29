@@ -6,6 +6,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../domain/auth_validators.dart';
 import '../auth_error_message.dart';
 import '../providers/auth_providers.dart';
+import '../widgets/auth_mockup_shell.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,113 +53,108 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('HabitBuilder')),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: AutofillGroup(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Iniciar sesión',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Continúa con tus hábitos y metas.',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: const InputDecoration(
-                          labelText: 'Correo electrónico',
-                          prefixIcon: Icon(Icons.mail_outline),
-                        ),
-                        validator: AuthValidators.email,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.password],
-                        onFieldSubmitted: (_) => _submit(),
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            tooltip: _obscurePassword
-                                ? 'Mostrar contraseña'
-                                : 'Ocultar contraseña',
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                          ),
-                        ),
-                        validator: (value) => (value == null || value.isEmpty)
-                            ? 'Ingresa tu contraseña'
-                            : null,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: authState.isLoading
-                              ? null
-                              : () {
-                                  ref
-                                      .read(authControllerProvider.notifier)
-                                      .clearError();
-                                  context.push(AppRoutes.forgotPassword);
-                                },
-                          child: const Text('Olvidé mi contraseña'),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      FilledButton.icon(
-                        onPressed: authState.isLoading ? null : _submit,
-                        icon: authState.isLoading
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.login),
-                        label: const Text('Entrar'),
-                      ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: authState.isLoading
-                            ? null
-                            : () {
-                                ref
-                                    .read(authControllerProvider.notifier)
-                                    .clearError();
-                                context.push(AppRoutes.register);
-                              },
-                        child: const Text('Crear una cuenta'),
-                      ),
-                    ],
+    return AuthMockupShell(
+      heroTitle: 'HabitBuilder',
+      heroSubtitle: 'Construye mejores hábitos, un día a la vez',
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Bienvenido de nuevo',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ingresa tus datos para continuar.',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 28),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  prefixIcon: Icon(Icons.mail_outline),
+                ),
+                validator: AuthValidators.email,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                onFieldSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  labelText: 'Contraseña',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    tooltip: _obscurePassword
+                        ? 'Mostrar contraseña'
+                        : 'Ocultar contraseña',
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
                   ),
                 ),
+                validator: (value) => (value == null || value.isEmpty)
+                    ? 'Ingresa tu contraseña'
+                    : null,
               ),
-            ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: authState.isLoading
+                      ? null
+                      : () {
+                          ref
+                              .read(authControllerProvider.notifier)
+                              .clearError();
+                          context.push(AppRoutes.forgotPassword);
+                        },
+                  child: const Text('Olvidé mi contraseña'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: authState.isLoading ? null : _submit,
+                icon: authState.isLoading
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.login),
+                label: const Text('Iniciar sesión'),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  const Text('¿No tienes cuenta?'),
+                  TextButton(
+                    onPressed: authState.isLoading
+                        ? null
+                        : () {
+                            ref
+                                .read(authControllerProvider.notifier)
+                                .clearError();
+                            context.push(AppRoutes.register);
+                          },
+                    child: const Text('Crear cuenta'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

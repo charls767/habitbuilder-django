@@ -24,15 +24,16 @@ recordatorios ni superficie o cálculo de métricas derivadas.
 
 ## Verification
 
-- 145 pruebas integradas: PASS
+- 146 pruebas integradas: PASS
 - 47 pruebas enfocadas de metas: PASS
-- Changed-code coverage consolidada contra `origin/main`: 92.05%
+- Changed-code coverage consolidada contra `origin/main`: 92.31%
 - `flutter analyze`: PASS
 - Web release build: PASS
 - Prism goals/linking smoke: PASS
 - Layout de 320 px y revisión visual desktop contra
   `HabitBuilder - Mockups.html`: PASS
 - Navegación inferior y formularios de hábitos/metas alineados al mockup: PASS
+- Login y registro alineados con CU-002/CU-001, respectivamente: PASS
 - Escaneo de alcance excluido: PASS
 - `git diff --check`: PASS
 

@@ -40,3 +40,19 @@ score: 5/5
 
 The implementation phase is complete. Merge review remains external to this
 execution and should proceed in dependency order.
+
+## Post-Milestone UI Alignment
+
+Revalidated on 2026-07-28 after applying the approved project mockups:
+
+- CU-001 registration and CU-002 login share the approved teal header,
+  HabitBuilder identity, rounded content panel and responsive composition.
+- Jira-required registration behavior remains intact: password confirmation,
+  privacy consent and data-processing consent were not removed for visual
+  parity.
+- A 320x700 widget test guards both access screens against layout overflow.
+- `flutter analyze`: PASS.
+- `flutter test --coverage`: 146 tests pass.
+- Auth screen coverage: login 95.52%, registration 87.61% and shared shell
+  100%.
+- Web release build and Prism smoke suite: PASS.
