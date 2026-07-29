@@ -9,14 +9,12 @@ import 'package:mocktail/mocktail.dart';
 class _MockReminderRemoteDataSource extends Mock
     implements ReminderRemoteDataSource {}
 
-class _FakeReminderRequestDto extends Fake implements ReminderRequestDto {}
-
 void main() {
   late _MockReminderRemoteDataSource remote;
   late ReminderRepositoryImpl repository;
 
   setUpAll(() {
-    registerFallbackValue(_FakeReminderRequestDto());
+    registerFallbackValue(ReminderRequestDto.fromDraft(_draft(activo: true)));
   });
 
   setUp(() {
