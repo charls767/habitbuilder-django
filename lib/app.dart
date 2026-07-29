@@ -25,7 +25,7 @@ class HabitBuilderApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(
         highContrast: accessibility?.highContrast ?? false,
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       routerConfig: router,
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);

@@ -8,6 +8,8 @@ import 'package:habitbuilder_mobile/core/storage/token_storage.dart';
 import 'package:habitbuilder_mobile/features/auth/domain/entities/usuario.dart';
 import 'package:habitbuilder_mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:habitbuilder_mobile/features/auth/presentation/providers/auth_providers.dart';
+import 'package:habitbuilder_mobile/features/habits/domain/entities/habito.dart';
+import 'package:habitbuilder_mobile/features/habits/presentation/providers/habit_providers.dart';
 import 'package:habitbuilder_mobile/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usuario.dart';
 import 'package:habitbuilder_mobile/features/profile/presentation/providers/profile_providers.dart';
@@ -33,8 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.loginCalls, 1);
-    expect(find.text('Perfil'), findsOneWidget);
-    expect(find.text('Camila'), findsWidgets);
+    expect(find.text('Hábitos del día'), findsOneWidget);
   });
 
   testWidgets('login uses generic credentials and explicit suspension errors', (
@@ -223,6 +224,7 @@ Future<void> _pumpApp(
         authRepositoryProvider.overrideWithValue(repository),
         tokenStorageProvider.overrideWithValue(_MemoryTokenStorage()),
         myProfileProvider.overrideWith((ref) async => _profileFixture),
+        habitsListProvider.overrideWith((ref) async => const <Habito>[]),
       ],
       child: const HabitBuilderApp(),
     ),
