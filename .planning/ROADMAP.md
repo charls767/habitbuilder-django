@@ -11,12 +11,12 @@ no añade un plan frontend.
 ## Milestones
 
 - ✅ **v1.0 Identity, Profile & Contract Foundation** — Phase 1 completada el 2026-07-26.
-- 🔎 **v2.0 Phase 2: Habits and Goals** — ejecución completa, PRs en revisión.
+- ✅ **v2.0 Phase 2: Habits and Goals** — completada el 2026-07-28.
 
 ## Phases
 
 - [x] **Phase 1: Identity, Profile & Contract Foundation** - Base Flutter, autenticación y perfil entregados en HBM-7/8/9.
-- [ ] **Phase 2: Habits and Goals** - Hábitos, transiciones confirmadas y metas vinculadas en HBM-10/11/12.
+- [x] **Phase 2: Habits and Goals** - Hábitos, transiciones confirmadas y metas vinculadas en HBM-10/11/12.
 
 ## Phase Details
 
@@ -105,4 +105,4 @@ El gate de cobertura se ejecuta además por ticket con
 | Phase | Milestone | Plans Complete | Status | Completed |
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
-| 2. Habits and Goals | v2.0 | 3/3 | In review — execution complete | - |
+| 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |

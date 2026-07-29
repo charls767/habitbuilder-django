@@ -1,7 +1,7 @@
 ---
 milestone: v2.0
 milestone_name: "Phase 2: Habits and Goals"
-status: review
+status: complete
 current_phase: 2
 total_phases: 2
 plans_complete: 3
@@ -17,7 +17,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 **Core value:** Una persona puede convertir una intención personal en hábitos y metas organizados, administrarlos con claridad y conservar el control de sus datos.
 
-**Current focus:** Phase 2 — Habits and Goals.
+**Current focus:** Phase 2 cerrada; listo para definir el siguiente milestone.
 
 ## Current Position
 
@@ -25,9 +25,9 @@ Phase: 2 of 2 — Habits and Goals
 
 Plan: 3 of 3
 
-Status: Ejecución completa; PR consolidado #7 en revisión
+Status: Completada e integrada a `main`
 
-Last activity: 2026-07-28 — HBM-10/11/12 implementados, verificados y enviados a revisión
+Last activity: 2026-07-28 — PRs mobile #7/#8 fusionados; HBM-1/2/10/11/12 en `Listo`
 
 Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
@@ -57,8 +57,7 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 ### Pending Todos
 
-- Revisar e integrar el PR mobile #7 desde `HBM-12/goals-linking` hacia `main`.
-- Mover HBM-10/11/12 a `Listo` únicamente después de sus merges.
+- Definir el alcance y los tickets del siguiente milestone antes de iniciar otra fase.
 
 ### Blockers/Concerns
 
@@ -80,6 +79,6 @@ Progress v2.0: [■■■■■■■■■■] 100% de ejecución
 
 Last session: 2026-07-28
 
-Stopped at: Phase 2 ejecutada y enviada a revisión; pendiente integración del PR mobile #7
+Stopped at: Phase 2 integrada y cerrada en Bitbucket, Jira y evidencia GSD
 
 Resume file: `.planning/phases/02-habits-goals/02-03-SUMMARY.md`
