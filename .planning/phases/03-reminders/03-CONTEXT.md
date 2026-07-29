@@ -24,7 +24,11 @@ remoto, campañas, snooze, geofencing, tracking ni métricas de notificaciones.
 - **D-01:** Ejecutar HBM-13 antes de HBM-14. El scheduler solo se integra
   después de estabilizar entidad, repositorio, controlador y UI.
 - **D-02:** Mobile consumirá `mensaje`, `hora`, `diasSemana` y `activo`. La
-  forma se reflejará en `docs/openapi.yaml` y HBB-23 debe converger con ella.
+  forma se reflejará primero en `docs/openapi.yaml` y en los slices frontend.
+  Por orden explícito del usuario, HBB-23 converge después del frontend; no es
+  una precondición para iniciar HBM-13/HBM-14, aunque el cierre contractual
+  debe registrar la comparación y el handoff al orden HBB-23 → HBB-24 →
+  HBB-27.
 - **D-03:** Un hábito admite cero o varios recordatorios; cada recordatorio
   pertenece exactamente a un hábito.
 
@@ -43,15 +47,22 @@ remoto, campañas, snooze, geofencing, tracking ni métricas de notificaciones.
 ### Scheduling local
 
 - **D-08:** La zona IANA de `PerfilUsuario.zonaHoraria` es canónica.
-  `DateTime.now()` local nunca decide la ocurrencia; se usa `TZDateTime`.
+  `DateTime.now()` local nunca decide la ocurrencia; se usa `TZDateTime`. En un
+  gap DST la hora avanza al primer instante local válido; en un overlap se
+  agenda una sola ocurrencia usando el offset más temprano.
 - **D-09:** El scheduler queda detrás de un puerto Dart. Dominio, controlador
   y tests no importan `flutter_local_notifications`.
 - **D-10:** Android solicita permiso de notificaciones y exact alarm cuando
   corresponda, usa exact-allow-while-idle si está autorizado y fallback
-  inexacto si no. Los receivers del plugin restauran tras reboot.
+  inexacto si no. Los receivers del plugin restauran tras reboot. El venue
+  ejecutable es el AVD local `Pixel_6`, detectado en
+  `C:\Users\USER\AppData\Local\Android\Sdk\emulator`; si no está iniciado, el
+  executor debe arrancarlo y esperar `sys.boot_completed`.
 - **D-11:** iOS solicita permiso una sola vez y limita la planificación a las
   próximas 64 ocurrencias ordenadas. Web usa un puerto no-op explícito para
-  conservar build y revisión visual.
+  conservar build y revisión visual. La aceptación iOS se documenta para un
+  runner macOS/CI externo; mientras no exista evidencia de ese runner, se
+  registra `pending_external` y nunca se afirma una prueba nativa inexistente.
 - **D-12:** Activar/editar programa; desactivar/eliminar cancela; al iniciar
   sesión se reconcilian recordatorios activos con el scheduler.
 
@@ -64,6 +75,15 @@ remoto, campañas, snooze, geofencing, tracking ni métricas de notificaciones.
 - **D-15:** `stash@{0}` y
   `windows/flutter/generated_plugins.cmake` permanecen intactos y fuera de
   cualquier commit.
+- **D-16:** La solicitud end-to-end del usuario autoriza la verificación no
+  interactiva y la instalación exacta de `flutter_local_notifications`
+  `22.2.0` y `timezone` `0.11.1`. Un helper automatizado y probado se ejecuta
+  antes y después de mutar `pubspec.yaml`: valida nombre/versión exactos,
+  endpoints y archive URLs HTTPS, el homepage oficial esperado de
+  `flutter_local_notifications`, el repository oficial esperado de
+  `timezone`, y demuestra que `checkedAtUtc` antecede tanto la mutación como
+  el lockfile resultante. Cualquier discrepancia falla cerrado antes de
+  continuar.
 
 ### The Agent's Discretion
 
@@ -71,6 +91,25 @@ remoto, campañas, snooze, geofencing, tracking ni métricas de notificaciones.
   feature-first, Riverpod, Dio, go_router y el sistema visual existente.
 - Estrategia de IDs enteros para notificaciones y distribución de las 64
   ocurrencias de iOS, siempre determinista y cubierta por pruebas.
+
+### Resolved Inputs
+
+- HBB-23 converge después de completar el frontend, por decisión explícita del
+  usuario; los planes mobile no esperan aprobación backend previa.
+- DST queda cerrado: gap → primer instante válido; overlap → una ocurrencia con
+  el offset más temprano.
+- Android usa el AVD local `Pixel_6`; iOS usa verificación externa macOS/CI
+  documentada y permanece pendiente hasta que exista evidencia real.
+- El gate de paquetes es automático y fail-closed por D-16; no requiere
+  interacción humana.
+- `workflow.use_worktrees=false`. 03-01..04 se ejecutan desde
+  `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile`; 03-05..08
+  usan como cwd
+  `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile-hbm14`.
+- `productTipSha` identifica exclusivamente el commit publicado por cada rama
+  de producto. Después del merge se permiten commits locales no publicados de
+  handoff/SUMMARY en el primary root; esos commits se registran aparte como
+  `metadataTipSha` y nunca cambian el source commit del PR remoto.
 
 </decisions>
 

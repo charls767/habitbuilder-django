@@ -52,12 +52,11 @@ hábitos activos y recibir notificaciones locales interpretadas en la zona
 horaria de su perfil, incluso después de reinicios y bajo restricciones del
 sistema operativo.
 
-**Depends on**: Phase 2; forma contractual de HBB-23 acordada para
-`recordatorios` y `NotificationSender`.
+**Depends on**: Phase 2. Por decisión D-02, frontend fija primero la forma de
+`recordatorios`; HBB-23 converge después del frontend en el orden
+HBB-23 → HBB-24 → HBB-27.
 
-**Requirements**: REMINDER-01, REMINDER-02, REMINDER-03, REMINDER-04,
-REMINDER-05, QUALITY-13, QUALITY-14, QUALITY-15, QUALITY-16, QUALITY-17,
-QUALITY-18, DELIVERY-07, DELIVERY-08
+**Requirements**: REMINDER-01, REMINDER-02, REMINDER-03, REMINDER-04, REMINDER-05, QUALITY-13, QUALITY-14, QUALITY-15, QUALITY-16, QUALITY-17, QUALITY-18, DELIVERY-07, DELIVERY-08
 
 **Success Criteria** (what must be TRUE):
 
@@ -67,17 +66,48 @@ QUALITY-18, DELIVERY-07, DELIVERY-08
   4. La lógica de elegibilidad y cálculo de próximas ocurrencias se prueba sin depender del framework nativo de notificaciones.
   5. HBM-13 se integra antes de abrir HBM-14; ambos superan 80% de changed-code coverage y todos los gates del repositorio.
 
-**Plans**: 2 plans in 2 waves
+**Plans**: 8 plans in 8 sequential waves
 
 Plans:
 
 **Wave 1**
 
-- [ ] 03-01: HBM-13 — listado, creación, edición y activación de recordatorios según CU-006.
+- [ ] 03-01: HBM-13 — baseline, tooling fail-closed y contrato Prism.
 
 **Wave 2** *(depends on 03-01)*
 
-- [ ] 03-02: HBM-14 — scheduling local con zona horaria, permisos, exact alarm y reboot.
+- [ ] 03-02: HBM-13 — dominio, DTO, datasource y repositorio.
+
+**Wave 3** *(depends on 03-02)*
+
+- [ ] 03-03: HBM-13 — UI/controlador CU-006, ruta y elegibilidad.
+
+**Wave 4** *(depends on 03-03)*
+
+- [ ] 03-04: HBM-13 — validación, `productTipSha`, único PR, merge y metadata local.
+
+**Wave 5** *(depends on 03-04)*
+
+- [ ] 03-05: HBM-14 — worktree manual, paquetes D-16 y planner/puerto puro.
+
+**Wave 6** *(depends on 03-05)*
+
+- [ ] 03-06: HBM-14 — adaptadores Android/iOS/no-op y configuración nativa.
+
+**Wave 7** *(depends on 03-06)*
+
+- [ ] 03-07: HBM-14 — reconciliación, triggers y estado degradado.
+
+**Wave 8** *(depends on 03-07)*
+
+- [ ] 03-08: HBM-14 — validación, `productTipSha`, único PR, merge y metadata local.
+
+**Manual worktree protocol**:
+
+- `.planning/config.json` fija `workflow.use_worktrees=false`; el orquestador no crea ni selecciona worktrees.
+- 03-01..04 se ejecutan en `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile`.
+- Tras el merge/ancestry de HBM-13, el bootstrap de 03-05 crea y valida `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile-hbm14` desde `origin/main` y todos los comandos de 03-05..08 se ejecutan con ese directorio como cwd.
+- Los `SUMMARY.md` y handoffs de HBM-14 se escriben y versionan mediante rutas absolutas desde el primary root para que el orquestador los vea; esos commits de metadata permanecen locales y nunca se envían a las ramas de producto.
 
 **Canonical refs**:
 
@@ -143,9 +173,13 @@ El gate de cobertura se ejecuta además por ticket con
 
 ## Definition of Done v3.0
 
-Phase 3 termina cuando los planes 03-01 y 03-02 tienen `SUMMARY.md`, el
-contrato de recordatorios está sincronizado con HBB-23, la programación local
-está aislada detrás de un puerto testeable y la revisión integrada pasa:
+Phase 3 termina cuando los planes 03-01..03-08 tienen `SUMMARY.md`, los
+`productTipSha` capturados de HBM-13 y HBM-14 son ancestros verificables de
+`origin/main`, las ramas remotas apuntan exactamente a esos tips y los commits
+locales posteriores de metadata permanecen sin publicar, el
+handoff frontend para la convergencia posterior de HBB-23 está registrado, la
+programación local está aislada detrás de un puerto testeable y la revisión
+integrada pasa:
 
 ```text
 flutter analyze
@@ -159,10 +193,10 @@ real de su PR.
 
 ## Progress
 
-**Execution Order:** Phase 1 → Phase 2 → 03-01 → 03-02.
+**Execution Order:** Phase 1 → Phase 2 → 03-01 → 03-02 → 03-03 → 03-04 → 03-05 → 03-06 → 03-07 → 03-08.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
 | 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |
-| 3. Reminders | v3.0 | 0/2 | Discussing and planning | - |
+| 3. Reminders | v3.0 | 0/8 | Planned | - |

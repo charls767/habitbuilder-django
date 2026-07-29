@@ -18,23 +18,24 @@
 
 - [ ] **QUALITY-13**: HBM-13 incluye pruebas unitarias de dominio/data y pruebas widget de listado, formulario, estados y elegibilidad.
 - [ ] **QUALITY-14**: HBM-14 incluye pruebas deterministas del cálculo de próximas ocurrencias y del puerto de scheduling sin depender del plugin nativo.
-- [ ] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra la base real de su PR.
+- [ ] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra su SHA inmutable de inicio; el gate falla si un Dart modificado/no excluido falta en LCOV o si hay cero líneas medibles.
 - [ ] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
 - [ ] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
-- [ ] **QUALITY-18**: Prism carga el contrato de recordatorios y el smoke cubre listar, crear, editar y desactivar.
+- [ ] **QUALITY-18**: Prism carga el contrato de recordatorios y un helper autocontenido inicia el mock, espera readiness, ejecuta smoke de listar/crear/editar/desactivar y mata exactamente su proceso en `finally`.
 
 ### Entrega
 
-- [ ] **DELIVERY-07**: HBM-13 se entrega en `HBM-13/reminder-ui`, con commits atómicos, pruebas y PR propio.
-- [ ] **DELIVERY-08**: HBM-14 parte del `main` que contiene HBM-13 y se entrega en `HBM-14/local-notifications`, con pruebas y PR propio.
+- [ ] **DELIVERY-07**: HBM-13 se entrega en `HBM-13/reminder-ui` con SHA inicial/tip persistidos, commits atómicos, exactamente un PR a `main`, merge y assert de ancestry.
+- [ ] **DELIVERY-08**: HBM-14 parte del `main` que contiene el tip HBM-13, usa worktree aislado y `HBM-14/local-notifications`, y prueba exactamente un PR/merge/ancestry propios.
 
 ## Sincronización HBB-23
 
 El contrato compartido debe definir varios recordatorios por hábito, mensaje,
 hora `HH:mm`, días ISO 1..7, estado activo y operaciones de listado, creación,
-edición y eliminación. HBB-23 formaliza además un puerto `NotificationSender`
-sin elegir proveedor concreto. El cierre exige que mobile y backend compartan
-la misma forma contractual.
+edición y eliminación. Por decisión explícita D-02, frontend fija y entrega
+primero esa forma; HBB-23 converge después en el orden HBB-23 → HBB-24 →
+HBB-27. Los planes mobile registran el handoff sin afirmar una convergencia
+backend que todavía no tenga evidencia.
 
 ## Fuera de alcance v3.0
 
@@ -49,16 +50,16 @@ la misma forma contractual.
 
 | Requisito | Jira | Fase | Plan | Estado |
 | --- | --- | --- | --- | --- |
-| REMINDER-01 | HBM-13 | Phase 3 | 03-01 | Pendiente |
-| REMINDER-02 | HBM-14 | Phase 3 | 03-02 | Pendiente |
-| REMINDER-03 | HBM-13/HBM-14 | Phase 3 | 03-01..02 | Pendiente |
-| REMINDER-04 | HBM-13 | Phase 3 | 03-01 | Pendiente |
-| REMINDER-05 | HBM-14 | Phase 3 | 03-02 | Pendiente |
-| QUALITY-13 | HBM-13 | Phase 3 | 03-01 | Pendiente |
-| QUALITY-14 | HBM-14 | Phase 3 | 03-02 | Pendiente |
-| QUALITY-15..18 | HBM-13/14 | Phase 3 | 03-01..02 | Pendiente |
-| DELIVERY-07 | HBM-13 | Phase 3 | 03-01 | Pendiente |
-| DELIVERY-08 | HBM-14 | Phase 3 | 03-02 | Pendiente |
+| REMINDER-01 | HBM-13 | Phase 3 | 03-01..03 | Pendiente |
+| REMINDER-02 | HBM-14 | Phase 3 | 03-05, 03-07 | Pendiente |
+| REMINDER-03 | HBM-13/HBM-14 | Phase 3 | 03-02..03, 03-07 | Pendiente |
+| REMINDER-04 | HBM-13 | Phase 3 | 03-02..03 | Pendiente |
+| REMINDER-05 | HBM-14 | Phase 3 | 03-05..07 | Pendiente |
+| QUALITY-13 | HBM-13 | Phase 3 | 03-02..04 | Pendiente |
+| QUALITY-14 | HBM-14 | Phase 3 | 03-05..08 | Pendiente |
+| QUALITY-15..18 | HBM-13/14 | Phase 3 | 03-01, 03-04..08 | Pendiente |
+| DELIVERY-07 | HBM-13 | Phase 3 | 03-04 | Pendiente |
+| DELIVERY-08 | HBM-14 | Phase 3 | 03-05, 03-08 | Pendiente |
 
 ## Historia validada v2.0
 

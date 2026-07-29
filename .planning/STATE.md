@@ -1,12 +1,12 @@
 ---
 milestone: v3.0
 milestone_name: "Phase 3: Reminders"
-status: discussing
+status: planned
 current_phase: 3
 total_phases: 3
 plans_complete: 0
-plans_total: 2
-updated: 2026-07-28
+plans_total: 8
+updated: 2026-07-29
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 Phase: 3 of 3 — Reminders
 
-Plan: discusión previa a 03-01
+Plan: 03-01 de 03-08
 
-Status: Discusión y planificación en curso
+Status: Ready to execute
 
-Last activity: 2026-07-28 — alcance HBM-13/14 y dependencias HBB-23/24/27 levantados desde Jira
+Last activity: 2026-07-29 — Phase 3 corregida a ocho planes secuenciales tras el segundo checker
 
 Progress v3.0: [□□□□□□□□□□] 0% de ejecución
 
@@ -44,7 +44,7 @@ Progress v3.0: [□□□□□□□□□□] 0% de ejecución
 | --- | ---: | ---: | ---: |
 | 1. Identity, Profile & Contract Foundation | 3 | 67 min | 22.3 min |
 | 2. Habits and Goals | 3/3 | 1 sesión | 1 sesión |
-| 3. Reminders | 0/2 | En curso | - |
+| 3. Reminders | 0/8 | En curso | - |
 
 ## Accumulated Context
 
@@ -58,11 +58,13 @@ Progress v3.0: [□□□□□□□□□□] 0% de ejecución
 - Phase 3 ejecuta HBM-13 antes de HBM-14.
 - La zona horaria del perfil es la fuente canónica para scheduling.
 - Backend se ejecutará en orden HBB-23 → HBB-24 → HBB-27.
+- `workflow.use_worktrees=false`; 03-01..04 se ejecutan en `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile` y 03-05..08 bajo `C:\Users\USER\Desktop\DPPF\HabitBuilder\habitbuilder-mobile-hbm14`.
+- El remoto de cada ticket apunta exactamente a `productTipSha`; los commits locales posteriores de SUMMARY/handoff se versionan desde el primary root y no se publican.
 
 ### Pending Todos
 
-- Capturar contexto y planes 03-01/03-02.
-- Implementar HBM-13 y luego HBM-14.
+- Ejecutar 03-01..04 para HBM-13 en el primary root.
+- Crear/validar manualmente el worktree HBM-14 y ejecutar 03-05..08 desde su root aislado.
 - Integrar HBB-23, HBB-24 y HBB-27 en el orden contractual.
 
 ### Blockers/Concerns
@@ -83,8 +85,8 @@ Progress v3.0: [□□□□□□□□□□] 0% de ejecución
 
 ## Session Continuity
 
-Last session: 2026-07-28
+Last session: 2026-07-29
 
-Stopped at: Phase 3 en discusión y planificación
+Stopped at: Phase 3 planificada; siguiente plan 03-01
 
 Resume file: `.planning/phases/03-reminders/03-CONTEXT.md`
