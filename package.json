@@ -5,6 +5,7 @@
   "description": "Prism mock server tooling for the HabitBuilder mobile client, backed by docs/openapi.yaml.",
   "scripts": {
     "mock:api": "prism mock docs/openapi.yaml -p 4010 --host 127.0.0.1",
+    "mock:gate": "node scripts/run-mock-gate.mjs",
     "mock:smoke": "node scripts/mock-smoke.mjs",
     "test:coverage-script": "node --test scripts/check-changed-coverage.test.mjs",
     "coverage:changed": "node scripts/check-changed-coverage.mjs"

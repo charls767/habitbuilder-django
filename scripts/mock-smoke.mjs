@@ -191,4 +191,68 @@ await request(
   200,
 );
 
-console.log('Prism smoke test: Phase 1 + habits lifecycle + goals linking OK');
+const remindersResponse = await request(
+  '/habits/hab_001/reminders',
+  {headers: authenticated},
+  200,
+);
+const reminders = await remindersResponse.json();
+if (!Array.isArray(reminders) || reminders.length < 2) {
+  throw new Error(
+    'GET /habits/hab_001/reminders no expuso varios recordatorios',
+  );
+}
+for (const reminder of reminders) {
+  for (const field of ['mensaje', 'hora', 'diasSemana', 'activo']) {
+    if (!(field in reminder)) {
+      throw new Error(`GET reminders no incluyó ${field}`);
+    }
+  }
+}
+
+await request(
+  '/habits/hab_001/reminders',
+  {
+    method: 'POST',
+    headers: authenticated,
+    body: JSON.stringify({
+      mensaje: 'Hora de leer',
+      hora: '07:00',
+      diasSemana: [1, 3, 5],
+      activo: true,
+    }),
+  },
+  201,
+);
+await request(
+  '/reminders/rec_001',
+  {
+    method: 'PATCH',
+    headers: authenticated,
+    body: JSON.stringify({
+      mensaje: 'Lee veinte páginas',
+      hora: '07:30',
+      diasSemana: [1, 3, 5],
+      activo: true,
+    }),
+  },
+  200,
+);
+await request(
+  '/reminders/rec_001',
+  {
+    method: 'PATCH',
+    headers: authenticated,
+    body: JSON.stringify({
+      mensaje: 'Lee veinte páginas',
+      hora: '07:30',
+      diasSemana: [1, 3, 5],
+      activo: false,
+    }),
+  },
+  200,
+);
+
+console.log(
+  'Prism smoke test: Phase 1 + habits + goals + reminders lifecycle OK',
+);

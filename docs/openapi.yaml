@@ -539,6 +539,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Recordatorio'
+              example:
+                - id: rec_001
+                  habitoId: hab_001
+                  mensaje: Hora de leer
+                  hora: '07:00'
+                  diasSemana: [1, 3, 5]
+                  activo: true
+                - id: rec_002
+                  habitoId: hab_001
+                  mensaje: Prepara el libro de mañana
+                  hora: '20:30'
+                  diasSemana: [2, 4]
+                  activo: false
     post:
       operationId: createReminder
       tags: [reminders]
@@ -1279,7 +1292,7 @@ components:
 
     Recordatorio:
       type: object
-      required: [id, habitoId, hora, diasSemana, activo]
+      required: [id, habitoId, mensaje, hora, diasSemana, activo]
       properties:
         id:
           type: string
@@ -1287,12 +1300,24 @@ components:
         habitoId:
           type: string
           example: hab_001
+        mensaje:
+          type: string
+          minLength: 1
+          pattern: '.*\S.*'
+          example: Hora de leer
         hora:
           type: string
           description: Hora en formato HH:mm (24h)
+          minLength: 5
+          maxLength: 5
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
           example: '07:00'
         diasSemana:
           type: array
+          description: 'Días ISO únicos (1=lunes ... 7=domingo).'
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
           items:
             type: integer
             minimum: 1
@@ -1304,13 +1329,26 @@ components:
 
     RecordatorioRequest:
       type: object
-      required: [hora, diasSemana, activo]
+      required: [mensaje, hora, diasSemana, activo]
       properties:
+        mensaje:
+          type: string
+          minLength: 1
+          pattern: '.*\S.*'
+          example: Hora de leer
         hora:
           type: string
+          description: Hora estricta en formato HH:mm (24h)
+          minLength: 5
+          maxLength: 5
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
           example: '07:00'
         diasSemana:
           type: array
+          description: 'Días ISO únicos (1=lunes ... 7=domingo).'
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
           items:
             type: integer
             minimum: 1
