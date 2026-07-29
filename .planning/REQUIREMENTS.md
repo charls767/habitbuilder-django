@@ -1,10 +1,67 @@
-# Requisitos: HabitBuilder Mobile — v2.0 Phase 2: Habits and Goals
+# Requisitos: HabitBuilder Mobile — v3.0 Phase 3: Reminders
 
 **Definidos:** 2026-07-28
 
 **Valor central:** Una persona puede convertir una intención personal en hábitos y metas organizados, administrarlos con claridad y conservar el control de sus datos.
 
-## Requisitos v2.0
+## Requisitos v3.0
+
+### Recordatorios
+
+- [x] **REMINDER-01**: La persona puede listar, crear y editar varios recordatorios de un hábito con mensaje, hora en formato 24 h y al menos un día activo.
+- [ ] **REMINDER-02**: Cada ocurrencia se calcula con `TZDateTime` en la zona IANA guardada en el perfil, nunca con un `DateTime` local ingenuo.
+- [x] **REMINDER-03**: La UI impide crear o reactivar recordatorios cuando el hábito está pausado o completado y explica el motivo sin fingir éxito.
+- [x] **REMINDER-04**: La persona puede desactivar y reactivar un recordatorio sin perder mensaje, hora ni días configurados.
+- [ ] **REMINDER-05**: El scheduler gestiona permisos Android/iOS, exact alarm con fallback, reprogramación tras reinicio y el límite de 64 pendientes de iOS.
+
+### Calidad
+
+- [x] **QUALITY-13**: HBM-13 incluye pruebas unitarias de dominio/data y pruebas widget de listado, formulario, estados y elegibilidad.
+- [ ] **QUALITY-14**: HBM-14 incluye pruebas deterministas del cálculo de próximas ocurrencias y del puerto de scheduling sin depender del plugin nativo.
+- [x] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra su SHA inmutable de inicio; el gate falla si un Dart modificado/no excluido falta en LCOV o si hay cero líneas medibles.
+- [x] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
+- [x] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
+- [x] **QUALITY-18**: Prism carga el contrato de recordatorios y un helper autocontenido inicia el mock, espera readiness, ejecuta smoke de listar/crear/editar/desactivar y mata exactamente su proceso en `finally`.
+
+### Entrega
+
+- [ ] **DELIVERY-07**: HBM-13 se entrega en `HBM-13/reminder-ui` con SHA inicial/tip persistidos, commits atómicos, exactamente un PR a `main`, merge y assert de ancestry.
+- [ ] **DELIVERY-08**: HBM-14 parte del `main` que contiene el tip HBM-13, usa worktree aislado y `HBM-14/local-notifications`, y prueba exactamente un PR/merge/ancestry propios.
+
+## Sincronización HBB-23
+
+El contrato compartido debe definir varios recordatorios por hábito, mensaje,
+hora `HH:mm`, días ISO 1..7, estado activo y operaciones de listado, creación,
+edición y eliminación. Por decisión explícita D-02, frontend fija y entrega
+primero esa forma; HBB-23 converge después en el orden HBB-23 → HBB-24 →
+HBB-27. Los planes mobile registran el handoff sin afirmar una convergencia
+backend que todavía no tenga evidencia.
+
+## Fuera de alcance v3.0
+
+| Funcionalidad | Razón |
+| --- | --- |
+| Push remoto y campañas | Phase 3 programa notificaciones locales del dispositivo. |
+| Snooze, geofencing y reglas contextuales | Son capacidades nuevas no descritas por HBM-13/14. |
+| Tracking, rachas y progreso | Pertenecen a fases posteriores. |
+| Estadísticas de entrega o apertura | Requieren telemetría fuera del alcance actual. |
+
+## Trazabilidad v3.0
+
+| Requisito | Jira | Fase | Plan | Estado |
+| --- | --- | --- | --- | --- |
+| REMINDER-01 | HBM-13 | Phase 3 | 03-01..03 | Pendiente |
+| REMINDER-02 | HBM-14 | Phase 3 | 03-05, 03-07 | Pendiente |
+| REMINDER-03 | HBM-13/HBM-14 | Phase 3 | 03-02..03, 03-07 | Pendiente |
+| REMINDER-04 | HBM-13 | Phase 3 | 03-02..03 | Pendiente |
+| REMINDER-05 | HBM-14 | Phase 3 | 03-05..07 | Pendiente |
+| QUALITY-13 | HBM-13 | Phase 3 | 03-02..04 | Pendiente |
+| QUALITY-14 | HBM-14 | Phase 3 | 03-05..08 | Pendiente |
+| QUALITY-15..18 | HBM-13/14 | Phase 3 | 03-01, 03-04..08 | Pendiente |
+| DELIVERY-07 | HBM-13 | Phase 3 | 03-04 | Pendiente |
+| DELIVERY-08 | HBM-14 | Phase 3 | 03-05, 03-08 | Pendiente |
+
+## Historia validada v2.0
 
 ### Hábitos
 
@@ -97,4 +154,4 @@ PROFILE-01..05, QUALITY-01..06 y DELIVERY-01..03. La evidencia permanece en
 `.planning/phases/01-identity-profile-contract-foundation/`.
 
 ---
-*Última actualización: 2026-07-28 al crear la trazabilidad del milestone v2.0.*
+*Última actualización: 2026-07-28 al crear la trazabilidad del milestone v3.0.*

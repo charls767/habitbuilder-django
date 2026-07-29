@@ -3,30 +3,29 @@
 ## Qué es
 
 Aplicación Flutter para que una persona autenticada organice hábitos y metas
-personales desde una experiencia móvil accesible. La base de identidad, sesión y
-perfil ya existe; el milestone actual añade la gestión frontend de hábitos y
-metas sobre un contrato OpenAPI ejecutable.
+personales desde una experiencia móvil accesible. Identidad, perfil, hábitos y
+metas ya están integrados; el milestone actual añade recordatorios locales
+confiables sobre un contrato OpenAPI ejecutable.
 
 ## Valor central
 
 Una persona puede convertir una intención personal en hábitos y metas
 organizados, administrarlos con claridad y conservar el control de sus datos.
 
-## Milestone actual: v2.0 Phase 2: Habits and Goals
+## Milestone actual: v3.0 Phase 3: Reminders
 
-**Objetivo:** Permitir que una persona gestione sus propios hábitos, sus
-transiciones de ciclo de vida y sus metas, incluidos los vínculos entre ambos,
-sin incorporar recordatorios, tracking, progreso ni lógica de negocio backend.
+**Objetivo:** Permitir que una persona configure recordatorios para hábitos
+activos y reciba notificaciones locales en la zona horaria de su perfil con
+comportamiento confiable ante permisos, suspensión y reinicios.
 
 **Tickets frontend:**
 
-- HBM-10: lista, creación y edición de hábitos; frecuencia, categoría y campo de meta.
-- HBM-11: pausa, finalización y eliminación con confirmación.
-- HBM-12: lista/detalle, creación y edición de metas; estado y vínculo/desvínculo de hábitos.
+- HBM-13: lista, creación, edición y activación de recordatorios según CU-006.
+- HBM-14: programación local con zona horaria, permisos, exact alarm y reboot.
 
-**Gate contractual:** HBB-16 debe acordar y publicar en `docs/openapi.yaml` los
-endpoints y schemas de `habitos` y `metas` antes de iniciar implementación
-frontend. Es una precondición, no un cuarto plan móvil.
+**Sincronización contractual:** HBB-23 formaliza en backend los endpoints de
+`recordatorios` y el puerto `NotificationSender`. Mobile fija primero la forma
+consumida en `docs/openapi.yaml`; ambos repos deben converger antes del cierre.
 
 ## Requisitos
 
@@ -36,54 +35,49 @@ frontend. Es una precondición, no un cuarto plan móvil.
 - ✓ Registro, login y recuperación de contraseña con manejo seguro de errores — v1.0, HBM-8.
 - ✓ Perfil, preferencias visuales y cierre de sesión confirmado — v1.0, HBM-9.
 - ✓ Tres PRs aislados con cobertura changed-code de 95.06%, 92.42% y 89.80%; 44 pruebas integradas, analyze, web build y Prism en PASS — v1.0, Phase 1.
+- ✓ Hábitos y metas integrados mediante HBM-10/11/12; 146 pruebas y gates completos — v2.0, Phase 2.
 
 ### Activos
 
-- [ ] HABIT-01..07: la persona gestiona únicamente sus hábitos, incluida frecuencia, categoría, meta opcional y transiciones confirmadas.
-- [ ] GOAL-01..04: la persona gestiona sus metas, estados, fecha objetivo y vínculos con hábitos existentes.
-- [ ] QUALITY-07..12: cada ticket demuestra pruebas unitarias/widget, cobertura changed-code >=80%, analyze, suite completa, web build y smoke Prism.
-- [ ] DELIVERY-04..06: HBM-10, HBM-11 y HBM-12 se entregan cada uno en una rama y un PR propios.
+- [ ] REMINDER-01..05: gestión y scheduling confiable de recordatorios por hábito.
+- [ ] QUALITY-13..18: pruebas unitarias/widget, cobertura changed-code >=80%, analyze, suite completa, web build y smoke Prism.
+- [ ] DELIVERY-07..08: HBM-13 y HBM-14 se entregan en ese orden, cada uno con rama y PR propios.
 
 ### Fuera de alcance
 
-- Recordatorios y programación de notificaciones — pertenecen a una fase posterior.
 - Tracking o registro de completaciones, rachas y check-ins — no forma parte de HBM-10/11/12.
 - Cálculo, métricas, reportes o visualización de progreso — se difiere aunque HBM-12 mencione “progress”.
+- Push remoto, campañas, geofencing, snooze y estadísticas de notificaciones — no forman parte de HBM-13/14.
 - Lógica de negocio backend, invariantes de agregados y persistencia real — responsabilidad del track HBB.
 - Aplicar íntegramente `stash@{0}` — es una referencia histórica para consultar selectivamente, no una fuente para restaurar en bloque.
 
 ## Contexto
 
-Phase 1 terminó el 2026-07-26 con HBM-7/8/9, tres ramas y tres PRs apilados.
-La revisión integrada pasó `flutter analyze`, 44 pruebas,
-`flutter build web --release` y smoke de Prism. Los artefactos y evidencia
-detallada permanecen en `.planning/phases/01-identity-profile-contract-foundation/`
-y `.planning/VERIFICATION.md`.
-
-Al iniciar este milestone, la rama activa observada es
-`HBM-10/habit-crud`. Existe `stash@{0}` con nombre
+Phase 2 terminó el 2026-07-28 con HBM-10/11/12 y quedó integrada en `main`.
+La revisión final pasó `flutter analyze`, 146 pruebas,
+`flutter build web --release` y smoke de Prism. Existe `stash@{0}` con nombre
 `pre-phase-1-combined-worktree`; contiene trabajo combinado de fases futuras y
 debe permanecer intacto.
 
 ## Restricciones
 
-- **Contrato:** HBB-16 debe estar acordado y disponible en `docs/openapi.yaml` antes de implementar HBM-10 — evita inventar endpoints o campos.
+- **Contrato:** La forma de HBB-23 debe quedar explícita en `docs/openapi.yaml`; mobile y backend deben terminar con el mismo contrato.
 - **Arquitectura:** Mantener Flutter 3.44.x/Dart 3.12+, feature-first (`domain`, `data`, `presentation`), Riverpod, go_router y Dio — continuidad con Phase 1.
 - **Propiedad:** La UI solo consulta o modifica recursos del usuario autenticado según el contrato — no se crean atajos de autorización en cliente.
 - **Calidad:** Cada ticket incluye pruebas unitarias y widget pertinentes y >=80% de cobertura sobre código nuevo o modificado, excluyendo generado.
 - **Gates:** Cada PR debe pasar `flutter analyze`, suite completa con cobertura, web build release y smoke Prism.
-- **Entrega:** Una rama y un PR por HBM-10, HBM-11 y HBM-12; commits atómicos y evidencia por ticket.
+- **Entrega:** HBM-13 se integra antes de abrir HBM-14; commits atómicos y evidencia por ticket.
 - **Seguridad del trabajo previo:** `stash@{0}` es solo referencia; no ejecutar `git stash pop` ni aplicarlo completo.
 
 ## Decisiones clave
 
 | Decisión | Justificación | Resultado |
 | --- | --- | --- |
-| Continuar la numeración en Phase 2 para v2.0 | Conserva la historia del milestone anterior y evita colisiones | — Pendiente |
-| Ejecutar tres waves HBM-10 → HBM-11 → HBM-12 | Las transiciones dependen del CRUD y las metas reutilizan hábitos existentes | — Pendiente |
-| Tratar HBB-16 como gate, no como plan frontend | El contrato debe preceder al código móvil y pertenece al track backend/contrato | — Pendiente |
-| Excluir todo progreso pese a la mención en HBM-12 | El alcance explícito del milestone no incluye métricas ni tracking | — Pendiente |
-| Mantener `stash@{0}` intacto y solo consultarlo | Evita reintroducir una implementación combinada o trabajo fuera de alcance | — Pendiente |
+| Ejecutar HBM-13 antes de HBM-14 | El scheduler necesita recordatorios persistidos y una UI estable | — Pendiente |
+| Usar la zona horaria del perfil | Evita depender del reloj o zona local del dispositivo | — Pendiente |
+| Aislar scheduling detrás de un puerto | Permite pruebas deterministas sin framework nativo | — Pendiente |
+| Ejecutar backend HBB-23 → HBB-24 → HBB-27 | Contrato, dominio y luego cobertura de reglas | — Pendiente |
+| Mantener `stash@{0}` intacto y solo consultarlo | Evita reintroducir trabajo fuera de alcance | — Pendiente |
 
 ## Evolución
 
@@ -102,4 +96,4 @@ Este documento evoluciona en transiciones de fase y límites de milestone.
 3. Preparar el contexto del siguiente milestone sin borrar la historia útil.
 
 ---
-*Última actualización: 2026-07-28 al iniciar milestone v2.0 Phase 2: Habits and Goals.*
+*Última actualización: 2026-07-28 al iniciar milestone v3.0 Phase 3: Reminders.*

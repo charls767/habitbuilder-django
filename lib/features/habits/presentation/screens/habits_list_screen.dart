@@ -47,6 +47,8 @@ class HabitsListScreen extends ConsumerWidget {
                         habit: habit,
                         onEdit: () =>
                             context.push(AppRoutes.habitEdit(habit.id)),
+                        onReminders: () =>
+                            context.push(AppRoutes.habitReminders(habit.id)),
                         actionsEnabled: !controllerState.isLoading,
                         onAction: (action) =>
                             _confirmAndRun(context, ref, habit, action),
@@ -188,12 +190,14 @@ class _HabitCard extends StatelessWidget {
   const _HabitCard({
     required this.habit,
     required this.onEdit,
+    required this.onReminders,
     required this.actionsEnabled,
     required this.onAction,
   });
 
   final Habito habit;
   final VoidCallback onEdit;
+  final VoidCallback onReminders;
   final bool actionsEnabled;
   final ValueChanged<_HabitAction> onAction;
 
@@ -271,6 +275,11 @@ class _HabitCard extends StatelessWidget {
                     ],
                   ],
                 ),
+              ),
+              IconButton(
+                onPressed: onReminders,
+                tooltip: 'Recordatorios para ${habit.nombre}',
+                icon: const Icon(Icons.alarm_outlined),
               ),
               PopupMenuButton<_HabitAction>(
                 enabled: actionsEnabled,

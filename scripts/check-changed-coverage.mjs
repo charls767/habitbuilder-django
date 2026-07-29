@@ -5,11 +5,13 @@ import {pathToFileURL} from 'node:url';
 const defaultExcluded = [
   /\.g\.dart$/,
   /\.freezed\.dart$/,
+  /^test\//,
   /^lib\/main\.dart$/,
   /^lib\/app\.dart$/,
   /^lib\/core\/router\//,
   /^lib\/core\/theme\//,
   /^lib\/core\/network\/dio_client\.dart$/,
+  /^lib\/features\/reminders\/domain\/repositories\/reminder_repository\.dart$/,
 ];
 
 export function parseLcov(content) {
@@ -51,6 +53,9 @@ export function normalizePath(value) {
 
 export function calculateCoverage(records, changedFiles, excluded = defaultExcluded) {
   const included = [];
+  const missingLcov = [];
+  const zeroLine = [];
+  let eligible = 0;
   let found = 0;
   let hit = 0;
 
@@ -59,8 +64,14 @@ export function calculateCoverage(records, changedFiles, excluded = defaultExclu
     if (!file || excluded.some((pattern) => pattern.test(file))) {
       continue;
     }
+    eligible += 1;
     const record = records.get(file);
-    if (!record || record.found === 0) {
+    if (!record) {
+      missingLcov.push(file);
+      continue;
+    }
+    if (!Number.isFinite(record.found) || record.found <= 0) {
+      zeroLine.push(file);
       continue;
     }
     included.push({file, ...record});
@@ -70,9 +81,12 @@ export function calculateCoverage(records, changedFiles, excluded = defaultExclu
 
   return {
     included,
+    missingLcov,
+    zeroLine,
+    eligible,
     found,
     hit,
-    percent: found === 0 ? 100 : (hit / found) * 100,
+    percent: eligible === 0 ? 100 : found === 0 ? 0 : (hit / found) * 100,
   };
 }
 
@@ -98,6 +112,9 @@ async function main() {
   const base = argumentValue(args, '--base', 'main');
   const lcovPath = argumentValue(args, '--lcov', 'coverage/lcov.info');
   const minimum = Number.parseFloat(argumentValue(args, '--min', '80'));
+  if (!Number.isFinite(minimum) || minimum < 0 || minimum > 100) {
+    throw new Error(`Invalid coverage minimum: ${minimum}`);
+  }
   const records = parseLcov(await readFile(lcovPath, 'utf8'));
   const result = calculateCoverage(records, changedDartFiles(base));
 
@@ -110,7 +127,27 @@ async function main() {
       `(${result.percent.toFixed(2)}%), minimum ${minimum.toFixed(2)}%`,
   );
 
-  if (result.percent < minimum) {
+  let failed = false;
+  if (result.missingLcov.length > 0) {
+    console.error(
+      `Missing LCOV record for changed Dart path(s): ${result.missingLcov.join(', ')}`,
+    );
+    failed = true;
+  }
+  if (result.zeroLine.length > 0) {
+    console.error(
+      `Zero measurable lines for changed Dart path(s): ${result.zeroLine.join(', ')}`,
+    );
+    failed = true;
+  }
+  if (!failed && result.percent < minimum) {
+    console.error(
+      `Changed-code coverage ${result.percent.toFixed(2)}% is below ` +
+        `minimum ${minimum.toFixed(2)}%`,
+    );
+    failed = true;
+  }
+  if (failed) {
     process.exitCode = 1;
   }
 }
