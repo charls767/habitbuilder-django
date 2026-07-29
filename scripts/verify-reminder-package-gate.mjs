@@ -420,6 +420,49 @@ export async function runPost({evidencePath, pubspec, lockfile}) {
 
   requireExactPins(pubspecContent);
   const resolvedVersions = requireExactLock(lockContent);
+
+  if (evidence.postValidatedAtUtc !== undefined) {
+    const postValidatedAt = parseUtcTimestamp(
+      evidence.postValidatedAtUtc,
+      'postValidatedAtUtc',
+    );
+    if (
+      postValidatedAt < Date.parse(currentPubspec.mtimeUtc) ||
+      postValidatedAt < Date.parse(currentLockfile.mtimeUtc)
+    ) {
+      throw new Error('postValidatedAtUtc must follow resulting file mtimes');
+    }
+    assertEqual(
+      evidence.files.pubspec.afterSha256,
+      currentPubspec.sha256,
+      'pubspec after hash',
+    );
+    assertEqual(
+      evidence.files.pubspec.afterMtimeUtc,
+      currentPubspec.mtimeUtc,
+      'pubspec after mtime',
+    );
+    assertEqual(
+      evidence.files.lockfile.afterSha256,
+      currentLockfile.sha256,
+      'lockfile after hash',
+    );
+    assertEqual(
+      evidence.files.lockfile.afterMtimeUtc,
+      currentLockfile.mtimeUtc,
+      'lockfile after mtime',
+    );
+    for (const descriptor of packageDescriptors) {
+      assertEqual(
+        evidence.resolvedVersions?.[descriptor.name],
+        resolvedVersions[descriptor.name],
+        `${descriptor.name} recorded resolved version`,
+      );
+    }
+    console.log('D-16 postflight passed with exact pubspec and lock versions');
+    return evidence;
+  }
+
   evidence.postValidatedAtUtc = new Date().toISOString();
   evidence.files.pubspec.afterSha256 = currentPubspec.sha256;
   evidence.files.pubspec.afterMtimeUtc = currentPubspec.mtimeUtc;

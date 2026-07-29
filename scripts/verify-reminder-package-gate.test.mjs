@@ -175,6 +175,20 @@ test('pre and post accept exact official metadata and exact lock pins', () => {
   });
 });
 
+test('repeated post validation is byte-for-byte idempotent', () => {
+  withFixture((paths) => {
+    preparePost(paths);
+    const first = runPost(paths);
+    assert.equal(first.status, 0, first.stderr);
+    const firstEvidence = readFileSync(paths.evidence, 'utf8');
+
+    const second = runPost(paths);
+
+    assert.equal(second.status, 0, second.stderr);
+    assert.equal(readFileSync(paths.evidence, 'utf8'), firstEvidence);
+  });
+});
+
 for (const [name, mutate] of [
   [
     'wrong package name',
