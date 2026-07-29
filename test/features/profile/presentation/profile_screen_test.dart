@@ -102,7 +102,7 @@ void main() {
 
     expect(authRepository.logoutCalls, 1);
     expect(storage.cleared, isTrue);
-    expect(find.text('Entrar'), findsOneWidget);
+    expect(find.text('Iniciar sesión'), findsOneWidget);
   });
 
   testWidgets('applies text size and high contrast globally', (tester) async {

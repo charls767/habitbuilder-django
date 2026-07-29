@@ -21,7 +21,7 @@ void main() {
     final repository = _FakeAuthRepository();
     await _pumpApp(tester, repository);
 
-    await tester.tap(find.text('Entrar'));
+    await _tapVisible(tester, 'Iniciar sesión');
     await tester.pump();
     expect(find.text('Ingresa un correo válido'), findsOneWidget);
     expect(find.text('Ingresa tu contraseña'), findsOneWidget);
@@ -31,7 +31,7 @@ void main() {
       'camila@example.com',
     );
     await tester.enterText(find.byType(TextFormField).at(1), 'Segura123');
-    await tester.tap(find.text('Entrar'));
+    await _tapVisible(tester, 'Iniciar sesión');
     await tester.pumpAndSettle();
 
     expect(repository.loginCalls, 1);
@@ -54,7 +54,7 @@ void main() {
       'unknown@example.com',
     );
     await tester.enterText(find.byType(TextFormField).at(1), 'Segura123');
-    await tester.tap(find.text('Entrar'));
+    await _tapVisible(tester, 'Iniciar sesión');
     await tester.pump();
     expect(
       find.text('El correo o la contraseña no son válidos.'),
@@ -66,7 +66,7 @@ void main() {
       code: 'CUENTA_SUSPENDIDA',
       message: 'Suspended.',
     );
-    await tester.tap(find.text('Entrar'));
+    await _tapVisible(tester, 'Iniciar sesión');
     await tester.pump();
     expect(find.textContaining('cuenta está suspendida'), findsOneWidget);
   });
@@ -77,7 +77,7 @@ void main() {
     final repository = _FakeAuthRepository();
     await _pumpApp(tester, repository);
 
-    await tester.tap(find.text('Crear una cuenta'));
+    await _tapVisible(tester, 'Crear cuenta');
     await tester.pumpAndSettle();
     final createButton = find.widgetWithText(FilledButton, 'Crear cuenta');
     expect(tester.widget<FilledButton>(createButton).onPressed, isNull);
@@ -118,7 +118,7 @@ void main() {
           fieldErrors: {'email': 'El correo ya está registrado.'},
         );
       await _pumpApp(tester, repository);
-      await tester.tap(find.text('Crear una cuenta'));
+      await _tapVisible(tester, 'Crear cuenta');
       await tester.pumpAndSettle();
 
       final fields = find.byType(TextFormField);
@@ -150,7 +150,7 @@ void main() {
   ) async {
     final repository = _FakeAuthRepository();
     await _pumpApp(tester, repository);
-    await tester.tap(find.text('Olvidé mi contraseña'));
+    await _tapVisible(tester, 'Olvidé mi contraseña');
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField), 'camila@example.com');
@@ -163,6 +163,22 @@ void main() {
       find.textContaining('Si existe una cuenta asociada'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('login and registration fit a 320px viewport', (tester) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await _pumpApp(tester, _FakeAuthRepository());
+    expect(tester.takeException(), isNull);
+    expect(find.text('Bienvenido de nuevo'), findsOneWidget);
+
+    await _tapVisible(tester, 'Crear cuenta');
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Crea tu cuenta'), findsOneWidget);
   });
 
   testWidgets('reset password uses the URL token and returns to login', (
@@ -212,6 +228,14 @@ void main() {
     expect(repository.newPassword, 'NuevaSegura123');
     expect(find.text('Login after reset'), findsOneWidget);
   });
+}
+
+Future<void> _tapVisible(WidgetTester tester, String text) async {
+  final finder = find.text(text);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _pumpApp(
