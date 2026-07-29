@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: "Phase 3: Reminders"
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-07-29T14:21:16.173Z"
-last_activity: 2026-07-29 — Plan 03-01 completado; siguiente plan 03-02
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-07-29T14:39:40.635Z"
+last_activity: 2026-07-29 — Plan 03-02 completado; siguiente plan 03-03
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 14
-  completed_plans: 7
-  percent: 50
+  completed_plans: 8
+  percent: 57
 ---
 
 # Project State
@@ -28,13 +28,13 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 Phase: 3 of 3 — Reminders
 
-Plan: 03-02 de 03-08
+Plan: 03-03 de 03-08
 
 Status: Ready to execute
 
-Last activity: 2026-07-29 — Plan 03-01 completado con baseline, coverage fail-closed y contrato Prism
+Last activity: 2026-07-29 — Plan 03-02 completado con dominio/data de recordatorios
 
-Progress v3.0: [■□□□□□□□□□] 13% de ejecución
+Progress v3.0: [■■□□□□□□□□] 25% de ejecución
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Progress v3.0: [■□□□□□□□□□] 13% de ejecución
 | --- | ---: | ---: | ---: |
 | 1. Identity, Profile & Contract Foundation | 3 | 67 min | 22.3 min |
 | 2. Habits and Goals | 3/3 | 1 sesión | 1 sesión |
-| 3. Reminders | 1/8 | 13 min | 13 min |
+| 3. Reminders | 2/8 | 23 min | 11.5 min |
 
 ## Accumulated Context
 
@@ -68,10 +68,12 @@ Progress v3.0: [■□□□□□□□□□] 13% de ejecución
 - [Phase 03]: Changed Dart paths missing from LCOV or reporting zero measurable lines are fatal even when aggregate coverage would pass.
 - [Phase 03]: The mock gate owns one captured Prism PID and awaits process-tree cleanup in finally.
 - [Phase 03]: Reminder create and update payloads require mensaje, strict HH:mm, unique ISO weekdays 1..7 and activo.
+- [Phase 03]: Reminder create and update use one complete ReminderDraft so activo changes preserve message, time and weekdays. — Matches the complete OpenAPI request and prevents configuration loss during toggles.
+- [Phase 03]: Reminder DTO parsing validates domain invariants before presentation and preserves backend ApiException failures. — Malformed transport data fails early while backend eligibility remains authoritative.
 
 ### Pending Todos
 
-- Ejecutar 03-02..04 para HBM-13 en el primary root.
+- Ejecutar 03-03..04 para HBM-13 en el primary root.
 - Crear/validar manualmente el worktree HBM-14 y ejecutar 03-05..08 desde su root aislado.
 - Integrar HBB-23, HBB-24 y HBB-27 en el orden contractual.
 
@@ -93,8 +95,8 @@ Progress v3.0: [■□□□□□□□□□] 13% de ejecución
 
 ## Session Continuity
 
-Last session: 2026-07-29T14:21:16.166Z
+Last session: 2026-07-29T14:39:40.630Z
 
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-02-PLAN.md
 
 Resume file: None

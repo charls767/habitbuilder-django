@@ -76,7 +76,7 @@ Plans:
 
 **Wave 2** *(depends on 03-01)*
 
-- [ ] 03-02: HBM-13 — dominio, DTO, datasource y repositorio.
+- [x] 03-02: HBM-13 — dominio, DTO, datasource y repositorio.
 
 **Wave 3** *(depends on 03-02)*
 
@@ -199,4 +199,4 @@ real de su PR.
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
 | 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |
-| 3. Reminders | v3.0 | 1/8 | In Progress | - |
+| 3. Reminders | v3.0 | 2/8 | In Progress | - |
