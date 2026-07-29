@@ -12,6 +12,7 @@ import '../../features/goals/presentation/screens/goals_list_screen.dart';
 import '../../features/habits/presentation/screens/habit_form_screen.dart';
 import '../../features/habits/presentation/screens/habits_list_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/reminders/presentation/screens/reminders_screen.dart';
 import '../network/auth_session_controller.dart';
 import 'app_routes.dart';
 
@@ -72,6 +73,11 @@ GoRouter appRouter(Ref ref) {
         path: '/habits/:habitId/edit',
         builder: (context, state) =>
             HabitFormScreen(habitId: state.pathParameters['habitId']!),
+      ),
+      GoRoute(
+        path: '/habits/:habitId/reminders',
+        builder: (context, state) =>
+            RemindersScreen(habitId: state.pathParameters['habitId']!),
       ),
       GoRoute(
         path: AppRoutes.goals,

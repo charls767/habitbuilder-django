@@ -24,10 +24,8 @@ void main() {
       expect(find.text('Aún no tienes recordatorios'), findsOneWidget);
       expect(find.text('Añadir recordatorio'), findsOneWidget);
 
-      await _pumpScreen(
-        tester,
-        listFuture: Future<List<Recordatorio>>.error(Exception('offline')),
-      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pumpScreen(tester, listError: Exception('offline'));
       await tester.pumpAndSettle();
       expect(find.text('No pudimos cargar tus recordatorios.'), findsOneWidget);
       expect(find.text('Reintentar'), findsOneWidget);
@@ -79,6 +77,7 @@ void main() {
 Future<void> _pumpScreen(
   WidgetTester tester, {
   Future<List<Recordatorio>>? listFuture,
+  Object? listError,
   ReminderRepository? repository,
 }) async {
   await tester.pumpWidget(
@@ -87,6 +86,10 @@ Future<void> _pumpScreen(
         habitDetailProvider('hab-1').overrideWith((ref) async => _habit()),
         if (listFuture != null)
           remindersListProvider('hab-1').overrideWith((ref) => listFuture),
+        if (listError != null)
+          remindersListProvider(
+            'hab-1',
+          ).overrideWith((ref) => Future.error(listError)),
         if (repository != null)
           reminderRepositoryProvider.overrideWithValue(repository),
       ],

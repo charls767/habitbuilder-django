@@ -11,6 +11,8 @@ abstract final class AppRoutes {
   static const String profile = '/profile';
 
   static String habitEdit(String habitId) => '/habits/$habitId/edit';
+  static String habitReminders(String habitId) =>
+      '/habits/${Uri.encodeComponent(habitId)}/reminders';
   static String goalDetail(String goalId) => '/goals/$goalId';
   static String goalEdit(String goalId) => '/goals/$goalId/edit';
 }
