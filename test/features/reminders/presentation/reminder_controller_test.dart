@@ -198,6 +198,11 @@ void main() {
         ..pendingCreate = Completer<Recordatorio>();
       final container = _container(repository, HabitoEstado.activo);
       addTearDown(container.dispose);
+      final subscription = container.listen(
+        reminderControllerProvider('hab-1'),
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
       final controller = container.read(
         reminderControllerProvider('hab-1').notifier,
       );

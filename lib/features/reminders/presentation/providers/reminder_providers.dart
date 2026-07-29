@@ -36,6 +36,14 @@ final class ReminderEligibilityException implements Exception {
   String toString() => message;
 }
 
+const reminderEligibilityMessage =
+    'Los hábitos pausados o completados no pueden crear ni reactivar '
+    'recordatorios.';
+
+bool canActivateReminders(Habito? habit) {
+  return habit?.estado == HabitoEstado.activo;
+}
+
 @riverpod
 class ReminderController extends _$ReminderController {
   late String _habitId;
@@ -54,13 +62,42 @@ class ReminderController extends _$ReminderController {
     });
   }
 
+  Future<bool> updateReminder({
+    required Recordatorio reminder,
+    required ReminderDraft draft,
+  }) {
+    return _mutate(() async {
+      if (!reminder.activo && draft.activo) {
+        await _ensureCanActivate();
+      }
+      await ref
+          .read(reminderRepositoryProvider)
+          .update(reminderId: reminder.id, draft: draft);
+    });
+  }
+
+  Future<bool> toggle(Recordatorio reminder, bool active) {
+    return updateReminder(
+      reminder: reminder,
+      draft: ReminderDraft(
+        mensaje: reminder.mensaje,
+        hora: reminder.hora,
+        diasSemana: reminder.diasSemana,
+        activo: active,
+      ),
+    );
+  }
+
+  Future<bool> delete(String reminderId) {
+    return _mutate(
+      () => ref.read(reminderRepositoryProvider).delete(reminderId),
+    );
+  }
+
   Future<void> _ensureCanActivate() async {
     final habit = await ref.read(habitDetailProvider(_habitId).future);
-    if (habit.estado != HabitoEstado.activo) {
-      throw const ReminderEligibilityException(
-        'Los hábitos pausados o completados no pueden crear ni reactivar '
-        'recordatorios.',
-      );
+    if (!canActivateReminders(habit)) {
+      throw const ReminderEligibilityException(reminderEligibilityMessage);
     }
   }
 

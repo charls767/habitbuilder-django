@@ -304,7 +304,6 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final semantics = tester.ensureSemantics();
-      addTearDown(semantics.dispose);
       final repository = _FakeReminderRepository(
         reminders: [
           _reminder(),
@@ -331,6 +330,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.text('Añadir recordatorio'), findsOneWidget);
+      semantics.dispose();
     });
   });
 }

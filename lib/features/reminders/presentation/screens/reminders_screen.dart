@@ -1,14 +1,16 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_chrome.dart';
 import '../../../habits/domain/entities/habito.dart';
 import '../../../habits/presentation/providers/habit_providers.dart';
 import '../../domain/entities/recordatorio.dart';
-import '../../domain/entities/reminder_time.dart';
 import '../providers/reminder_providers.dart';
+import '../widgets/reminder_card.dart';
+import '../widgets/reminder_form_sheet.dart';
 
 class RemindersScreen extends ConsumerWidget {
   const RemindersScreen({required this.habitId, super.key});
@@ -19,6 +21,7 @@ class RemindersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final reminders = ref.watch(remindersListProvider(habitId));
     final habit = ref.watch(habitDetailProvider(habitId));
+    final mutation = ref.watch(reminderControllerProvider(habitId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recordatorios')),
@@ -27,7 +30,13 @@ class RemindersScreen extends ConsumerWidget {
           data: (items) => _ReminderList(
             reminders: items,
             habit: habit.value,
-            onAdd: () => _openCreate(context, ref, habit.value),
+            actionsEnabled: !mutation.isLoading,
+            onAdd: () => _openForm(context, habit: habit.value),
+            onEdit: (reminder) =>
+                _openForm(context, habit: habit.value, reminder: reminder),
+            onToggle: (reminder, active) =>
+                _toggle(context, ref, reminder, active),
+            onDelete: (reminder) => _confirmDelete(context, ref, reminder),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => _LoadError(
@@ -38,29 +47,86 @@ class RemindersScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openCreate(
-    BuildContext context,
-    WidgetRef ref,
-    Habito? habit,
-  ) async {
-    if (habit?.estado != HabitoEstado.activo) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Los hábitos pausados o completados no pueden crear ni reactivar '
-            'recordatorios.',
-          ),
-        ),
-      );
+  Future<void> _openForm(
+    BuildContext context, {
+    required Habito? habit,
+    Recordatorio? reminder,
+  }) async {
+    if (reminder == null && !canActivateReminders(habit)) {
+      _showMessage(context, reminderEligibilityMessage);
       return;
     }
 
-    await showModalBottomSheet<void>(
+    await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => _ReminderCreateSheet(habitId: habitId),
+      builder: (context) =>
+          ReminderFormSheet(habitId: habitId, reminder: reminder),
     );
+  }
+
+  Future<void> _toggle(
+    BuildContext context,
+    WidgetRef ref,
+    Recordatorio reminder,
+    bool active,
+  ) async {
+    final success = await ref
+        .read(reminderControllerProvider(habitId).notifier)
+        .toggle(reminder, active);
+    if (!context.mounted || success) return;
+    _showMessage(
+      context,
+      reminderErrorMessage(ref.read(reminderControllerProvider(habitId)).error),
+    );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    Recordatorio reminder,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('¿Eliminar recordatorio?'),
+        content: Text(
+          'Se eliminará “${reminder.mensaje}”. Esta acción no se puede '
+          'deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+              foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final success = await ref
+        .read(reminderControllerProvider(habitId).notifier)
+        .delete(reminder.id);
+    if (!context.mounted || success) return;
+    _showMessage(
+      context,
+      reminderErrorMessage(ref.read(reminderControllerProvider(habitId)).error),
+    );
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -68,16 +134,24 @@ class _ReminderList extends StatelessWidget {
   const _ReminderList({
     required this.reminders,
     required this.habit,
+    required this.actionsEnabled,
     required this.onAdd,
+    required this.onEdit,
+    required this.onToggle,
+    required this.onDelete,
   });
 
   final List<Recordatorio> reminders;
   final Habito? habit;
+  final bool actionsEnabled;
   final VoidCallback onAdd;
+  final ValueChanged<Recordatorio> onEdit;
+  final void Function(Recordatorio reminder, bool active) onToggle;
+  final ValueChanged<Recordatorio> onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final canCreate = habit?.estado == HabitoEstado.activo;
+    final canCreate = canActivateReminders(habit);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -91,16 +165,21 @@ class _ReminderList extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         if (reminders.isEmpty)
-          _EmptyState(onAdd: canCreate ? onAdd : null)
+          _EmptyState(onAdd: canCreate && actionsEnabled ? onAdd : null)
         else ...[
           for (final reminder in reminders) ...[
-            _ReminderPreview(reminder: reminder),
+            ReminderCard(
+              reminder: reminder,
+              actionsEnabled: actionsEnabled,
+              toggleEnabled: actionsEnabled && (reminder.activo || canCreate),
+              onEdit: () => onEdit(reminder),
+              onToggle: (active) => onToggle(reminder, active),
+              onDelete: () => onDelete(reminder),
+            ),
             const SizedBox(height: 12),
           ],
-          OutlinedButton.icon(
-            onPressed: canCreate ? onAdd : null,
-            icon: const Icon(Icons.add_alarm_outlined),
-            label: const Text('Añadir recordatorio'),
+          _AddReminderAction(
+            onPressed: canCreate && actionsEnabled ? onAdd : null,
           ),
         ],
       ],
@@ -116,10 +195,18 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeCount = reminders.where((item) => item.activo).length;
+    final programmedCopy = activeCount == 1
+        ? '1 recordatorio programado'
+        : '$activeCount recordatorios programados';
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -127,64 +214,29 @@ class _SummaryCard extends StatelessWidget {
           children: [
             const Icon(
               Icons.notifications_active_outlined,
-              color: Colors.white,
+              color: AppColors.accent,
+              size: 28,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$activeCount activos',
+                    'Notificaciones activas',
                     style: Theme.of(
                       context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.white),
+                    ).textTheme.titleMedium?.copyWith(color: Colors.white),
                   ),
+                  const SizedBox(height: 2),
                   Text(
-                    reminders.isEmpty
-                        ? 'Configura cuándo quieres recibir un aviso.'
-                        : '${reminders.length} configurados para este hábito.',
+                    programmedCopy,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.88),
+                      color: const Color(0xFFBCEFE6),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ReminderPreview extends StatelessWidget {
-  const _ReminderPreview({required this.reminder});
-
-  final Recordatorio reminder;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              reminder.hora.toString(),
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 4),
-            Text(reminder.mensaje),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final day in reminder.diasSemana)
-                  Chip(label: Text(_weekday(day))),
-              ],
             ),
           ],
         ),
@@ -234,6 +286,32 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+class _AddReminderAction extends StatelessWidget {
+  const _AddReminderAction({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return CustomPaint(
+      foregroundPainter: _DashedBorderPainter(
+        color: enabled ? AppColors.primary : AppColors.border,
+        radius: 16,
+      ),
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide.none,
+          foregroundColor: enabled ? AppColors.primary : AppColors.muted,
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Añadir recordatorio'),
+      ),
+    );
+  }
+}
+
 class _EligibilityNotice extends StatelessWidget {
   const _EligibilityNotice();
 
@@ -249,8 +327,9 @@ class _EligibilityNotice extends StatelessWidget {
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Este hábito está pausado o completado. Puedes conservar su '
-                'configuración, pero no crear ni reactivar recordatorios.',
+                'Este hábito está pausado o completado. Puedes editar, '
+                'desactivar o eliminar su configuración, pero no crear ni '
+                'reactivar recordatorios.',
               ),
             ),
           ],
@@ -289,173 +368,35 @@ class _LoadError extends StatelessWidget {
   }
 }
 
-class _ReminderCreateSheet extends ConsumerStatefulWidget {
-  const _ReminderCreateSheet({required this.habitId});
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({required this.color, required this.radius});
 
-  final String habitId;
-
-  @override
-  ConsumerState<_ReminderCreateSheet> createState() =>
-      _ReminderCreateSheetState();
-}
-
-class _ReminderCreateSheetState extends ConsumerState<_ReminderCreateSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _messageController = TextEditingController();
-  final _timeController = TextEditingController();
-  final _selectedDays = <int>{};
-  String? _errorMessage;
-  bool _submitting = false;
+  final Color color;
+  final double radius;
 
   @override
-  void dispose() {
-    _messageController.dispose();
-    _timeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ref.watch(reminderControllerProvider(widget.habitId));
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + bottomInset),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Añadir recordatorio',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 18),
-            TextFormField(
-              controller: _messageController,
-              decoration: const InputDecoration(labelText: 'Mensaje'),
-              textInputAction: TextInputAction.next,
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Escribe un mensaje'
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _timeController,
-              decoration: const InputDecoration(labelText: 'Hora (HH:mm)'),
-              keyboardType: TextInputType.datetime,
-              validator: (value) {
-                try {
-                  ReminderTime.parse(value ?? '');
-                  return null;
-                } on FormatException {
-                  return 'Usa una hora válida en formato HH:mm';
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            const AppSectionLabel('Días'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (var day = 1; day <= 7; day++)
-                  FilterChip(
-                    label: Text(_weekdayInitial(day)),
-                    selected: _selectedDays.contains(day),
-                    onSelected: _submitting
-                        ? null
-                        : (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedDays.add(day);
-                              } else {
-                                _selectedDays.remove(day);
-                              }
-                            });
-                          },
-                  ),
-              ],
-            ),
-            if (_selectedDays.isEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                'Selecciona al menos un día',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ],
-            if (_errorMessage case final message?) ...[
-              const SizedBox(height: 12),
-              Text(
-                message,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 20),
-            FilledButton(
-              onPressed: _submitting ? null : _submit,
-              child: _submitting
-                  ? const SizedBox.square(
-                      dimension: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Guardar recordatorio'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _submit() async {
-    final valid = _formKey.currentState?.validate() ?? false;
-    if (!valid || _selectedDays.isEmpty) {
-      setState(() {});
-      return;
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
+      );
+    final metric = path.computeMetrics().single;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    const dash = 7.0;
+    const gap = 5.0;
+    for (var distance = 0.0; distance < metric.length; distance += dash + gap) {
+      canvas.drawPath(
+        metric.extractPath(distance, math.min(distance + dash, metric.length)),
+        paint,
+      );
     }
-
-    setState(() {
-      _submitting = true;
-      _errorMessage = null;
-    });
-    final success = await ref
-        .read(reminderControllerProvider(widget.habitId).notifier)
-        .create(
-          ReminderDraft(
-            mensaje: _messageController.text,
-            hora: ReminderTime.parse(_timeController.text),
-            diasSemana: _selectedDays.toList(),
-            activo: true,
-          ),
-        );
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.of(context).pop();
-      return;
-    }
-
-    final error = ref.read(reminderControllerProvider(widget.habitId)).error;
-    setState(() {
-      _submitting = false;
-      _errorMessage = switch (error) {
-        ApiException(:final message) => message,
-        ReminderEligibilityException(:final message) => message,
-        _ => 'No pudimos guardar el recordatorio. Intenta de nuevo.',
-      };
-    });
   }
-}
 
-String _weekday(int day) {
-  const labels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  return labels[day - 1];
-}
-
-String _weekdayInitial(int day) {
-  const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-  return labels[day - 1];
+  @override
+  bool shouldRepaint(_DashedBorderPainter oldDelegate) {
+    return color != oldDelegate.color || radius != oldDelegate.radius;
+  }
 }
