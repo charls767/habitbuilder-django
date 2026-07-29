@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: "Phase 3: Reminders"
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-07-29T14:39:40.635Z"
-last_activity: 2026-07-29 — Plan 03-02 completado; siguiente plan 03-03
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-07-29T15:14:01.106Z"
+last_activity: 2026-07-29 — Plan 03-03 completado con UI/controlador CU-006
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 14
-  completed_plans: 8
-  percent: 57
+  completed_plans: 9
+  percent: 64
 ---
 
 # Project State
@@ -28,13 +28,13 @@ See: `.planning/PROJECT.md` (updated 2026-07-28)
 
 Phase: 3 of 3 — Reminders
 
-Plan: 03-03 de 03-08
+Plan: 03-04 de 03-08
 
 Status: Ready to execute
 
-Last activity: 2026-07-29 — Plan 03-02 completado con dominio/data de recordatorios
+Last activity: 2026-07-29 — Plan 03-03 completado con UI/controlador CU-006
 
-Progress v3.0: [■■□□□□□□□□] 25% de ejecución
+Progress v3.0: [■■■■□□□□□□] 38% de ejecución
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Progress v3.0: [■■□□□□□□□□] 25% de ejecución
 | --- | ---: | ---: | ---: |
 | 1. Identity, Profile & Contract Foundation | 3 | 67 min | 22.3 min |
 | 2. Habits and Goals | 3/3 | 1 sesión | 1 sesión |
-| 3. Reminders | 2/8 | 23 min | 11.5 min |
+| 3. Reminders | 3/8 | 48 min | 16 min |
 
 ## Accumulated Context
 
@@ -70,10 +70,14 @@ Progress v3.0: [■■□□□□□□□□] 25% de ejecución
 - [Phase 03]: Reminder create and update payloads require mensaje, strict HH:mm, unique ISO weekdays 1..7 and activo.
 - [Phase 03]: Reminder create and update use one complete ReminderDraft so activo changes preserve message, time and weekdays. — Matches the complete OpenAPI request and prevents configuration loss during toggles.
 - [Phase 03]: Reminder DTO parsing validates domain invariants before presentation and preserves backend ApiException failures. — Malformed transport data fails early while backend eligibility remains authoritative.
+- [Phase 03]: Create and inactive-to-active reminder transitions share one habit eligibility predicate in controller and UI. — Prevents presentation-only eligibility bypass.
+- [Phase 03]: Reminder switch and delete flows retain authoritative state until repository success, then invalidate only the scoped habit list. — Prevents false success and cross-habit refresh.
+- [Phase 03]: Reminder edit submits one complete ReminderDraft and remains available while a habit is paused or completed. — Preserves configuration while blocking only reactivation.
+- [Phase 03]: Reminder forms hydrate once and use UI plus controller locks to prevent duplicate writes. — Preserves entered state and rejects concurrent submissions.
 
 ### Pending Todos
 
-- Ejecutar 03-03..04 para HBM-13 en el primary root.
+- Ejecutar 03-04 para validar y entregar HBM-13 desde el primary root.
 - Crear/validar manualmente el worktree HBM-14 y ejecutar 03-05..08 desde su root aislado.
 - Integrar HBB-23, HBB-24 y HBB-27 en el orden contractual.
 
@@ -83,6 +87,7 @@ Progress v3.0: [■■□□□□□□□□] 25% de ejecución
 - HBB-16 ya está en backend `main` mediante los PR #7/#8; el PR backend #1 fue cerrado como obsoleto.
 - El worktree contiene una modificación ajena en `windows/flutter/generated_plugins.cmake`; permaneció intacta.
 - `stash@{0}` sigue presente y no fue aplicado, extraído ni eliminado.
+- El helper `coverage:changed` clasifica tests e interfaces puras como LCOV ausente; 03-04 debe reconciliar el gate antes de publicar, aunque la cobertura productiva medible es 94.51%.
 
 ## Deferred Items
 
@@ -95,8 +100,8 @@ Progress v3.0: [■■□□□□□□□□] 25% de ejecución
 
 ## Session Continuity
 
-Last session: 2026-07-29T14:39:40.630Z
+Last session: 2026-07-29T15:14:01.099Z
 
-Stopped at: Completed 03-02-PLAN.md
+Stopped at: Completed 03-03-PLAN.md
 
 Resume file: None

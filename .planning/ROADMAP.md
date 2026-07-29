@@ -80,7 +80,7 @@ Plans:
 
 **Wave 3** *(depends on 03-02)*
 
-- [ ] 03-03: HBM-13 — UI/controlador CU-006, ruta y elegibilidad.
+- [x] 03-03: HBM-13 — UI/controlador CU-006, ruta y elegibilidad.
 
 **Wave 4** *(depends on 03-03)*
 
@@ -199,4 +199,4 @@ real de su PR.
 | --- | --- | --- | --- | --- |
 | 1. Identity, Profile & Contract Foundation | v1.0 | 3/3 | Complete | 2026-07-26 |
 | 2. Habits and Goals | v2.0 | 3/3 | Complete | 2026-07-28 |
-| 3. Reminders | v3.0 | 2/8 | In Progress | - |
+| 3. Reminders | v3.0 | 3/8 | In Progress|  |

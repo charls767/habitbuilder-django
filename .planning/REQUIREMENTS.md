@@ -20,7 +20,7 @@
 - [ ] **QUALITY-14**: HBM-14 incluye pruebas deterministas del cálculo de próximas ocurrencias y del puerto de scheduling sin depender del plugin nativo.
 - [x] **QUALITY-15**: Cada ticket alcanza al menos 80.00% de changed-code coverage contra su SHA inmutable de inicio; el gate falla si un Dart modificado/no excluido falta en LCOV o si hay cero líneas medibles.
 - [x] **QUALITY-16**: `flutter analyze` y `flutter test --coverage` terminan con exit code 0 en cada ticket.
-- [ ] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
+- [x] **QUALITY-17**: `flutter build web --release` mantiene un fallback funcional sin scheduling nativo.
 - [x] **QUALITY-18**: Prism carga el contrato de recordatorios y un helper autocontenido inicia el mock, espera readiness, ejecuta smoke de listar/crear/editar/desactivar y mata exactamente su proceso en `finally`.
 
 ### Entrega
