@@ -182,3 +182,20 @@ test('ignores excluded generated Dart paths missing from LCOV', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Changed-code coverage: 0\/0/);
 });
+
+test('ignores test Dart paths because Flutter LCOV does not instrument tests', () => {
+  const result = runFixture({changedPath: 'test/features/example_test.dart'});
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Changed-code coverage: 0\/0/);
+});
+
+test('ignores the pure reminder repository interface with no executable lines', () => {
+  const result = runFixture({
+    changedPath:
+      'lib/features/reminders/domain/repositories/reminder_repository.dart',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Changed-code coverage: 0\/0/);
+});

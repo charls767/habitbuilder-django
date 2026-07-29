@@ -5,11 +5,13 @@ import {pathToFileURL} from 'node:url';
 const defaultExcluded = [
   /\.g\.dart$/,
   /\.freezed\.dart$/,
+  /^test\//,
   /^lib\/main\.dart$/,
   /^lib\/app\.dart$/,
   /^lib\/core\/router\//,
   /^lib\/core\/theme\//,
   /^lib\/core\/network\/dio_client\.dart$/,
+  /^lib\/features\/reminders\/domain\/repositories\/reminder_repository\.dart$/,
 ];
 
 export function parseLcov(content) {
