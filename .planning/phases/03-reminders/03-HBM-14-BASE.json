@@ -1,0 +1,15 @@
+{
+  "ticket": "HBM-14",
+  "primaryRoot": "C:/Users/USER/Desktop/DPPF/HabitBuilder/habitbuilder-mobile",
+  "worktreeRoot": "C:/Users/USER/Desktop/DPPF/HabitBuilder/habitbuilder-mobile-hbm14",
+  "branch": "HBM-14/local-notifications",
+  "startSha": "31da6e546bd2c56622ff3455605310006f24f16b",
+  "originMainSha": "31da6e546bd2c56622ff3455605310006f24f16b",
+  "hbm13ProductTipSha": "d7e2e7cc596456637fd95627368fc48822289402",
+  "capturedAtUtc": "2026-07-29T22:59:27.175Z",
+  "protectedPath": "windows/flutter/generated_plugins.cmake",
+  "protectedSha256": "C6C0F0C5E484A957961E8653DC9A19A240B799B9FCD7D1120D7FF7D0F2F23AFE",
+  "stashRef": "stash@{0}",
+  "stashObject": "a6764834f136258ef8c971f6e206f4110e81dee6",
+  "metadataPublished": false
+}
