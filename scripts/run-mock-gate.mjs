@@ -210,7 +210,7 @@ export async function runMockGate({
   terminateTree = terminateOwnedProcessTree,
   fetchImpl = globalThis.fetch,
   readinessUrl = 'http://127.0.0.1:4010/health',
-  readinessTimeoutMs = 15000,
+  readinessTimeoutMs = 30000,
   readinessPollMs = 100,
 } = {}) {
   let mockChild;

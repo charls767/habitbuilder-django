@@ -73,7 +73,7 @@ variables and are never included in the report.
 $env:API_BASE_URL='https://api.example.com'
 $env:API_EMAIL='participant-test-account@example.com'
 $env:API_PASSWORD='set-locally'
-$env:LATENCY_ENDPOINT='/progress?periodo=semana'
+$env:LATENCY_ENDPOINT='/v1/progreso?periodo=semana'
 $env:LATENCY_WARM_RUNS='10'
 $env:LATENCY_ENVIRONMENT='Android 14, Wi-Fi, release build'
 $env:LATENCY_OUTPUT='latency-report.json'

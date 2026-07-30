@@ -112,7 +112,7 @@ async function measureRequest({fetchImpl, url, token, now}) {
 
 export async function runLatencyStudy({
   baseUrl,
-  endpoint = '/progress?periodo=semana',
+  endpoint = '/v1/progreso?periodo=semana',
   warmRuns = 10,
   accessToken,
   email,
@@ -161,7 +161,7 @@ export async function runLatencyCli(environmentVariables, options = {}) {
   const report = await runLatencyStudy({
     baseUrl: environmentVariables.API_BASE_URL ?? 'http://127.0.0.1:4010',
     endpoint:
-      environmentVariables.LATENCY_ENDPOINT ?? '/progress?periodo=semana',
+      environmentVariables.LATENCY_ENDPOINT ?? '/v1/progreso?periodo=semana',
     warmRuns: environmentVariables.LATENCY_WARM_RUNS ?? '10',
     accessToken: environmentVariables.API_ACCESS_TOKEN,
     email: environmentVariables.API_EMAIL,
