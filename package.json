@@ -8,7 +8,10 @@
     "mock:gate": "node scripts/run-mock-gate.mjs",
     "mock:smoke": "node scripts/mock-smoke.mjs",
     "test:coverage-script": "node --test scripts/check-changed-coverage.test.mjs",
-    "coverage:changed": "node scripts/check-changed-coverage.mjs"
+    "coverage:changed": "node scripts/check-changed-coverage.mjs",
+    "quality:sus": "node scripts/sus-score.mjs",
+    "quality:latency": "node scripts/client-latency.mjs",
+    "test:quality": "node --test scripts/sus-score.test.mjs scripts/client-latency.test.mjs"
   },
   "devDependencies": {
     "@stoplight/prism-cli": "^5.10.0"

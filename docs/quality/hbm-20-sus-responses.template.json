@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "study": {
+    "ticket": "HBM-20",
+    "targetSus": 80,
+    "conductedAt": null,
+    "facilitator": null,
+    "environment": {
+      "commit": null,
+      "appVersion": null,
+      "device": null,
+      "osVersion": null,
+      "network": null,
+      "apiEnvironment": null
+    }
+  },
+  "responses": []
+}
