@@ -41,7 +41,7 @@ void main() {
     await _pumpScreen(tester, repository: repository);
 
     expect(find.text('Nota inicial'), findsOneWidget);
-    await tester.tap(find.byTooltip('Editar nota'));
+    await tester.tap(find.byTooltip('Editar nota para Leer'));
     await tester.pumpAndSettle();
     expect(find.text('Nota del día'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField), 'Nota actualizada');
@@ -56,7 +56,7 @@ void main() {
   testWidgets('asks for a status before adding a note', (tester) async {
     await _pumpScreen(tester, repository: _FakeTrackingRepository());
 
-    await tester.tap(find.byTooltip('Agregar nota'));
+    await tester.tap(find.byTooltip('Agregar nota para Leer'));
     await tester.pump();
 
     expect(find.text('Selecciona primero un estado.'), findsOneWidget);
@@ -121,6 +121,32 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('announces habit context and fits 200% high-contrast text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final semantics = tester.ensureSemantics();
+    try {
+      await _pumpScreen(
+        tester,
+        repository: _FakeTrackingRepository(),
+        highContrast: true,
+      );
+
+      expect(find.bySemanticsLabel('Hábito Leer'), findsOneWidget);
+      expect(find.bySemanticsLabel('Estado de Leer'), findsOneWidget);
+      expect(find.byTooltip('Agregar nota para Leer'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('renders empty and habits error states', (tester) async {
     await _pumpScreen(
       tester,
@@ -147,6 +173,7 @@ Future<void> _pumpScreen(
   required _FakeTrackingRepository repository,
   List<Habito>? habits,
   Object? habitsError,
+  bool highContrast = false,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -173,7 +200,10 @@ Future<void> _pumpScreen(
               : Future.error(habitsError),
         ),
       ],
-      child: MaterialApp(theme: AppTheme.light(), home: const TrackingScreen()),
+      child: MaterialApp(
+        theme: AppTheme.light(highContrast: highContrast),
+        home: const TrackingScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();
