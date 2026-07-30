@@ -1,0 +1,11 @@
+{
+  "repoRoot": "C:/Users/USER/Desktop/DPPF/HabitBuilder/habitbuilder-mobile",
+  "branch": "HBM-13/reminder-ui",
+  "startSha": "8215829f1624773f1d879214f04db0fc5ca503a7",
+  "originMainSha": "e21a6b3d1d9ae76bb497e9e514a76d2474ce6965",
+  "capturedAtUtc": "2026-07-29T14:00:25Z",
+  "protectedPath": "windows/flutter/generated_plugins.cmake",
+  "protectedSha256": "C6C0F0C5E484A957961E8653DC9A19A240B799B9FCD7D1120D7FF7D0F2F23AFE",
+  "stashRef": "stash@{0}",
+  "stashObject": "a6764834f136258ef8c971f6e206f4110e81dee6"
+}

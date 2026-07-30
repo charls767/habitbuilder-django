@@ -1,42 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/accessibility/accessibility_settings.dart';
+import 'core/network/auth_session_controller.dart';
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/profile/presentation/providers/profile_providers.dart';
+import 'features/reminders/presentation/widgets/reminder_reconciliation_bootstrap.dart';
+import 'features/tracking/presentation/widgets/tracking_sync_bootstrap.dart';
 
-/// Placeholder root route — replaced by the real auth/home flow starting
-/// with the HBM-8 (registration/login) and HBM-1 epic tickets.
-final GoRouter _router = GoRouter(
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const _ScaffoldPlaceholder(),
-    ),
-  ],
-);
-
-class HabitBuilderApp extends StatelessWidget {
+class HabitBuilderApp extends ConsumerWidget {
   const HabitBuilderApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    final authSession = ref.watch(authSessionControllerProvider);
+    final profile = authSession.value == true
+        ? ref.watch(myProfileProvider).value
+        : null;
+    final accessibility = profile?.accessibility;
+
     return MaterialApp.router(
       title: 'HabitBuilder',
-      theme: AppTheme.light,
-      routerConfig: _router,
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class _ScaffoldPlaceholder extends StatelessWidget {
-  const _ScaffoldPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('HabitBuilder — scaffold only, see Jira epic HBM-1'),
+      theme: AppTheme.light(highContrast: accessibility?.highContrast ?? false),
+      darkTheme: AppTheme.dark(
+        highContrast: accessibility?.highContrast ?? false,
       ),
+      themeMode: ThemeMode.light,
+      routerConfig: router,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        return TrackingSyncBootstrap(
+          child: ReminderReconciliationBootstrap(
+            child: MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: effectiveTextScaler(
+                  systemScaler: mediaQuery.textScaler,
+                  preferenceFactor: accessibility?.textSize.scaleFactor ?? 1,
+                ),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            ),
+          ),
+        );
+      },
     );
   }
 }

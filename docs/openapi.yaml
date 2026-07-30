@@ -1,0 +1,1613 @@
+openapi: 3.0.3
+info:
+  title: HabitBuilder API
+  description: >
+    Contrato v1 del backend de HabitBuilder. Phase 2 define de forma ejecutable
+    hábitos, frecuencias, categorías, metas y sus transiciones para que backend
+    y Flutter trabajen contra la misma fuente de verdad mediante Prism.
+    Los grupos de fases posteriores permanecen como esqueletos.
+  version: 0.2.0
+servers:
+  - url: http://localhost:4010
+    description: Prism mock server (local)
+
+tags:
+  - name: system
+  - name: auth
+  - name: profile
+  - name: categories
+  - name: habits
+  - name: goals
+  - name: reminders
+  - name: tracking
+  - name: progress
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags: [system]
+      summary: Consultar disponibilidad del backend y la base de datos
+      security: []
+      responses:
+        '200':
+          description: Backend y base de datos disponibles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '503':
+          description: Backend disponible con base de datos degradada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Registrar un nuevo usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroUsuarioRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Datos o consentimiento inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: El email ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Iniciar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredencialesRequest'
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '423':
+          description: Cuenta suspendida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      operationId: refreshToken
+      tags: [auth]
+      summary: Renovar el access token usando el refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Tokens renovados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: Refresh token inválido o expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/password-reset/request:
+    post:
+      operationId: requestPasswordReset
+      tags: [auth]
+      summary: Solicitar un enlace de recuperación de contraseña
+      description: >
+        Siempre responde de la misma forma, exista o no el correo, para no
+        revelar qué cuentas están registradas.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '202':
+          description: Solicitud aceptada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+
+  /auth/password-reset/confirm:
+    post:
+      operationId: confirmPasswordReset
+      tags: [auth]
+      summary: Establecer una nueva contraseña
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '204':
+          description: Contraseña actualizada
+        '400':
+          description: Token inválido, expirado o contraseña débil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me:
+    get:
+      operationId: getMyProfile
+      tags: [profile]
+      summary: Obtener el perfil del usuario autenticado
+      responses:
+        '200':
+          description: Perfil del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilUsuario'
+    patch:
+      operationId: updateMyProfile
+      tags: [profile]
+      summary: Actualizar el perfil del usuario autenticado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUsuarioRequest'
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilUsuario'
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: Listar categorías disponibles para clasificar hábitos
+      responses:
+        '200':
+          description: Listado de categorías
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categoria'
+
+  /habits:
+    get:
+      operationId: listHabits
+      tags: [habits]
+      summary: Listar los hábitos del usuario autenticado
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/HabitoEstado'
+      responses:
+        '200':
+          description: Listado de hábitos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Habito'
+    post:
+      operationId: createHabit
+      tags: [habits]
+      summary: Crear un hábito
+      description: >
+        Todo hábito inicia activo y debe tener fecha de inicio y una frecuencia
+        válida. El usuario, estado y marcas de tiempo los asigna el servidor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HabitoCreateRequest'
+      responses:
+        '201':
+          description: Hábito creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '400':
+          description: Frecuencia, fecha o relación inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /habits/{habitId}:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    get:
+      operationId: getHabit
+      tags: [habits]
+      summary: Obtener un hábito por id
+      responses:
+        '200':
+          description: Hábito encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '404':
+          description: Hábito no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateHabit
+      tags: [habits]
+      summary: Editar los datos configurables de un hábito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HabitoUpdateRequest'
+      responses:
+        '200':
+          description: Hábito actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '400':
+          description: Datos o frecuencia inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Hábito inexistente o ajeno al usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteHabit
+      tags: [habits]
+      summary: Eliminar un hábito
+      description: >
+        Conserva los registros históricos necesarios para reportes. El cliente
+        debe confirmar la acción y advertir su impacto antes de invocarla.
+      responses:
+        '204':
+          description: Hábito eliminado
+        '404':
+          description: Hábito inexistente o ajeno al usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /habits/{habitId}/pause:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    post:
+      operationId: pauseHabit
+      tags: [habits]
+      summary: Pausar un hábito activo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PausaHabitoRequest'
+      responses:
+        '200':
+          description: Hábito pausado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '409':
+          description: La transición no es válida para el estado actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /habits/{habitId}/resume:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    post:
+      operationId: resumeHabit
+      tags: [habits]
+      summary: Reanudar un hábito pausado
+      responses:
+        '200':
+          description: Hábito reanudado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '409':
+          description: El hábito no está pausado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /habits/{habitId}/complete:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    post:
+      operationId: completeHabit
+      tags: [habits]
+      summary: Marcar un hábito como completado
+      responses:
+        '200':
+          description: Hábito completado y sin ocurrencias futuras
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habito'
+        '409':
+          description: El hábito ya está completado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /goals:
+    get:
+      operationId: listGoals
+      tags: [goals]
+      summary: Listar las metas del usuario autenticado
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/MetaEstado'
+      responses:
+        '200':
+          description: Listado de metas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meta'
+    post:
+      operationId: createGoal
+      tags: [goals]
+      summary: Crear una meta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetaCreateRequest'
+      responses:
+        '201':
+          description: Meta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+
+  /goals/{goalId}:
+    parameters:
+      - $ref: '#/components/parameters/GoalId'
+    get:
+      operationId: getGoal
+      tags: [goals]
+      summary: Obtener una meta por id
+      responses:
+        '200':
+          description: Meta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+    patch:
+      operationId: updateGoal
+      tags: [goals]
+      summary: Actualizar una meta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetaUpdateRequest'
+      responses:
+        '200':
+          description: Meta actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+    delete:
+      operationId: deleteGoal
+      tags: [goals]
+      summary: Eliminar una meta sin eliminar sus hábitos
+      responses:
+        '204':
+          description: Meta eliminada
+
+  /goals/{goalId}/habits/{habitId}:
+    parameters:
+      - $ref: '#/components/parameters/GoalId'
+      - $ref: '#/components/parameters/HabitId'
+    put:
+      operationId: linkHabitToGoal
+      tags: [goals]
+      summary: Enlazar un hábito existente a una meta
+      description: >
+        Un hábito solo puede pertenecer a una meta. Enlazarlo reemplaza su
+        vínculo anterior cuando ambos recursos pertenecen al usuario.
+      responses:
+        '200':
+          description: Meta con su listado actualizado de hábitos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+        '404':
+          description: Meta o hábito inexistente o ajeno al usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: unlinkHabitFromGoal
+      tags: [goals]
+      summary: Desenlazar un hábito de una meta
+      responses:
+        '200':
+          description: Meta con su listado actualizado de hábitos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+
+  /habits/{habitId}/reminders:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: Listar recordatorios de un hábito
+      responses:
+        '200':
+          description: Listado de recordatorios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recordatorio'
+              example:
+                - id: rec_001
+                  habitoId: hab_001
+                  mensaje: Hora de leer
+                  hora: '07:00'
+                  diasSemana: [1, 3, 5]
+                  activo: true
+                - id: rec_002
+                  habitoId: hab_001
+                  mensaje: Prepara el libro de mañana
+                  hora: '20:30'
+                  diasSemana: [2, 4]
+                  activo: false
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Configurar un recordatorio
+      description: Los recordatorios solo se configuran para hábitos activos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordatorioRequest'
+      responses:
+        '201':
+          description: Recordatorio creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recordatorio'
+        '409':
+          description: El hábito no está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reminders/{reminderId}:
+    parameters:
+      - name: reminderId
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      operationId: updateReminder
+      tags: [reminders]
+      summary: Actualizar un recordatorio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordatorioRequest'
+      responses:
+        '200':
+          description: Recordatorio actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recordatorio'
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Eliminar un recordatorio
+      responses:
+        '204':
+          description: Recordatorio eliminado
+
+  /habits/{habitId}/logs:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    get:
+      operationId: listHabitLogs
+      tags: [tracking]
+      summary: Listar los registros de cumplimiento de un hábito
+      parameters:
+        - name: desde
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Listado de registros
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistroHabito'
+    post:
+      operationId: upsertHabitLog
+      tags: [tracking]
+      summary: Crear o editar el cumplimiento de un hábito en una fecha
+      description: >
+        Realiza un upsert por hábito y fecha. Repetir la misma solicitud con
+        la misma clave de idempotencia devuelve el mismo resultado sin crear
+        duplicados.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Clave estable por hábito y fecha generada por el cliente.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroHabitoRequest'
+      responses:
+        '200':
+          description: Registro existente actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroHabito'
+        '201':
+          description: Registro creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroHabito'
+        '409':
+          description: La clave de idempotencia ya se usó con otra solicitud
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /logs/{logId}:
+    parameters:
+      - name: logId
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: deleteHabitLog
+      tags: [tracking]
+      summary: Eliminar un registro de cumplimiento
+      responses:
+        '204':
+          description: Registro eliminado
+
+  /habits/{habitId}/streak:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    get:
+      operationId: getHabitStreak
+      tags: [tracking]
+      summary: Obtener la racha actual y más larga de un hábito
+      responses:
+        '200':
+          description: Racha del hábito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Racha'
+
+  /habits/{habitId}/stats:
+    parameters:
+      - $ref: '#/components/parameters/HabitId'
+    get:
+      operationId: getHabitStats
+      tags: [progress]
+      summary: Obtener estadísticas derivadas de los registros de un hábito
+      responses:
+        '200':
+          description: Estadísticas del hábito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estadistica'
+
+  /v1/progreso:
+    get:
+      operationId: verProgreso
+      tags: [progress]
+      summary: Consultar el progreso calculado de los hábitos del usuario
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Progreso por hábito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgresoResponse'
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token ausente o inválido
+
+  /v1/estadisticas:
+    get:
+      operationId: verEstadisticas
+      tags: [progress]
+      summary: Consultar estadísticas agregadas y filtradas
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: habitoId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: categoria
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estadísticas filtradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadisticasResponse'
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token ausente o inválido
+        '404':
+          description: Hábito o categoría no encontrados
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    HabitId:
+      name: habitId
+      in: path
+      required: true
+      schema:
+        type: string
+    GoalId:
+      name: goalId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    Health:
+      type: object
+      required: [status, database]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        database:
+          type: string
+          enum: [up, down]
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          example: RECURSO_NO_ENCONTRADO
+        mensaje:
+          type: string
+          example: El recurso solicitado no existe.
+        errores:
+          type: object
+          additionalProperties:
+            type: string
+          description: Errores de validación indexados por nombre de campo.
+          example:
+            email: El formato del correo no es válido.
+
+    Message:
+      type: object
+      required: [mensaje]
+      properties:
+        mensaje:
+          type: string
+          example: Si la cuenta existe, enviaremos instrucciones al correo.
+
+    RegistroUsuarioRequest:
+      type: object
+      required:
+        - nombre
+        - email
+        - password
+        - aceptaTerminos
+        - aceptaPrivacidad
+        - versionTerminos
+        - versionPrivacidad
+      properties:
+        nombre:
+          type: string
+          example: Camila Acevedo
+        email:
+          type: string
+          format: email
+          example: camila@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
+          example: contraseñaSegura123
+        aceptaTerminos:
+          type: boolean
+          enum: [true]
+          example: true
+        aceptaPrivacidad:
+          type: boolean
+          enum: [true]
+          example: true
+        versionTerminos:
+          type: string
+          example: '2026-01'
+        versionPrivacidad:
+          type: string
+          example: '2026-01'
+
+    CredencialesRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: camila@example.com
+        password:
+          type: string
+          format: password
+          example: contraseñaSegura123
+
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          example: camila@example.com
+
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+          example: reset_eyJhbGciOiJIUzI1NiJ9
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
+          example: NuevaContraseña123
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, expiresIn]
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock.access
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock.refresh
+        expiresIn:
+          type: integer
+          description: Segundos hasta la expiración del access token
+          example: 3600
+
+    Usuario:
+      type: object
+      required: [id, nombre, email, fechaRegistro]
+      properties:
+        id:
+          type: string
+          example: usr_001
+        nombre:
+          type: string
+          example: Camila Acevedo
+        email:
+          type: string
+          format: email
+          example: camila@example.com
+        fechaRegistro:
+          type: string
+          format: date-time
+          example: '2026-01-10T09:00:00Z'
+
+    PerfilUsuario:
+      type: object
+      required:
+        - usuarioId
+        - nombreCompleto
+        - objetivoGeneral
+        - zonaHoraria
+        - accesibilidad
+        - notificaciones
+      properties:
+        usuarioId:
+          type: string
+          example: usr_001
+        nombreCompleto:
+          type: string
+          example: Camila Acevedo
+        fotoUrl:
+          type: string
+          nullable: true
+          example: https://cdn.habitbuilder.app/avatars/usr_001.png
+        biografia:
+          type: string
+          nullable: true
+          example: Construyendo hábitos saludables un día a la vez.
+        objetivoGeneral:
+          type: string
+          example: Dormir mejor y tener más energía.
+        zonaHoraria:
+          type: string
+          description: Identificador de zona horaria IANA.
+          pattern: '^(UTC|[A-Za-z_]+/[A-Za-z0-9_+-]+)$'
+          example: America/Bogota
+        accesibilidad:
+          $ref: '#/components/schemas/PreferenciasAccesibilidad'
+        notificaciones:
+          $ref: '#/components/schemas/PreferenciasNotificacion'
+
+    PerfilUsuarioRequest:
+      type: object
+      required:
+        - nombreCompleto
+        - objetivoGeneral
+        - zonaHoraria
+        - accesibilidad
+        - notificaciones
+      properties:
+        nombreCompleto:
+          type: string
+        objetivoGeneral:
+          type: string
+        zonaHoraria:
+          type: string
+          description: Identificador de zona horaria IANA.
+          pattern: '^(UTC|[A-Za-z_]+/[A-Za-z0-9_+-]+)$'
+        accesibilidad:
+          $ref: '#/components/schemas/PreferenciasAccesibilidad'
+        notificaciones:
+          $ref: '#/components/schemas/PreferenciasNotificacion'
+
+    PreferenciasAccesibilidad:
+      type: object
+      required: [lectorTexto, tamanoTexto, altoContraste]
+      properties:
+        lectorTexto:
+          type: boolean
+          example: false
+        tamanoTexto:
+          type: string
+          enum: [pequeno, mediano, grande]
+          example: mediano
+        altoContraste:
+          type: boolean
+          example: false
+
+    PreferenciasNotificacion:
+      type: object
+      required: [habilitadas, recordatoriosHabitos, resumenSemanal]
+      properties:
+        habilitadas:
+          type: boolean
+          example: true
+        recordatoriosHabitos:
+          type: boolean
+          example: true
+        resumenSemanal:
+          type: boolean
+          example: true
+
+    Categoria:
+      type: object
+      required: [id, nombre]
+      properties:
+        id:
+          type: string
+          example: cat_salud
+        nombre:
+          type: string
+          example: Salud física
+        colorHex:
+          type: string
+          example: '#4CAF50'
+        icono:
+          type: string
+          example: fitness_center
+
+    FrecuenciaTipo:
+      type: string
+      enum: [diaria, dias_semana, veces_periodo]
+
+    Frecuencia:
+      oneOf:
+        - $ref: '#/components/schemas/FrecuenciaDiaria'
+        - $ref: '#/components/schemas/FrecuenciaDiasSemana'
+        - $ref: '#/components/schemas/FrecuenciaVecesPeriodo'
+      discriminator:
+        propertyName: tipo
+        mapping:
+          diaria: '#/components/schemas/FrecuenciaDiaria'
+          dias_semana: '#/components/schemas/FrecuenciaDiasSemana'
+          veces_periodo: '#/components/schemas/FrecuenciaVecesPeriodo'
+
+    FrecuenciaDiaria:
+      type: object
+      required: [tipo]
+      properties:
+        tipo:
+          type: string
+          enum: [diaria]
+
+    FrecuenciaDiasSemana:
+      type: object
+      required: [tipo, diasSemana]
+      properties:
+        tipo:
+          type: string
+          enum: [dias_semana]
+        diasSemana:
+          type: array
+          description: 'Días únicos de la semana (1=lunes ... 7=domingo).'
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          example: [1, 3, 5]
+
+    PeriodoFrecuencia:
+      type: string
+      enum: [semana, mes]
+
+    FrecuenciaVecesPeriodo:
+      type: object
+      required: [tipo, veces, periodo]
+      properties:
+        tipo:
+          type: string
+          enum: [veces_periodo]
+        veces:
+          type: integer
+          minimum: 1
+          maximum: 31
+          example: 3
+        periodo:
+          $ref: '#/components/schemas/PeriodoFrecuencia'
+
+    HabitoEstado:
+      type: string
+      enum: [activo, pausado, completado]
+
+    Habito:
+      type: object
+      required:
+        - id
+        - usuarioId
+        - nombre
+        - fechaInicio
+        - frecuencia
+        - estado
+        - pausas
+        - fechaCreacion
+        - fechaActualizacion
+      properties:
+        id:
+          type: string
+          example: hab_001
+        usuarioId:
+          type: string
+          example: usr_001
+        nombre:
+          type: string
+          example: Meditar 10 minutos
+        descripcion:
+          type: string
+          nullable: true
+          example: Meditación guiada al despertar
+        categoriaId:
+          type: string
+          nullable: true
+          example: cat_salud
+        metaId:
+          type: string
+          nullable: true
+          example: meta_001
+        fechaInicio:
+          type: string
+          format: date
+          example: '2026-07-28'
+        frecuencia:
+          $ref: '#/components/schemas/Frecuencia'
+        estado:
+          $ref: '#/components/schemas/HabitoEstado'
+        pausas:
+          type: array
+          items:
+            $ref: '#/components/schemas/PausaHabito'
+        fechaCompletado:
+          type: string
+          format: date-time
+          nullable: true
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: '2026-01-12T08:00:00Z'
+        fechaActualizacion:
+          type: string
+          format: date-time
+          example: '2026-07-28T14:30:00Z'
+
+    HabitoCreateRequest:
+      type: object
+      required: [nombre, fechaInicio, frecuencia]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 120
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 500
+        categoriaId:
+          type: string
+          nullable: true
+        metaId:
+          type: string
+          nullable: true
+        fechaInicio:
+          type: string
+          format: date
+        frecuencia:
+          $ref: '#/components/schemas/Frecuencia'
+
+    HabitoUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 120
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 500
+        categoriaId:
+          type: string
+          nullable: true
+        metaId:
+          type: string
+          nullable: true
+        fechaInicio:
+          type: string
+          format: date
+        frecuencia:
+          $ref: '#/components/schemas/Frecuencia'
+
+    PausaHabitoRequest:
+      type: object
+      required: [fechaInicio]
+      properties:
+        fechaInicio:
+          type: string
+          format: date
+          example: '2026-08-01'
+        fechaFin:
+          type: string
+          format: date
+          nullable: true
+          description: Si se omite, la pausa queda abierta hasta reanudar.
+
+    PausaHabito:
+      allOf:
+        - $ref: '#/components/schemas/PausaHabitoRequest'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              example: pause_001
+
+    MetaEstado:
+      type: string
+      enum: [en_progreso, lograda, pausada, cancelada]
+
+    Meta:
+      type: object
+      required:
+        - id
+        - usuarioId
+        - nombre
+        - estado
+        - habitoIds
+        - progresoPorcentaje
+        - fechaCreacion
+        - fechaActualizacion
+      properties:
+        id:
+          type: string
+          example: meta_001
+        usuarioId:
+          type: string
+          example: usr_001
+        nombre:
+          type: string
+          example: Reducir el estrés
+        descripcion:
+          type: string
+          nullable: true
+          example: Incorporar prácticas diarias de bienestar mental
+        fechaObjetivo:
+          type: string
+          format: date
+          nullable: true
+          example: '2026-12-31'
+        estado:
+          $ref: '#/components/schemas/MetaEstado'
+        habitoIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          example: [hab_001, hab_002]
+        progresoPorcentaje:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          readOnly: true
+          description: Porcentaje de hábitos vinculados que están completados.
+          example: 50
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: '2026-07-28T14:00:00Z'
+        fechaActualizacion:
+          type: string
+          format: date-time
+          example: '2026-07-28T14:30:00Z'
+
+    MetaCreateRequest:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 120
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 500
+        fechaObjetivo:
+          type: string
+          format: date
+          nullable: true
+        habitoIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+
+    MetaUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 120
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 500
+        fechaObjetivo:
+          type: string
+          format: date
+          nullable: true
+        estado:
+          $ref: '#/components/schemas/MetaEstado'
+
+    Recordatorio:
+      type: object
+      required: [id, habitoId, mensaje, hora, diasSemana, activo]
+      properties:
+        id:
+          type: string
+          example: rec_001
+        habitoId:
+          type: string
+          example: hab_001
+        mensaje:
+          type: string
+          minLength: 1
+          pattern: '.*\S.*'
+          example: Hora de leer
+        hora:
+          type: string
+          description: Hora en formato HH:mm (24h)
+          minLength: 5
+          maxLength: 5
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+          example: '07:00'
+        diasSemana:
+          type: array
+          description: 'Días ISO únicos (1=lunes ... 7=domingo).'
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          example: [1, 2, 3, 4, 5]
+        activo:
+          type: boolean
+          example: true
+
+    RecordatorioRequest:
+      type: object
+      required: [mensaje, hora, diasSemana, activo]
+      properties:
+        mensaje:
+          type: string
+          minLength: 1
+          pattern: '.*\S.*'
+          example: Hora de leer
+        hora:
+          type: string
+          description: Hora estricta en formato HH:mm (24h)
+          minLength: 5
+          maxLength: 5
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+          example: '07:00'
+        diasSemana:
+          type: array
+          description: 'Días ISO únicos (1=lunes ... 7=domingo).'
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+        activo:
+          type: boolean
+
+    RegistroHabito:
+      type: object
+      required: [id, habitoId, fecha, estado]
+      properties:
+        id:
+          type: string
+          example: log_001
+        habitoId:
+          type: string
+          example: hab_001
+        fecha:
+          type: string
+          format: date
+          example: '2026-07-24'
+        estado:
+          $ref: '#/components/schemas/EstadoRegistro'
+        nota:
+          type: string
+          nullable: true
+          example: Sesión completa sin interrupciones
+
+    RegistroHabitoRequest:
+      type: object
+      required: [fecha, estado]
+      properties:
+        fecha:
+          type: string
+          format: date
+        estado:
+          $ref: '#/components/schemas/EstadoRegistro'
+        nota:
+          type: string
+          nullable: true
+          maxLength: 240
+
+    EstadoRegistro:
+      type: string
+      enum: [completado, parcial, omitido]
+
+    Racha:
+      type: object
+      required: [habitoId, rachaActual, rachaMasLarga]
+      properties:
+        habitoId:
+          type: string
+          example: hab_001
+        rachaActual:
+          type: integer
+          example: 5
+        rachaMasLarga:
+          type: integer
+          example: 12
+        ultimaFecha:
+          type: string
+          format: date
+          nullable: true
+          example: '2026-07-24'
+
+    ProgresoResponse:
+      type: object
+      description: Progreso calculado de un hábito para el periodo solicitado.
+      required: [habitoId, periodoDesde, periodoHasta, rachaActual, rachaMasLarga, porcentaje, estado]
+      properties:
+        habitoId:
+          type: string
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
+        periodoDesde:
+          type: string
+          format: date
+          example: '2026-07-27'
+        periodoHasta:
+          type: string
+          format: date
+          example: '2026-08-02'
+        rachaActual:
+          type: integer
+          minimum: 0
+          example: 12
+        rachaMasLarga:
+          type: integer
+          minimum: 0
+          example: 28
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 84
+        estado:
+          type: string
+          enum: [con_datos, sin_datos]
+          example: con_datos
+
+    EstadisticasResponse:
+      type: object
+      description: Estadísticas agregadas para el periodo y filtros solicitados.
+      required: [periodoDesde, periodoHasta, porcentaje, mejorRacha, masConsistentes, masOmitidos, estado]
+      properties:
+        periodoDesde:
+          type: string
+          format: date
+          example: '2026-07-27'
+        periodoHasta:
+          type: string
+          format: date
+          example: '2026-08-02'
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 84
+        mejorRacha:
+          type: integer
+          minimum: 0
+          example: 12
+        masConsistentes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+        masOmitidos:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+        estado:
+          type: string
+          enum: [con_datos, insuficiente]
+          example: con_datos
+
+    EstadisticaHabito:
+      type: object
+      required: [habitoId, nombre, porcentaje, rachaMasLarga, totalHecho, totalOmitido]
+      properties:
+        habitoId:
+          type: string
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
+        nombre:
+          type: string
+          example: Leer 20 minutos
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 92
+        rachaMasLarga:
+          type: integer
+          minimum: 0
+          example: 12
+        totalHecho:
+          type: integer
+          minimum: 0
+          example: 28
+        totalOmitido:
+          type: integer
+          minimum: 0
+          example: 3
+
+    Estadistica:
+      type: object
+      required: [habitoId, totalRegistros, totalCompletados, promedioCumplimiento, periodo]
+      properties:
+        habitoId:
+          type: string
+          example: hab_001
+        totalRegistros:
+          type: integer
+          example: 30
+        totalCompletados:
+          type: integer
+          example: 24
+        promedioCumplimiento:
+          type: number
+          format: double
+          example: 0.8
+        periodo:
+          type: string
+          example: ultimos_30_dias
