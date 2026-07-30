@@ -90,6 +90,41 @@ void main() {
     expect(record.sincronizacion, EstadoSincronizacion.sincronizado);
   });
 
+  test(
+    'keeps the queued identity when the response identity is inconsistent',
+    () async {
+      final draft = _draft();
+      final write = PendingTrackingWrite(draft: draft);
+      await local.savePending(draft);
+      final inconsistent = RegistroHabito(
+        id: 'server-log-1',
+        habitId: 'unexpected-habit',
+        fecha: DateTime(2030, 1, 1),
+        estado: EstadoRegistro.parcial,
+      );
+
+      expect(await local.markSynced(write, inconsistent), isTrue);
+
+      final record = (await local.listByHabit(
+        draft.habitId,
+        from: draft.fecha,
+        to: draft.fecha,
+      )).single;
+      expect(record.id, inconsistent.id);
+      expect(record.habitId, draft.habitId);
+      expect(record.fecha, draft.fecha);
+      expect(record.sincronizacion, EstadoSincronizacion.sincronizado);
+      expect(
+        await local.listByHabit(
+          inconsistent.habitId,
+          from: inconsistent.fecha,
+          to: inconsistent.fecha,
+        ),
+        isEmpty,
+      );
+    },
+  );
+
   test('persists conflicts and a new edit makes them retryable', () async {
     final draft = _draft();
     final write = PendingTrackingWrite(draft: draft);
