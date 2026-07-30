@@ -50,17 +50,15 @@ void main() {
       );
 
       expect(request.toJson(), {
-        'nombre': 'Dormir mejor',
         'descripcion': 'Descansar ocho horas',
         'fechaObjetivo': '2026-12-31',
-        'habitoIds': ['habit-1', 'habit-2'],
       });
     });
 
     test('omits nullable and empty optional fields', () {
       final request = MetaCreateRequestDto(nombre: 'Leer mas');
 
-      expect(request.toJson(), {'nombre': 'Leer mas'});
+      expect(request.toJson(), {'descripcion': 'Leer mas'});
     });
   });
 
@@ -92,11 +90,10 @@ void main() {
       );
 
       expect(request.toJson(), {
-        'nombre': 'Nuevo nombre',
         'descripcion': 'Nueva descripcion',
         'fechaObjetivo': '2027-01-15',
-        'estado': 'cancelada',
       });
+      expect(request.stateJson(), {'estado': 'cancelada'});
     });
   });
 }

@@ -59,6 +59,18 @@ For an Android emulator:
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4010
 ```
 
+To run against the real backend contract, start `habitbuilder-backend` and
+use its local port instead of the Prism port:
+
+```powershell
+flutter run --dart-define=API_BASE_URL=http://localhost:8080
+```
+
+The mobile client sends the backend's `/v1` routes, stores the single session
+token returned by login, and clears the local session on HTTP 401 because the
+backend does not expose a refresh-token endpoint. Categories remain a local
+frontend catalog because the backend stores `categoria` as a free-form value.
+
 ## Architecture
 
 ```text
@@ -85,9 +97,9 @@ functional auth and profile code belongs to HBM-8 and HBM-9.
 
 ## Security
 
-- Access and refresh tokens are stored only with `flutter_secure_storage`.
-- The Dio interceptor attempts one refresh after a 401.
-- Failed refresh clears the local session.
+- The access token is stored only with `flutter_secure_storage`.
+- The backend currently has no refresh-token endpoint; HTTP 401 clears the
+  local session.
 - HTTP logs omit headers, request bodies, response bodies and error payloads.
 - Secrets and credentials must never be committed or printed.
 

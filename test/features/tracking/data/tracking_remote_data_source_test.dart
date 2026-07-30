@@ -41,18 +41,15 @@ void main() {
     expect(listed.single.id, 'log-1');
     expect(saved.estado, EstadoRegistro.completado);
     expect(requests[0].method, 'GET');
-    expect(requests[0].path, '/habits/habit%20with%20spaces/logs');
+    expect(requests[0].path, '/v1/habitos/habit%20with%20spaces/registros');
     expect(requests[0].queryParameters, {
       'desde': '2026-07-01',
       'hasta': '2026-07-31',
     });
     expect(requests[1].method, 'POST');
-    expect(
-      requests[1].headers['Idempotency-Key'],
-      'habit with spaces:2026-07-30',
-    );
+    expect(requests[1].headers['Idempotency-Key'], isNull);
     expect(requests[1].data, {
-      'fecha': '2026-07-30',
+      'fechaLocal': '2026-07-30',
       'estado': 'parcial',
       'nota': 'Media sesion',
     });
@@ -115,8 +112,8 @@ Map<String, dynamic> _recordJson() {
   return {
     'id': 'log-1',
     'habitoId': 'habit-1',
-    'fecha': '2026-07-30',
-    'estado': 'completado',
+    'fechaLocal': '2026-07-30',
+    'estado': 'hecho',
     'nota': null,
   };
 }

@@ -36,5 +36,5 @@ abstract interface class GoalRepository {
 
   Future<Meta> linkHabit(String goalId, String habitId);
 
-  Future<Meta> unlinkHabit(String goalId, String habitId);
+  Future<void> unlinkHabit(String goalId, String habitId);
 }

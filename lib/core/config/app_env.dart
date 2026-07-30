@@ -1,11 +1,10 @@
 /// Runtime configuration for the HabitBuilder mobile client.
 ///
 /// Values are injected at build/run time via `--dart-define`, e.g.:
-///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4010
+///   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ///
-/// The default points at the local Prism mock server (see
-/// `docs/openapi.yaml` and `npm run mock:api`) so the app is never blocked
-/// on the real backend.
+/// The default remains the local mock for UI-only work. Use the backend's
+/// port 8080 explicitly for the real `/v1` contract.
 abstract final class AppEnv {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',

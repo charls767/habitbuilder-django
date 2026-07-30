@@ -16,7 +16,7 @@ class TrackingRemoteDataSource {
   }) {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
-        '/habits/${Uri.encodeComponent(habitId)}/logs',
+        '/v1/habitos/${Uri.encodeComponent(habitId)}/registros',
         queryParameters: {
           'desde': formatLocalDate(from),
           'hasta': formatLocalDate(to),
@@ -36,9 +36,8 @@ class TrackingRemoteDataSource {
   ) {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits/${Uri.encodeComponent(draft.habitId)}/logs',
+        '/v1/habitos/${Uri.encodeComponent(draft.habitId)}/registros',
         data: request.toJson(),
-        options: Options(headers: {'Idempotency-Key': draft.idempotencyKey}),
       );
       return RegistroHabitoDto.fromJson(response.data!);
     });

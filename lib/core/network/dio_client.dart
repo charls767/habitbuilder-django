@@ -15,15 +15,15 @@ BaseOptions _baseOptions() => BaseOptions(
   headers: const {'Content-Type': 'application/json'},
 );
 
-/// Bare Dio instance with no interceptors, used by [JwtInterceptor] to call
-/// `/auth/refresh` and to retry the original request without recursing back
-/// into itself.
+/// Bare Dio instance retained for compatibility with the network provider.
+/// The current backend has no refresh endpoint.
 @Riverpod(keepAlive: true)
 Dio refreshDio(Ref ref) => Dio(_baseOptions());
 
 /// The Dio client every feature's remote data source should depend on.
 ///
-/// Wires the JWT interceptor (attaches the access token, refreshes on 401)
+/// Wires the JWT interceptor (attaches the access token and closes the session
+/// on 401)
 /// and, outside of release builds, request/response logging.
 @Riverpod(keepAlive: true)
 Dio dio(Ref ref) {

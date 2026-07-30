@@ -11,17 +11,20 @@ class HabitRemoteDataSource {
   final Dio _dio;
 
   Future<List<CategoriaDto>> listCategories() async {
-    return runApiCall(() async {
-      final response = await _dio.get<List<dynamic>>('/categories');
-      return response.data!
-          .map((item) => CategoriaDto.fromJson(item as Map<String, dynamic>))
-          .toList();
-    });
+    // The backend stores categoria as a free-form string and does not expose
+    // a category endpoint. Keep the picker useful without a guaranteed 404.
+    return const [
+      CategoriaDto(id: 'salud', nombre: 'Salud'),
+      CategoriaDto(id: 'estudio', nombre: 'Estudio'),
+      CategoriaDto(id: 'trabajo', nombre: 'Trabajo'),
+      CategoriaDto(id: 'bienestar', nombre: 'Bienestar'),
+      CategoriaDto(id: 'personal', nombre: 'Personal'),
+    ];
   }
 
   Future<List<MetaOptionDto>> listGoalOptions() async {
     return runApiCall(() async {
-      final response = await _dio.get<List<dynamic>>('/goals');
+      final response = await _dio.get<List<dynamic>>('/v1/metas');
       return response.data!
           .map((item) => MetaOptionDto.fromJson(item as Map<String, dynamic>))
           .toList();
@@ -30,19 +33,21 @@ class HabitRemoteDataSource {
 
   Future<List<HabitoDto>> listHabits({String? estado}) async {
     return runApiCall(() async {
-      final response = await _dio.get<List<dynamic>>(
-        '/habits',
-        queryParameters: estado == null ? null : {'estado': estado},
-      );
-      return response.data!
+      final response = await _dio.get<List<dynamic>>('/v1/habitos');
+      final habits = response.data!
           .map((item) => HabitoDto.fromJson(item as Map<String, dynamic>))
           .toList();
+      return estado == null
+          ? habits
+          : habits.where((habit) => habit.estado.apiValue == estado).toList();
     });
   }
 
   Future<HabitoDto> getHabit(String habitId) async {
     return runApiCall(() async {
-      final response = await _dio.get<Map<String, dynamic>>('/habits/$habitId');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/habitos/$habitId',
+      );
       return HabitoDto.fromJson(response.data!);
     });
   }
@@ -50,7 +55,7 @@ class HabitRemoteDataSource {
   Future<HabitoDto> createHabit(HabitoCreateRequestDto request) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits',
+        '/v1/habitos',
         data: request.toJson(),
       );
       return HabitoDto.fromJson(response.data!);
@@ -63,7 +68,7 @@ class HabitRemoteDataSource {
   ) async {
     return runApiCall(() async {
       final response = await _dio.patch<Map<String, dynamic>>(
-        '/habits/$habitId',
+        '/v1/habitos/$habitId',
         data: request.toJson(),
       );
       return HabitoDto.fromJson(response.data!);
@@ -77,10 +82,10 @@ class HabitRemoteDataSource {
   }) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits/$habitId/pause',
+        '/v1/habitos/$habitId/pausar',
         data: {
-          'fechaInicio': _formatDate(fechaInicio),
-          if (fechaFin != null) 'fechaFin': _formatDate(fechaFin),
+          'inicio': _formatDate(fechaInicio),
+          if (fechaFin != null) 'fin': _formatDate(fechaFin),
         },
       );
       return HabitoDto.fromJson(response.data!);
@@ -90,7 +95,7 @@ class HabitRemoteDataSource {
   Future<HabitoDto> resumeHabit(String habitId) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits/$habitId/resume',
+        '/v1/habitos/$habitId/reanudar',
       );
       return HabitoDto.fromJson(response.data!);
     });
@@ -99,14 +104,14 @@ class HabitRemoteDataSource {
   Future<HabitoDto> completeHabit(String habitId) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits/$habitId/complete',
+        '/v1/habitos/$habitId/completar',
       );
       return HabitoDto.fromJson(response.data!);
     });
   }
 
   Future<void> deleteHabit(String habitId) async {
-    await runApiCall(() => _dio.delete<void>('/habits/$habitId'));
+    await runApiCall(() => _dio.delete<void>('/v1/habitos/$habitId'));
   }
 }
 

@@ -34,42 +34,39 @@ void main() {
       ),
     );
 
-    expect(profile.usuarioId, 'user-1');
+    expect(profile.usuarioId, isEmpty);
     expect(updated.accessibility.textSize, TextSizePreference.large);
     expect(requests.map((request) => request.method), ['GET', 'PATCH']);
-    expect(requests.last.path, '/users/me');
+    expect(requests.last.path, '/v1/usuarios/me');
     final patch = requests.last.data! as Map<String, dynamic>;
     expect(patch['zonaHoraria'], 'Europe/Madrid');
     expect(patch['accesibilidad'], {
-      'lectorTexto': true,
-      'tamanoTexto': 'grande',
-      'altoContraste': true,
+      'ttsHabilitado': true,
+      'tamanoTexto': 'extra_grande',
+      'contrasteAlto': true,
     });
     expect(patch['notificaciones'], {
-      'habilitadas': true,
-      'recordatoriosHabitos': false,
-      'resumenSemanal': true,
+      'recordatoriosHabilitados': false,
+      'resumenProgresoHabilitado': true,
     });
   });
 }
 
 Map<String, dynamic> _profileJson() {
   return {
-    'usuarioId': 'user-1',
-    'nombreCompleto': 'Camila Acevedo',
+    'nombre': 'Camila Acevedo',
     'objetivoGeneral': 'Dormir mejor',
     'zonaHoraria': 'America/Bogota',
     'fotoUrl': null,
     'biografia': 'Building better habits.',
     'accesibilidad': {
-      'lectorTexto': true,
-      'tamanoTexto': 'grande',
-      'altoContraste': true,
+      'ttsHabilitado': true,
+      'tamanoTexto': 'extra_grande',
+      'contrasteAlto': true,
     },
     'notificaciones': {
-      'habilitadas': true,
-      'recordatoriosHabitos': false,
-      'resumenSemanal': true,
+      'recordatoriosHabilitados': false,
+      'resumenProgresoHabilitado': true,
     },
   };
 }

@@ -13,7 +13,7 @@ class RegistroHabitoDto {
     return RegistroHabitoDto(
       id: json['id'] as String,
       habitId: json['habitoId'] as String,
-      fecha: DateTime.parse(json['fecha'] as String),
+      fecha: DateTime.parse((json['fechaLocal'] ?? json['fecha']) as String),
       estado: EstadoRegistro.fromApiValue(json['estado'] as String),
       nota: json['nota'] as String?,
     );
@@ -54,7 +54,7 @@ class RegistroHabitoRequestDto {
   final String? nota;
 
   Map<String, dynamic> toJson() => {
-    'fecha': formatLocalDate(fecha),
+    'fechaLocal': formatLocalDate(fecha),
     'estado': estado.apiValue,
     'nota': nota,
   };

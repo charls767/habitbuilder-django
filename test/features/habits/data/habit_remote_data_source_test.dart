@@ -16,27 +16,14 @@ void main() {
       final dio = Dio()
         ..httpClientAdapter = _CallbackAdapter((options) {
           requests.add(options);
-          if (options.path == '/categories') {
-            return _jsonResponse(200, [
-              {
-                'id': 'cat-1',
-                'nombre': 'Salud',
-                'colorHex': '#00FF00',
-                'icono': 'fitness',
-              },
-            ]);
-          }
-          if (options.path == '/goals') {
+          if (options.path == '/v1/metas') {
             return _jsonResponse(200, [
               {
                 'id': 'goal-1',
-                'usuarioId': 'user-1',
-                'nombre': 'Dormir mejor',
+                'descripcion': 'Dormir mejor',
+                'fechaObjetivo': '2026-12-31',
                 'estado': 'en_progreso',
-                'habitoIds': <String>[],
-                'progresoPorcentaje': 0,
-                'fechaCreacion': '2026-07-01T00:00:00Z',
-                'fechaActualizacion': '2026-07-28T00:00:00Z',
+                'creadoEn': '2026-07-01T00:00:00Z',
               },
             ]);
           }
@@ -45,7 +32,7 @@ void main() {
           }
           return _jsonResponse(
             options.method == 'POST' ? 201 : 200,
-            options.path == '/habits' && options.method == 'GET'
+            options.path == '/v1/habitos' && options.method == 'GET'
                 ? [_habitJson()]
                 : _habitJson(),
           );
@@ -69,7 +56,7 @@ void main() {
       );
       await dataSource.deleteHabit('habit-1');
 
-      expect(categories.single.id, 'cat-1');
+      expect(categories.first.id, 'salud');
       expect(goals.single.nombre, 'Dormir mejor');
       expect(habits.single.id, 'habit-1');
       expect(habit.id, 'habit-1');
@@ -77,21 +64,20 @@ void main() {
       expect(updated.id, 'habit-1');
 
       expect(requests.map((request) => '${request.method} ${request.path}'), [
-        'GET /categories',
-        'GET /goals',
-        'GET /habits',
-        'GET /habits/habit-1',
-        'POST /habits',
-        'PATCH /habits/habit-1',
-        'DELETE /habits/habit-1',
+        'GET /v1/metas',
+        'GET /v1/habitos',
+        'GET /v1/habitos/habit-1',
+        'POST /v1/habitos',
+        'PATCH /v1/habitos/habit-1',
+        'DELETE /v1/habitos/habit-1',
       ]);
-      expect(requests[2].queryParameters, {'estado': 'activo'});
-      expect(requests[4].data, {
+      expect(requests[1].queryParameters, isEmpty);
+      expect(requests[3].data, {
         'nombre': 'Leer',
         'fechaInicio': '2026-07-28',
         'frecuencia': {'tipo': 'diaria'},
       });
-      expect(requests[5].data, {'nombre': 'Leer mas'});
+      expect(requests[4].data, {'nombre': 'Leer mas'});
     },
   );
 

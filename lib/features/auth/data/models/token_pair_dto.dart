@@ -1,18 +1,26 @@
-/// Wire shape for the `TokenPair` schema in `docs/openapi.yaml`.
+/// Wire shape for the backend `SesionResponse` schema.
 class TokenPairDto {
   const TokenPairDto({
     required this.accessToken,
-    required this.refreshToken,
-    required this.expiresIn,
+    this.refreshToken,
+    this.expiresIn,
   });
 
-  factory TokenPairDto.fromJson(Map<String, dynamic> json) => TokenPairDto(
-    accessToken: json['accessToken'] as String,
-    refreshToken: json['refreshToken'] as String,
-    expiresIn: json['expiresIn'] as int,
-  );
+  factory TokenPairDto.fromJson(Map<String, dynamic> json) {
+    final expiration = json['expiraEn'] as String?;
+    final expiresIn = expiration == null
+        ? json['expiresIn'] as int?
+        : DateTime.parse(
+            expiration,
+          ).difference(DateTime.now().toUtc()).inSeconds;
+    return TokenPairDto(
+      accessToken: (json['token'] ?? json['accessToken']) as String,
+      refreshToken: json['refreshToken'] as String?,
+      expiresIn: expiresIn,
+    );
+  }
 
   final String accessToken;
-  final String refreshToken;
-  final int expiresIn;
+  final String? refreshToken;
+  final int? expiresIn;
 }

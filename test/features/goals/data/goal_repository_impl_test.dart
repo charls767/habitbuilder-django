@@ -58,7 +58,7 @@ void main() {
   });
 
   test(
-    'creates a goal with unique habit ids and exact editable fields',
+    'creates a goal using the backend description and target date',
     () async {
       when(() => remote.createGoal(any())).thenAnswer((_) async => _goalDto());
 
@@ -74,10 +74,8 @@ void main() {
               as MetaCreateRequestDto;
       expect(goal.id, 'goal-1');
       expect(request.toJson(), {
-        'nombre': 'Dormir mejor',
         'descripcion': 'Ocho horas',
         'fechaObjetivo': '2026-12-31',
-        'habitoIds': ['habit-1', 'habit-2'],
       });
     },
   );
@@ -104,10 +102,8 @@ void main() {
               as MetaUpdateRequestDto;
       expect(goal.id, 'goal-1');
       expect(request.toJson(), {
-        'nombre': 'Dormir profundamente',
-        'descripcion': null,
+        'descripcion': 'Dormir profundamente',
         'fechaObjetivo': null,
-        'estado': 'lograda',
       });
     },
   );
@@ -158,16 +154,14 @@ void main() {
     verify(() => remote.linkHabit('goal-1', 'habit-2')).called(1);
   });
 
-  test('unlinks a habit and maps the authoritative returned goal', () async {
+  test('unlinks a habit and delegates the no-content response', () async {
     when(
       () => remote.unlinkHabit('goal-1', 'habit-1'),
-    ).thenAnswer((_) async => _goalDto(habitoIds: const []));
+    ).thenAnswer((_) async {});
 
-    final goal = await repository.unlinkHabit('goal-1', 'habit-1');
+    await repository.unlinkHabit('goal-1', 'habit-1');
 
-    expect(goal.habitoIds, isEmpty);
     verify(() => remote.unlinkHabit('goal-1', 'habit-1')).called(1);
-    verifyNever(() => remote.getGoal(any()));
   });
 
   test('preserves normalized datasource errors unchanged', () async {

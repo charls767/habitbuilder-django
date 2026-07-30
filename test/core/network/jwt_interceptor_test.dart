@@ -49,56 +49,21 @@ void main() {
     );
   });
 
-  test('refreshes tokens and retries once after a 401', () async {
-    final storage = _MemoryTokenStorage(
-      accessToken: 'expired',
-      refreshToken: 'refresh-one',
-    );
-    var protectedCalls = 0;
-    final mainDio = Dio()
-      ..httpClientAdapter = _CallbackAdapter((options) {
-        protectedCalls++;
-        return _jsonResponse(401, '{"mensaje":"expired"}');
-      });
-    final refreshDio = Dio()
-      ..httpClientAdapter = _CallbackAdapter((options) {
-        if (options.path == '/auth/refresh') {
-          expect(options.data, {'refreshToken': 'refresh-one'});
-          return _jsonResponse(
-            200,
-            '{"accessToken":"access-two","refreshToken":"refresh-two"}',
-          );
-        }
-        expect(options.headers['Authorization'], 'Bearer access-two');
-        return _jsonResponse(200, '{"retried":true}');
-      });
-    mainDio.interceptors.add(
-      JwtInterceptor(
-        tokenStorage: storage,
-        refreshDio: refreshDio,
-        onUnauthenticated: () async {},
-      ),
-    );
-
-    final response = await mainDio.get<Map<String, dynamic>>('/protected');
-
-    expect(protectedCalls, 1);
-    expect(response.data, {'retried': true});
-    expect(await storage.readAccessToken(), 'access-two');
-    expect(await storage.readRefreshToken(), 'refresh-two');
-  });
-
   test(
-    'marks the session unauthenticated when no refresh token exists',
+    'ends the session on a 401 because refresh is not in the API contract',
     () async {
+      final storage = _MemoryTokenStorage(
+        accessToken: 'expired',
+        refreshToken: 'refresh-one',
+      );
       var unauthenticated = false;
-      final dio = Dio()
+      final mainDio = Dio()
         ..httpClientAdapter = _CallbackAdapter(
-          (options) => _jsonResponse(401, '{}'),
+          (options) => _jsonResponse(401, '{"mensaje":"expired"}'),
         );
-      dio.interceptors.add(
+      mainDio.interceptors.add(
         JwtInterceptor(
-          tokenStorage: _MemoryTokenStorage(accessToken: 'expired'),
+          tokenStorage: storage,
           refreshDio: Dio(),
           onUnauthenticated: () async {
             unauthenticated = true;
@@ -107,14 +72,38 @@ void main() {
       );
 
       await expectLater(
-        dio.get<Map<String, dynamic>>('/protected'),
+        mainDio.get<Map<String, dynamic>>('/protected'),
         throwsA(isA<DioException>()),
       );
       expect(unauthenticated, isTrue);
+      expect(await storage.readAccessToken(), 'expired');
     },
   );
 
-  test('clears the session when refresh fails', () async {
+  test('marks the session unauthenticated for an expired token', () async {
+    var unauthenticated = false;
+    final dio = Dio()
+      ..httpClientAdapter = _CallbackAdapter(
+        (options) => _jsonResponse(401, '{}'),
+      );
+    dio.interceptors.add(
+      JwtInterceptor(
+        tokenStorage: _MemoryTokenStorage(accessToken: 'expired'),
+        refreshDio: Dio(),
+        onUnauthenticated: () async {
+          unauthenticated = true;
+        },
+      ),
+    );
+
+    await expectLater(
+      dio.get<Map<String, dynamic>>('/protected'),
+      throwsA(isA<DioException>()),
+    );
+    expect(unauthenticated, isTrue);
+  });
+
+  test('clears the session when the API rejects the token', () async {
     final storage = _MemoryTokenStorage(
       accessToken: 'expired',
       refreshToken: 'bad-refresh',
@@ -124,14 +113,10 @@ void main() {
       ..httpClientAdapter = _CallbackAdapter(
         (options) => _jsonResponse(401, '{}'),
       );
-    final refreshDio = Dio()
-      ..httpClientAdapter = _CallbackAdapter(
-        (options) => _jsonResponse(401, '{}'),
-      );
     dio.interceptors.add(
       JwtInterceptor(
         tokenStorage: storage,
-        refreshDio: refreshDio,
+        refreshDio: Dio(),
         onUnauthenticated: () async {
           unauthenticated = true;
           await storage.clear();

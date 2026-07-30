@@ -1,11 +1,14 @@
 enum TextSizePreference {
-  small('pequeno', 'Pequeño', 0.9),
-  medium('mediano', 'Mediano', 1),
-  large('grande', 'Grande', 1.15);
+  small('normal', 'Normal', 0.9),
+  medium('grande', 'Grande', 1),
+  large('extra_grande', 'Extra grande', 1.15);
 
   const TextSizePreference(this.apiValue, this.label, this.scaleFactor);
 
   factory TextSizePreference.fromApiValue(String? value) {
+    if (value == 'pequeno' || value == 'mediano') {
+      return value == 'pequeno' ? small : medium;
+    }
     return values.firstWhere(
       (preference) => preference.apiValue == value,
       orElse: () => medium,

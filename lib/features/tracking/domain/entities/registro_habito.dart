@@ -1,11 +1,12 @@
 enum EstadoRegistro {
-  completado('completado'),
+  completado('hecho'),
   parcial('parcial'),
   omitido('omitido');
 
   const EstadoRegistro(this.apiValue);
 
   factory EstadoRegistro.fromApiValue(String value) {
+    if (value == 'completado') return completado;
     return values.firstWhere(
       (estado) => estado.apiValue == value,
       orElse: () =>

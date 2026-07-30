@@ -13,11 +13,8 @@ void main() {
     final dio = Dio()
       ..httpClientAdapter = _CallbackAdapter((options) {
         requests.add(options);
-        if (options.path == '/goals' && options.method == 'GET') {
+        if (options.path == '/v1/metas' && options.method == 'GET') {
           return _jsonResponse(200, [_goalJson()]);
-        }
-        if (options.path == '/goals/goal-delete') {
-          return ResponseBody.fromString('', 204);
         }
         return _jsonResponse(options.method == 'POST' ? 201 : 200, _goalJson());
       });
@@ -39,33 +36,32 @@ void main() {
     );
     await source.deleteGoal('goal-delete');
     final linked = await source.linkHabit('goal-1', 'habit-2');
-    final unlinked = await source.unlinkHabit('goal-1', 'habit-2');
+    await source.unlinkHabit('goal-1', 'habit-2');
 
     expect(goals.single.id, 'goal-1');
     expect(goal.id, 'goal-1');
     expect(created.id, 'goal-1');
     expect(updated.id, 'goal-1');
     expect(linked.habitoIds, ['habit-1']);
-    expect(unlinked.habitoIds, ['habit-1']);
     expect(requests.map((request) => '${request.method} ${request.path}'), [
-      'GET /goals',
-      'GET /goals/goal-1',
-      'POST /goals',
-      'PATCH /goals/goal-1',
-      'DELETE /goals/goal-delete',
-      'PUT /goals/goal-1/habits/habit-2',
-      'DELETE /goals/goal-1/habits/habit-2',
+      'GET /v1/metas',
+      'GET /v1/metas/goal-1',
+      'POST /v1/metas',
+      'GET /v1/metas/goal-1',
+      'PATCH /v1/metas/goal-delete/estado',
+      'POST /v1/metas/goal-1/habitos',
+      'DELETE /v1/metas/goal-1/habitos/habit-2',
     ]);
-    expect(requests[0].queryParameters, {'estado': 'en_progreso'});
+    expect(requests[0].queryParameters, isEmpty);
     expect(requests[2].data, {
-      'nombre': 'Dormir mejor',
       'descripcion': 'Ocho horas',
       'fechaObjetivo': '2026-12-31',
-      'habitoIds': ['habit-1'],
     });
-    expect(requests[3].data, isEmpty);
-    expect(requests[4].data, isNull);
-    expect(requests[5].data, isNull);
+    expect(requests[3].data, isNull);
+    expect(requests[4].data, {'estado': 'cancelada'});
+    expect(requests[5].data, {
+      'habitoIds': ['habit-2'],
+    });
     expect(requests[6].data, isNull);
   });
 
