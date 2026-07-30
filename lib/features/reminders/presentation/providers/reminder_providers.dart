@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/network/dio_client.dart';
 import '../../../habits/domain/entities/habito.dart';
 import '../../../habits/presentation/providers/habit_providers.dart';
+import '../../application/reminder_reconciliation_coordinator.dart';
 import '../../data/datasources/reminder_remote_data_source.dart';
 import '../../data/repositories/reminder_repository_impl.dart';
 import '../../domain/entities/recordatorio.dart';
@@ -25,6 +27,36 @@ ReminderRepository reminderRepository(Ref ref) {
 @riverpod
 Future<List<Recordatorio>> remindersList(Ref ref, String habitId) {
   return ref.watch(reminderRepositoryProvider).listByHabit(habitId);
+}
+
+typedef ReminderReconciliationRequest =
+    Future<ReminderDeliveryState> Function({bool requestPermission});
+
+final reminderReconciliationRequestProvider =
+    Provider<ReminderReconciliationRequest>(
+      (ref) =>
+          ({bool requestPermission = false}) async =>
+              const ReminderDeliveryState.delivered(),
+    );
+
+final reminderDeliveryStateProvider =
+    NotifierProvider<ReminderDeliveryController, ReminderDeliveryState>(
+      ReminderDeliveryController.new,
+    );
+
+final class ReminderDeliveryController extends Notifier<ReminderDeliveryState> {
+  @override
+  ReminderDeliveryState build() => const ReminderDeliveryState.idle();
+
+  void update(ReminderDeliveryState next) {
+    state = next;
+  }
+
+  Future<void> retry() async {
+    state = await ref.read(reminderReconciliationRequestProvider)(
+      requestPermission: true,
+    );
+  }
 }
 
 final class ReminderEligibilityException implements Exception {

@@ -8,6 +8,8 @@ import 'package:habitbuilder_mobile/features/auth/presentation/providers/auth_pr
 import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usuario.dart';
 import 'package:habitbuilder_mobile/features/profile/domain/repositories/profile_repository.dart';
 import 'package:habitbuilder_mobile/features/profile/presentation/providers/profile_providers.dart';
+import 'package:habitbuilder_mobile/features/reminders/application/reminder_reconciliation_coordinator.dart';
+import 'package:habitbuilder_mobile/features/reminders/presentation/providers/reminder_providers.dart';
 
 void main() {
   test('updates profile preferences and refreshes my profile', () async {
@@ -65,6 +67,40 @@ void main() {
     expect(storage.cleared, isTrue);
     expect(container.read(authSessionControllerProvider).value, isFalse);
   });
+
+  test(
+    'successful zone and notification update requests reconciliation',
+    () async {
+      final repository = _FakeProfileRepository();
+      final requests = <bool>[];
+      final container = ProviderContainer(
+        overrides: [
+          profileRepositoryProvider.overrideWithValue(repository),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          tokenStorageProvider.overrideWithValue(_MemoryTokenStorage()),
+          reminderReconciliationRequestProvider.overrideWithValue(({
+            bool requestPermission = false,
+          }) async {
+            requests.add(requestPermission);
+            return const ReminderDeliveryState.delivered();
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(profileControllerProvider.notifier)
+          .updateProfile(
+            nombreCompleto: 'Camila Acevedo',
+            objetivoGeneral: 'Dormir ocho horas',
+            zonaHoraria: 'Europe/Madrid',
+            accessibility: const AccessibilityPreferences.defaults(),
+            notifications: const NotificationPreferences.defaults(),
+          );
+
+      expect(requests, [true]);
+    },
+  );
 }
 
 ProviderContainer _container(_FakeProfileRepository repository) {

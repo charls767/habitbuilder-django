@@ -11,6 +11,11 @@ import 'package:habitbuilder_mobile/features/habits/domain/entities/frecuencia.d
 import 'package:habitbuilder_mobile/features/habits/domain/entities/habito.dart';
 import 'package:habitbuilder_mobile/features/habits/presentation/providers/habit_providers.dart';
 import 'package:habitbuilder_mobile/features/habits/presentation/screens/habits_list_screen.dart';
+import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usuario.dart';
+import 'package:habitbuilder_mobile/features/profile/presentation/providers/profile_providers.dart';
+import 'package:habitbuilder_mobile/features/reminders/application/reminder_reconciliation_coordinator.dart';
+import 'package:habitbuilder_mobile/features/reminders/presentation/providers/reminder_providers.dart';
+import 'package:habitbuilder_mobile/features/reminders/presentation/widgets/reminder_reconciliation_bootstrap.dart';
 
 void main() {
   testWidgets('app boots and shows the scaffold placeholder', (tester) async {
@@ -86,6 +91,53 @@ void main() {
     expect(router.state.uri.path, AppRoutes.habitReminders('hab-1'));
     expect(find.text('Recordatorios hab-1'), findsOneWidget);
   });
+
+  testWidgets(
+    'authenticated startup, login and resume request reconciliation',
+    (tester) async {
+      final requests = <bool>[];
+      final container = ProviderContainer(
+        overrides: [
+          tokenStorageProvider.overrideWithValue(
+            _MemoryTokenStorage(accessToken: 'access'),
+          ),
+          habitsListProvider.overrideWith((ref) async => const []),
+          myProfileProvider.overrideWith((ref) async => _profile()),
+          reminderReconciliationRequestProvider.overrideWithValue(({
+            bool requestPermission = false,
+          }) async {
+            requests.add(requestPermission);
+            return const ReminderDeliveryState.delivered();
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const HabitBuilderApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReminderReconciliationBootstrap), findsOneWidget);
+      expect(requests, [false]);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      expect(requests, [false, false]);
+
+      await container
+          .read(authSessionControllerProvider.notifier)
+          .markUnauthenticated();
+      container
+          .read(authSessionControllerProvider.notifier)
+          .markAuthenticated();
+      await tester.pump();
+      expect(requests, [false, false, false]);
+    },
+  );
 }
 
 Habito _habit() {
@@ -103,11 +155,17 @@ Habito _habit() {
 }
 
 class _MemoryTokenStorage implements TokenStorage {
-  @override
-  Future<void> clear() async {}
+  _MemoryTokenStorage({this.accessToken});
+
+  String? accessToken;
 
   @override
-  Future<String?> readAccessToken() async => null;
+  Future<void> clear() async {
+    accessToken = null;
+  }
+
+  @override
+  Future<String?> readAccessToken() async => accessToken;
 
   @override
   Future<String?> readRefreshToken() async => null;
@@ -116,5 +174,18 @@ class _MemoryTokenStorage implements TokenStorage {
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
-  }) async {}
+  }) async {
+    this.accessToken = accessToken;
+  }
+}
+
+PerfilUsuario _profile() {
+  return const PerfilUsuario(
+    usuarioId: 'user-1',
+    nombreCompleto: 'Camila Acevedo',
+    objetivoGeneral: 'Dormir mejor',
+    zonaHoraria: 'America/Bogota',
+    accessibility: AccessibilityPreferences.defaults(),
+    notifications: NotificationPreferences.defaults(),
+  );
 }
