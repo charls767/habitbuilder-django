@@ -18,6 +18,8 @@ abstract final class AppColors {
 
 abstract final class AppTheme {
   static ThemeData light({bool highContrast = false}) {
+    final outlineColor = highContrast ? AppColors.body : AppColors.border;
+    final secondaryTextColor = highContrast ? AppColors.ink : AppColors.muted;
     final scheme =
         ColorScheme.fromSeed(
           seedColor: AppColors.primary,
@@ -36,8 +38,8 @@ abstract final class AppTheme {
           error: AppColors.danger,
           surface: AppColors.surface,
           onSurface: AppColors.ink,
-          outline: AppColors.border,
-          outlineVariant: AppColors.border,
+          outline: outlineColor,
+          outlineVariant: outlineColor,
           surfaceContainerLowest: AppColors.surface,
           surfaceContainerLow: AppColors.canvas,
           surfaceContainer: AppColors.canvas,
@@ -70,29 +72,29 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: outlineColor),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        labelStyle: const TextStyle(
-          color: AppColors.muted,
+        labelStyle: TextStyle(
+          color: secondaryTextColor,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
-        hintStyle: const TextStyle(color: AppColors.muted),
+        hintStyle: TextStyle(color: secondaryTextColor),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: outlineColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: outlineColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -111,7 +113,7 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: outlineColor),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -142,7 +144,7 @@ abstract final class AppTheme {
           (states) => TextStyle(
             color: states.contains(WidgetState.selected)
                 ? AppColors.primary
-                : AppColors.muted,
+                : secondaryTextColor,
             fontSize: 11,
             fontWeight: FontWeight.w700,
           ),
@@ -151,7 +153,7 @@ abstract final class AppTheme {
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
                 ? AppColors.primary
-                : AppColors.muted,
+                : secondaryTextColor,
           ),
         ),
       ),
@@ -159,7 +161,7 @@ abstract final class AppTheme {
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.primary,
         disabledColor: AppColors.canvas,
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: outlineColor),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         labelStyle: const TextStyle(
           color: AppColors.body,

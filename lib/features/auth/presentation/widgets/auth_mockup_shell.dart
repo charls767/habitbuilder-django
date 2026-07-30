@@ -25,7 +25,9 @@ class AuthMockupShell extends StatelessWidget {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final compact = constraints.maxWidth < 600;
-          final heroHeight = compact ? 340.0 : 290.0;
+          final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+          final extraTextHeight = ((textScale - 1).clamp(0, 1)) * 120;
+          final heroHeight = (compact ? 340.0 : 290.0) + extraTextHeight;
           final panelMinHeight = constraints.hasBoundedHeight
               ? (constraints.maxHeight - heroHeight).clamp(0.0, double.infinity)
               : 0.0;
@@ -35,8 +37,8 @@ class AuthMockupShell extends StatelessWidget {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Column(
                 children: [
-                  SizedBox(
-                    height: heroHeight,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: heroHeight),
                     child: SafeArea(
                       bottom: false,
                       child: Stack(
@@ -63,32 +65,38 @@ class AuthMockupShell extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(
-                                    width: 68,
-                                    height: 68,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.14,
+                                  ExcludeSemantics(
+                                    child: Container(
+                                      width: 68,
+                                      height: 68,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.14,
+                                        ),
+                                        borderRadius: BorderRadius.circular(18),
                                       ),
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                    child: const Icon(
-                                      Icons.local_fire_department_rounded,
-                                      size: 36,
-                                      color: AppColors.accent,
+                                      child: const Icon(
+                                        Icons.local_fire_department_rounded,
+                                        size: 36,
+                                        color: AppColors.accent,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 18),
-                                  Text(
-                                    heroTitle,
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w800,
-                                        ),
+                                  Semantics(
+                                    container: true,
+                                    header: true,
+                                    child: Text(
+                                      heroTitle,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   ConstrainedBox(

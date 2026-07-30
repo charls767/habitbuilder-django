@@ -62,9 +62,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Bienvenido de nuevo',
-                style: Theme.of(context).textTheme.headlineSmall,
+              Semantics(
+                header: true,
+                child: Text(
+                  'Bienvenido de nuevo',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -130,7 +133,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 icon: authState.isLoading
                     ? const SizedBox.square(
                         dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          semanticsLabel: 'Iniciando sesión',
+                        ),
                       )
                     : const Icon(Icons.login),
                 label: const Text('Iniciar sesión'),

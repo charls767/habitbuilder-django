@@ -181,6 +181,36 @@ void main() {
     expect(find.text('Crea tu cuenta'), findsOneWidget);
   });
 
+  testWidgets('core auth flow preserves 200% system text and semantics', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final semantics = tester.ensureSemantics();
+    try {
+      await _pumpApp(tester, _FakeAuthRepository());
+
+      final loginContext = tester.element(find.text('Bienvenido de nuevo'));
+      expect(MediaQuery.textScalerOf(loginContext).scale(10), 20);
+      expect(find.bySemanticsLabel('HabitBuilder'), findsOneWidget);
+      expect(find.bySemanticsLabel('Correo electrónico'), findsOneWidget);
+      expect(find.bySemanticsLabel('Contraseña'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await _tapVisible(tester, 'Crear cuenta');
+      expect(find.bySemanticsLabel('Crea tu cuenta'), findsOneWidget);
+      expect(find.bySemanticsLabel('Nombre'), findsOneWidget);
+      expect(find.bySemanticsLabel('Confirmar contraseña'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('reset password uses the URL token and returns to login', (
     tester,
   ) async {

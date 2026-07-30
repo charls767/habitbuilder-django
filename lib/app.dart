@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/accessibility/accessibility_settings.dart';
 import 'core/network/auth_session_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -35,8 +36,9 @@ class HabitBuilderApp extends ConsumerWidget {
           child: ReminderReconciliationBootstrap(
             child: MediaQuery(
               data: mediaQuery.copyWith(
-                textScaler: TextScaler.linear(
-                  accessibility?.textSize.scaleFactor ?? 1,
+                textScaler: effectiveTextScaler(
+                  systemScaler: mediaQuery.textScaler,
+                  preferenceFactor: accessibility?.textSize.scaleFactor ?? 1,
                 ),
               ),
               child: child ?? const SizedBox.shrink(),
