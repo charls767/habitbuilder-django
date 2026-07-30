@@ -57,11 +57,14 @@ class AppDestinationBar extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 760),
               child: NavigationBar(
                 selectedIndex: selectedIndex,
+                labelBehavior:
+                    NavigationDestinationLabelBehavior.onlyShowSelected,
                 onDestinationSelected: (index) {
                   final route = switch (index) {
                     0 => AppRoutes.habits,
                     1 => AppRoutes.tracking,
                     2 => AppRoutes.goals,
+                    3 => AppRoutes.progress,
                     _ => AppRoutes.profile,
                   };
                   context.go(route);
@@ -81,6 +84,11 @@ class AppDestinationBar extends StatelessWidget {
                     icon: Icon(Icons.flag_outlined),
                     selectedIcon: Icon(Icons.flag),
                     label: 'Metas',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.insights_outlined),
+                    selectedIcon: Icon(Icons.insights),
+                    label: 'Progreso',
                   ),
                   NavigationDestination(
                     icon: Icon(Icons.person_outline),

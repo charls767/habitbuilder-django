@@ -12,6 +12,7 @@ import '../../features/goals/presentation/screens/goals_list_screen.dart';
 import '../../features/habits/presentation/screens/habit_form_screen.dart';
 import '../../features/habits/presentation/screens/habits_list_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/progress/presentation/screens/progress_screen.dart';
 import '../../features/reminders/presentation/screens/reminders_screen.dart';
 import '../../features/tracking/presentation/screens/tracking_screen.dart';
 import '../network/auth_session_controller.dart';
@@ -69,6 +70,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.tracking,
         builder: (context, state) => const TrackingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.progress,
+        builder: (context, state) => const ProgressScreen(),
       ),
       GoRoute(
         path: AppRoutes.habitCreate,
