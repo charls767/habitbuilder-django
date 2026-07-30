@@ -16,25 +16,27 @@ void main() {
         ..httpClientAdapter = _CallbackAdapter((options) {
           requests.add(options);
           return switch (options.path) {
-            '/auth/register' => _jsonResponse(
+            '/v1/auth/register' => _jsonResponse(
               201,
               jsonEncode({
-                'id': 'user-1',
-                'nombre': 'Camila',
-                'email': 'camila@example.com',
-                'fechaRegistro': '2026-07-26T12:00:00Z',
+                'usuario': {
+                  'id': 'user-1',
+                  'nombre': 'Camila',
+                  'email': 'camila@example.com',
+                  'rol': 'regular',
+                  'estado': 'activo',
+                },
               }),
             ),
-            '/auth/login' => _jsonResponse(
+            '/v1/auth/login' => _jsonResponse(
               200,
               jsonEncode({
-                'accessToken': 'access',
-                'refreshToken': 'refresh',
-                'expiresIn': 900,
+                'token': 'access',
+                'expiraEn': '2026-07-26T13:00:00Z',
               }),
             ),
-            '/auth/password-reset/request' => _jsonResponse(202, '{}'),
-            '/auth/password-reset/confirm' => _jsonResponse(204, ''),
+            '/v1/auth/reset/request' => _jsonResponse(200, '{}'),
+            '/v1/auth/reset/confirm' => _jsonResponse(200, '{}'),
             _ => _jsonResponse(404, '{}'),
           };
         });
@@ -62,16 +64,16 @@ void main() {
 
       expect(user.id, 'user-1');
       expect(user.nombre, 'Camila');
-      expect(user.fechaRegistro, DateTime.utc(2026, 7, 26, 12));
+      expect(user.fechaRegistro, isA<DateTime>());
       expect(storage.accessToken, 'access');
-      expect(storage.refreshToken, 'refresh');
+      expect(storage.refreshToken, isEmpty);
       expect(requests, hasLength(4));
       expect(requests.first.extra['skipAuth'], isTrue);
-      expect(requests.first.data, containsPair('versionTerminos', '2026-01'));
+      expect(requests.first.data, containsPair('terminosAceptados', true));
       expect(requests[2].data, {'email': 'camila@example.com'});
       expect(requests[3].data, {
         'token': 'reset-token',
-        'newPassword': 'NuevaSegura123',
+        'nuevaPassword': 'NuevaSegura123',
       });
 
       await repository.logout();

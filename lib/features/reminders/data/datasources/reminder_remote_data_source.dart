@@ -11,7 +11,7 @@ class ReminderRemoteDataSource {
   Future<List<RecordatorioDto>> listByHabit(String habitId) async {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
-        '/habits/$habitId/reminders',
+        '/v1/habitos/$habitId/recordatorios',
       );
       return response.data!
           .map((item) => RecordatorioDto.fromJson(item as Map<String, dynamic>))
@@ -25,7 +25,7 @@ class ReminderRemoteDataSource {
   ) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/habits/$habitId/reminders',
+        '/v1/habitos/$habitId/recordatorios',
         data: request.toJson(),
       );
       return RecordatorioDto.fromJson(response.data!);
@@ -38,7 +38,7 @@ class ReminderRemoteDataSource {
   ) async {
     return runApiCall(() async {
       final response = await _dio.patch<Map<String, dynamic>>(
-        '/reminders/$reminderId',
+        '/v1/recordatorios/$reminderId',
         data: request.toJson(),
       );
       return RecordatorioDto.fromJson(response.data!);
@@ -46,6 +46,6 @@ class ReminderRemoteDataSource {
   }
 
   Future<void> delete(String reminderId) async {
-    await runApiCall(() => _dio.delete<void>('/reminders/$reminderId'));
+    await runApiCall(() => _dio.delete<void>('/v1/recordatorios/$reminderId'));
   }
 }

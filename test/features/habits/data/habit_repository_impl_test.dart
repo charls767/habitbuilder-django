@@ -112,7 +112,7 @@ void main() {
     expect(request.toJson(), {
       'nombre': 'Leer',
       'descripcion': 'Veinte paginas',
-      'categoriaId': 'cat-1',
+      'categoria': 'cat-1',
       'metaId': 'goal-1',
       'fechaInicio': '2026-07-28',
       'frecuencia': {'tipo': 'veces_periodo', 'veces': 3, 'periodo': 'semana'},
@@ -143,9 +143,8 @@ void main() {
     expect(request.toJson(), {
       'nombre': 'Leer a diario',
       'descripcion': null,
-      'categoriaId': 'cat-2',
+      'categoria': 'cat-2',
       'metaId': null,
-      'fechaInicio': '2026-08-01',
       'frecuencia': {
         'tipo': 'dias_semana',
         'diasSemana': [1, 5],

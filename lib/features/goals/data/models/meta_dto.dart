@@ -17,14 +17,22 @@ class MetaDto {
   factory MetaDto.fromJson(Map<String, dynamic> json) {
     return MetaDto(
       id: json['id'] as String,
-      usuarioId: json['usuarioId'] as String,
-      nombre: json['nombre'] as String,
+      usuarioId: json['usuarioId'] as String? ?? '',
+      nombre: (json['nombre'] ?? json['descripcion']) as String,
       descripcion: json['descripcion'] as String?,
       fechaObjetivo: _parseNullableDate(json['fechaObjetivo']),
       estado: MetaEstado.fromApiValue(json['estado'] as String),
-      habitoIds: (json['habitoIds'] as List<dynamic>).cast<String>(),
-      fechaCreacion: DateTime.parse(json['fechaCreacion'] as String),
-      fechaActualizacion: DateTime.parse(json['fechaActualizacion'] as String),
+      habitoIds: (json['habitoIds'] as List<dynamic>? ?? const [])
+          .cast<String>(),
+      fechaCreacion: DateTime.parse(
+        (json['creadoEn'] ?? json['fechaCreacion']) as String,
+      ),
+      fechaActualizacion: DateTime.parse(
+        (json['actualizadoEn'] ??
+                json['fechaActualizacion'] ??
+                json['creadoEn'])
+            as String,
+      ),
     );
   }
 
@@ -65,10 +73,10 @@ class MetaCreateRequestDto {
   final List<String> habitoIds;
 
   Map<String, dynamic> toJson() => {
-    'nombre': nombre,
-    if (descripcion != null) 'descripcion': descripcion,
+    'descripcion': (descripcion == null || descripcion!.trim().isEmpty)
+        ? nombre
+        : descripcion,
     if (fechaObjetivo != null) 'fechaObjetivo': _formatDate(fechaObjetivo!),
-    if (habitoIds.isNotEmpty) 'habitoIds': habitoIds,
   };
 }
 
@@ -86,16 +94,19 @@ class MetaUpdateRequestDto {
   final MetaEstado? estado;
 
   Map<String, dynamic> toJson() => {
-    if (nombre != null) 'nombre': nombre,
-    if (descripcion.isPresent) 'descripcion': descripcion.value,
+    if (descripcion.isPresent || nombre != null)
+      'descripcion': (descripcion.isPresent && descripcion.value != null)
+          ? descripcion.value
+          : nombre,
     if (fechaObjetivo.isPresent)
       'fechaObjetivo': fechaObjetivo.value == null
           ? null
           : _formatDate(fechaObjetivo.value!),
-    if (estado != null) 'estado': estado!.apiValue,
   };
 
-  bool get hasChanges => toJson().isNotEmpty;
+  Map<String, dynamic> stateJson() => {'estado': estado!.apiValue};
+
+  bool get hasChanges => toJson().isNotEmpty || estado != null;
 }
 
 DateTime? _parseNullableDate(Object? value) {

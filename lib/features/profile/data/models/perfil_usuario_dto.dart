@@ -1,6 +1,6 @@
 import '../../domain/entities/perfil_usuario.dart';
 
-/// Wire shape for the `PerfilUsuario` schema in `docs/openapi.yaml`.
+/// Wire shape for the backend `PerfilResponse` schema.
 class PerfilUsuarioDto {
   const PerfilUsuarioDto({
     required this.usuarioId,
@@ -20,24 +20,25 @@ class PerfilUsuarioDto {
         json['notificaciones'] as Map<String, dynamic>? ?? const {};
 
     return PerfilUsuarioDto(
-      usuarioId: json['usuarioId'] as String,
-      nombreCompleto: json['nombreCompleto'] as String,
+      usuarioId: json['usuarioId'] as String? ?? '',
+      nombreCompleto: json['nombre'] as String,
       zonaHoraria: json['zonaHoraria'] as String,
       objetivoGeneral: json['objetivoGeneral'] as String? ?? '',
       fotoUrl: json['fotoUrl'] as String?,
       biografia: json['biografia'] as String?,
       accessibility: AccessibilityPreferences(
-        textToSpeech: accessibilityJson['lectorTexto'] as bool? ?? false,
+        textToSpeech: accessibilityJson['ttsHabilitado'] as bool? ?? false,
         textSize: TextSizePreference.fromApiValue(
           accessibilityJson['tamanoTexto'] as String?,
         ),
-        highContrast: accessibilityJson['altoContraste'] as bool? ?? false,
+        highContrast: accessibilityJson['contrasteAlto'] as bool? ?? false,
       ),
       notifications: NotificationPreferences(
-        enabled: notificationsJson['habilitadas'] as bool? ?? true,
+        enabled: true,
         habitReminders:
-            notificationsJson['recordatoriosHabitos'] as bool? ?? true,
-        weeklySummary: notificationsJson['resumenSemanal'] as bool? ?? true,
+            notificationsJson['recordatoriosHabilitados'] as bool? ?? true,
+        weeklySummary:
+            notificationsJson['resumenProgresoHabilitado'] as bool? ?? true,
       ),
     );
   }

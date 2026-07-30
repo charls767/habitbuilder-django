@@ -146,7 +146,7 @@ void main() {
     test('maps nullable response fields and open pauses', () {
       final json = _fullHabitJson()
         ..['descripcion'] = null
-        ..['categoriaId'] = null
+        ..['categoria'] = null
         ..['metaId'] = null
         ..['fechaCompletado'] = null
         ..['pausas'] = [
@@ -176,7 +176,7 @@ void main() {
       expect(dto.toJson(), {
         'nombre': 'Leer',
         'descripcion': 'Veinte paginas',
-        'categoriaId': 'cat_aprender',
+        'categoria': 'cat_aprender',
         'metaId': 'meta_lectura',
         'fechaInicio': '2026-07-09',
         'frecuencia': {'tipo': 'diaria'},
@@ -206,7 +206,7 @@ void main() {
       expect(clearFields.hasChanges, isTrue);
       expect(clearFields.toJson(), {
         'descripcion': null,
-        'categoriaId': null,
+        'categoria': null,
         'metaId': null,
       });
     });
@@ -224,9 +224,8 @@ void main() {
       expect(dto.toJson(), {
         'nombre': 'Nuevo nombre',
         'descripcion': 'Descripcion',
-        'categoriaId': 'cat_2',
+        'categoria': 'cat_2',
         'metaId': 'meta_2',
-        'fechaInicio': '2026-08-02',
         'frecuencia': {
           'tipo': 'dias_semana',
           'diasSemana': [2, 6],
@@ -242,7 +241,7 @@ Map<String, dynamic> _fullHabitJson() {
     'usuarioId': 'usr_001',
     'nombre': 'Meditar 10 minutos',
     'descripcion': 'Meditacion guiada',
-    'categoriaId': 'cat_salud',
+    'categoria': 'cat_salud',
     'metaId': 'meta_001',
     'fechaInicio': '2026-07-28',
     'frecuencia': {

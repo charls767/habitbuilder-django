@@ -1,6 +1,6 @@
 import '../../domain/entities/usuario.dart';
 
-/// Wire shape for the `Usuario` schema in `docs/openapi.yaml`.
+/// Wire shape for the nested `RegistroUsuarioResponse.usuario` projection.
 class UsuarioDto {
   const UsuarioDto({
     required this.id,
@@ -9,12 +9,19 @@ class UsuarioDto {
     required this.fechaRegistro,
   });
 
-  factory UsuarioDto.fromJson(Map<String, dynamic> json) => UsuarioDto(
-    id: json['id'] as String,
-    nombre: json['nombre'] as String,
-    email: json['email'] as String,
-    fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
-  );
+  factory UsuarioDto.fromJson(Map<String, dynamic> json) {
+    final usuario = json['usuario'] is Map<String, dynamic>
+        ? json['usuario'] as Map<String, dynamic>
+        : json;
+    return UsuarioDto(
+      id: usuario['id'] as String,
+      nombre: usuario['nombre'] as String,
+      email: usuario['email'] as String,
+      fechaRegistro:
+          DateTime.tryParse(usuario['fechaRegistro'] as String? ?? '') ??
+          DateTime.now().toUtc(),
+    );
+  }
 
   final String id;
   final String nombre;

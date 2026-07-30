@@ -43,16 +43,20 @@ class GoalController extends _$GoalController {
     List<String> habitoIds = const [],
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
-          .read(goalRepositoryProvider)
-          .createGoal(
-            nombre: nombre,
-            descripcion: descripcion,
-            fechaObjetivo: fechaObjetivo,
-            habitoIds: habitoIds,
-          ),
-    );
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(goalRepositoryProvider);
+      final goal = await repository.createGoal(
+        nombre: nombre,
+        descripcion: descripcion,
+        fechaObjetivo: fechaObjetivo,
+        habitoIds: habitoIds,
+      );
+      await _synchronizeHabitLinks(
+        goalId: goal.id,
+        previousHabitIds: const [],
+        selectedHabitIds: habitoIds,
+      );
+    });
     if (!state.hasError) {
       _invalidateGoalCollections();
     }

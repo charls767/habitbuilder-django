@@ -4,7 +4,7 @@ import '../../../../core/network/api_exception.dart';
 import '../models/token_pair_dto.dart';
 import '../models/usuario_dto.dart';
 
-/// Thin wrapper around the `/auth/*` endpoints. Knows nothing about token
+/// Thin wrapper around the `/v1/auth/*` endpoints. Knows nothing about token
 /// storage or app-wide session state — that's `AuthRepositoryImpl`'s job.
 class AuthRemoteDataSource {
   AuthRemoteDataSource(this._dio);
@@ -22,15 +22,12 @@ class AuthRemoteDataSource {
   }) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/auth/register',
+        '/v1/auth/register',
         data: {
           'nombre': nombre,
           'email': email,
           'password': password,
-          'aceptaTerminos': aceptaTerminos,
-          'aceptaPrivacidad': aceptaPrivacidad,
-          'versionTerminos': versionTerminos,
-          'versionPrivacidad': versionPrivacidad,
+          'terminosAceptados': aceptaTerminos,
         },
         options: Options(extra: const {'skipAuth': true}),
       );
@@ -44,7 +41,7 @@ class AuthRemoteDataSource {
   }) async {
     return runApiCall(() async {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/auth/login',
+        '/v1/auth/login',
         data: {'email': email, 'password': password},
         options: Options(extra: const {'skipAuth': true}),
       );
@@ -55,7 +52,7 @@ class AuthRemoteDataSource {
   Future<void> requestPasswordReset({required String email}) async {
     await runApiCall(
       () => _dio.post<void>(
-        '/auth/password-reset/request',
+        '/v1/auth/reset/request',
         data: {'email': email},
         options: Options(extra: const {'skipAuth': true}),
       ),
@@ -68,8 +65,8 @@ class AuthRemoteDataSource {
   }) async {
     await runApiCall(
       () => _dio.post<void>(
-        '/auth/password-reset/confirm',
-        data: {'token': token, 'newPassword': newPassword},
+        '/v1/auth/reset/confirm',
+        data: {'token': token, 'nuevaPassword': newPassword},
         options: Options(extra: const {'skipAuth': true}),
       ),
     );

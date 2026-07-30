@@ -22,18 +22,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required NotificationPreferences notifications,
   }) async {
     final dto = await _remote.updateMyProfile({
-      'nombreCompleto': nombreCompleto,
       'objetivoGeneral': objetivoGeneral,
       'zonaHoraria': zonaHoraria,
       'accesibilidad': {
-        'lectorTexto': accessibility.textToSpeech,
+        'ttsHabilitado': accessibility.textToSpeech,
         'tamanoTexto': accessibility.textSize.apiValue,
-        'altoContraste': accessibility.highContrast,
+        'contrasteAlto': accessibility.highContrast,
       },
       'notificaciones': {
-        'habilitadas': notifications.enabled,
-        'recordatoriosHabitos': notifications.habitReminders,
-        'resumenSemanal': notifications.weeklySummary,
+        'recordatoriosHabilitados': notifications.habitReminders,
+        'resumenProgresoHabilitado': notifications.weeklySummary,
       },
     });
     return dto.toEntity();

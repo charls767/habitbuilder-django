@@ -72,8 +72,6 @@ class GoalRepositoryImpl implements GoalRepository {
   }
 
   @override
-  Future<Meta> unlinkHabit(String goalId, String habitId) async {
-    final dto = await _remote.unlinkHabit(goalId, habitId);
-    return dto.toEntity();
-  }
+  Future<void> unlinkHabit(String goalId, String habitId) =>
+      _remote.unlinkHabit(goalId, habitId);
 }

@@ -5,19 +5,17 @@ import 'package:habitbuilder_mobile/features/profile/domain/entities/perfil_usua
 void main() {
   test('maps all Phase 1 profile preferences', () {
     final dto = PerfilUsuarioDto.fromJson({
-      'usuarioId': 'usr_001',
-      'nombreCompleto': 'Camila Acevedo',
+      'nombre': 'Camila Acevedo',
       'objetivoGeneral': 'Dormir mejor',
       'zonaHoraria': 'America/Bogota',
       'accesibilidad': {
-        'lectorTexto': true,
-        'tamanoTexto': 'grande',
-        'altoContraste': true,
+        'ttsHabilitado': true,
+        'tamanoTexto': 'extra_grande',
+        'contrasteAlto': true,
       },
       'notificaciones': {
-        'habilitadas': true,
-        'recordatoriosHabitos': false,
-        'resumenSemanal': true,
+        'recordatoriosHabilitados': false,
+        'resumenProgresoHabilitado': true,
       },
     });
 
@@ -32,8 +30,7 @@ void main() {
 
   test('uses safe preference defaults for an older backend payload', () {
     final profile = PerfilUsuarioDto.fromJson({
-      'usuarioId': 'usr_001',
-      'nombreCompleto': 'Camila Acevedo',
+      'nombre': 'Camila Acevedo',
       'zonaHoraria': 'America/Bogota',
     }).toEntity();
 

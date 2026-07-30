@@ -34,7 +34,7 @@ void main() {
     await tester.pump();
 
     await _tapVisible(tester, 'Lectura de texto');
-    await _tapVisible(tester, 'Grande');
+    await _tapVisible(tester, 'Extra grande');
     await _tapVisible(tester, 'Alto contraste');
     await _tapVisible(tester, 'Permitir notificaciones');
 

@@ -51,22 +51,29 @@ class HabitoDto {
   factory HabitoDto.fromJson(Map<String, dynamic> json) {
     return HabitoDto(
       id: json['id'] as String,
-      usuarioId: json['usuarioId'] as String,
+      usuarioId: json['usuarioId'] as String? ?? '',
       nombre: json['nombre'] as String,
       descripcion: json['descripcion'] as String?,
-      categoriaId: json['categoriaId'] as String?,
+      categoriaId: (json['categoria'] ?? json['categoriaId']) as String?,
       metaId: json['metaId'] as String?,
       fechaInicio: DateTime.parse(json['fechaInicio'] as String),
       frecuencia: FrecuenciaDto.fromJson(
         json['frecuencia'] as Map<String, dynamic>,
       ),
       estado: HabitoEstado.fromApiValue(json['estado'] as String),
-      pausas: (json['pausas'] as List<dynamic>)
+      pausas: (json['pausas'] as List<dynamic>? ?? const [])
           .map((item) => PausaHabitoDto.fromJson(item as Map<String, dynamic>))
           .toList(),
       fechaCompletado: _parseNullableDate(json['fechaCompletado']),
-      fechaCreacion: DateTime.parse(json['fechaCreacion'] as String),
-      fechaActualizacion: DateTime.parse(json['fechaActualizacion'] as String),
+      fechaCreacion: DateTime.parse(
+        (json['creadoEn'] ?? json['fechaCreacion']) as String,
+      ),
+      fechaActualizacion: DateTime.parse(
+        (json['actualizadoEn'] ??
+                json['fechaActualizacion'] ??
+                json['creadoEn'])
+            as String,
+      ),
     );
   }
 
@@ -89,7 +96,7 @@ class HabitoDto {
     'usuarioId': usuarioId,
     'nombre': nombre,
     'descripcion': descripcion,
-    'categoriaId': categoriaId,
+    'categoria': categoriaId,
     'metaId': metaId,
     'fechaInicio': _formatDate(fechaInicio),
     'frecuencia': frecuencia.toJson(),
@@ -137,7 +144,7 @@ class HabitoCreateRequestDto {
   Map<String, dynamic> toJson() => {
     'nombre': nombre,
     if (descripcion != null) 'descripcion': descripcion,
-    if (categoriaId != null) 'categoriaId': categoriaId,
+    if (categoriaId != null) 'categoria': categoriaId,
     if (metaId != null) 'metaId': metaId,
     'fechaInicio': _formatDate(fechaInicio),
     'frecuencia': frecuencia.toJson(),
@@ -164,9 +171,8 @@ class HabitoUpdateRequestDto {
   Map<String, dynamic> toJson() => {
     if (nombre != null) 'nombre': nombre,
     if (descripcion.isPresent) 'descripcion': descripcion.value,
-    if (categoriaId.isPresent) 'categoriaId': categoriaId.value,
+    if (categoriaId.isPresent) 'categoria': categoriaId.value,
     if (metaId.isPresent) 'metaId': metaId.value,
-    if (fechaInicio != null) 'fechaInicio': _formatDate(fechaInicio!),
     if (frecuencia != null) 'frecuencia': frecuencia!.toJson(),
   };
 

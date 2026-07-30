@@ -10,7 +10,7 @@ class ProfileRemoteDataSource {
 
   Future<PerfilUsuarioDto> getMyProfile() async {
     return runApiCall(() async {
-      final response = await _dio.get<Map<String, dynamic>>('/users/me');
+      final response = await _dio.get<Map<String, dynamic>>('/v1/usuarios/me');
       return PerfilUsuarioDto.fromJson(response.data!);
     });
   }
@@ -18,7 +18,7 @@ class ProfileRemoteDataSource {
   Future<PerfilUsuarioDto> updateMyProfile(Map<String, dynamic> patch) async {
     return runApiCall(() async {
       final response = await _dio.patch<Map<String, dynamic>>(
-        '/users/me',
+        '/v1/usuarios/me',
         data: patch,
       );
       return PerfilUsuarioDto.fromJson(response.data!);

@@ -36,7 +36,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final tokens = await _remote.login(email: email, password: password);
     await _tokenStorage.saveTokens(
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      refreshToken: tokens.refreshToken ?? '',
     );
   }
 

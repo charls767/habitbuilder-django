@@ -28,8 +28,8 @@ void main() {
             }
 
             final state = switch (options.path) {
-              '/habits/habit-1/pause' => 'pausado',
-              '/habits/habit-1/complete' => 'completado',
+              '/v1/habitos/habit-1/pausar' => 'pausado',
+              '/v1/habitos/habit-1/completar' => 'completado',
               _ => 'activo',
             };
             return _jsonResponse(200, _habitJson(estado: state));
@@ -54,17 +54,14 @@ void main() {
         expect(resumed.estado, HabitoEstado.activo);
         expect(completed.estado, HabitoEstado.completado);
         expect(requests.map((request) => '${request.method} ${request.path}'), [
-          'POST /habits/habit-1/pause',
-          'POST /habits/habit-1/pause',
-          'POST /habits/habit-1/resume',
-          'POST /habits/habit-1/complete',
-          'DELETE /habits/habit-1',
+          'POST /v1/habitos/habit-1/pausar',
+          'POST /v1/habitos/habit-1/pausar',
+          'POST /v1/habitos/habit-1/reanudar',
+          'POST /v1/habitos/habit-1/completar',
+          'DELETE /v1/habitos/habit-1',
         ]);
-        expect(requests[0].data, {'fechaInicio': '2026-08-01'});
-        expect(requests[1].data, {
-          'fechaInicio': '2026-08-02',
-          'fechaFin': '2026-08-09',
-        });
+        expect(requests[0].data, {'inicio': '2026-08-01'});
+        expect(requests[1].data, {'inicio': '2026-08-02', 'fin': '2026-08-09'});
         expect(
           (requests[0].data as Map<String, dynamic>),
           isNot(contains('usuarioId')),

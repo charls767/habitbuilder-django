@@ -2,13 +2,11 @@ import 'package:dio/dio.dart';
 
 import '../storage/token_storage.dart';
 
-/// Attaches the stored JWT access token to every request and transparently
-/// refreshes it on a 401, retrying the original call once.
+/// Attaches the stored JWT access token to every request.
 ///
-/// If the refresh itself fails (expired/invalid refresh token),
-/// [onUnauthenticated] is invoked (clearing the stored tokens) so the app
-/// can redirect to the login screen — see `AuthSessionController` and
-/// `lib/core/router/app_router.dart`.
+/// The backend contract currently exposes a single expiring session token
+/// and no refresh endpoint. A 401 therefore ends the local session instead of
+/// calling an unsupported refresh route.
 class JwtInterceptor extends Interceptor {
   JwtInterceptor({
     required this.tokenStorage,
@@ -18,15 +16,14 @@ class JwtInterceptor extends Interceptor {
 
   final TokenStorage tokenStorage;
 
-  /// A bare [Dio] instance (no interceptors attached) pointed at the same
-  /// base URL, used only for the `/auth/refresh` call and for retrying the
-  /// original request — avoids re-entering this interceptor recursively.
+  /// Kept in the constructor for compatibility with existing dependency
+  /// wiring and tests. The current backend has no refresh contract, so it is
+  /// intentionally unused.
   final Dio refreshDio;
 
   final Future<void> Function() onUnauthenticated;
 
   static const _skipAuthKey = 'skipAuth';
-  static const _isRetryKey = 'isRetry';
 
   @override
   Future<void> onRequest(
@@ -48,43 +45,14 @@ class JwtInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final isRetry = err.requestOptions.extra[_isRetryKey] == true;
     final skipAuth = err.requestOptions.extra[_skipAuthKey] == true;
 
-    if (err.response?.statusCode != 401 || isRetry || skipAuth) {
+    if (err.response?.statusCode != 401 || skipAuth) {
       handler.next(err);
       return;
     }
 
-    final refreshToken = await tokenStorage.readRefreshToken();
-    if (refreshToken == null) {
-      await onUnauthenticated();
-      handler.next(err);
-      return;
-    }
-
-    try {
-      final response = await refreshDio.post<Map<String, dynamic>>(
-        '/auth/refresh',
-        data: {'refreshToken': refreshToken},
-        options: Options(extra: {_skipAuthKey: true}),
-      );
-
-      final data = response.data!;
-      await tokenStorage.saveTokens(
-        accessToken: data['accessToken'] as String,
-        refreshToken: data['refreshToken'] as String,
-      );
-
-      final retryOptions = err.requestOptions
-        ..extra[_isRetryKey] = true
-        ..headers['Authorization'] = 'Bearer ${data['accessToken']}';
-
-      final retryResponse = await refreshDio.fetch<dynamic>(retryOptions);
-      handler.resolve(retryResponse);
-    } on Object {
-      await onUnauthenticated();
-      handler.next(err);
-    }
+    await onUnauthenticated();
+    handler.next(err);
   }
 }

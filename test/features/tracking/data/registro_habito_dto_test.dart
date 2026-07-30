@@ -6,7 +6,7 @@ void main() {
   group('RegistroHabito', () {
     test('maps every API status and rejects unknown values', () {
       expect(EstadoRegistro.values.map((status) => status.apiValue), [
-        'completado',
+        'hecho',
         'parcial',
         'omitido',
       ]);
@@ -57,8 +57,8 @@ void main() {
       );
 
       expect(request.toJson(), {
-        'fecha': '2026-07-30',
-        'estado': 'completado',
+        'fechaLocal': '2026-07-30',
+        'estado': 'hecho',
         'nota': 'Sesion completa',
       });
     });

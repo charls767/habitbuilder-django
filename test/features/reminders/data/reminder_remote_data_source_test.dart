@@ -42,10 +42,10 @@ void main() {
     expect(created.id, 'reminder-1');
     expect(updated.id, 'reminder-1');
     expect(requests.map((item) => '${item.method} ${item.path}'), [
-      'GET /habits/habit-1/reminders',
-      'POST /habits/habit-1/reminders',
-      'PATCH /reminders/reminder-1',
-      'DELETE /reminders/reminder-1',
+      'GET /v1/habitos/habit-1/recordatorios',
+      'POST /v1/habitos/habit-1/recordatorios',
+      'PATCH /v1/recordatorios/reminder-1',
+      'DELETE /v1/recordatorios/reminder-1',
     ]);
     expect(requests[1].data, {
       'mensaje': 'Hora de leer',

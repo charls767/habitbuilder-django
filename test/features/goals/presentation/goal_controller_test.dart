@@ -27,6 +27,25 @@ void main() {
     expect(repository.createdHabitIds, ['hab-2', 'hab-1']);
   });
 
+  test('creates the goal before synchronizing selected habit links', () async {
+    final repository = _FakeGoalRepository();
+    final container = ProviderContainer(
+      overrides: [goalRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    final success = await container
+        .read(goalControllerProvider.notifier)
+        .createGoal(
+          nombre: 'Dormir mejor',
+          fechaObjetivo: DateTime(2026, 12, 31),
+          habitoIds: const ['habit-1', 'habit-2'],
+        );
+
+    expect(success, isTrue);
+    expect(repository.linkedHabitIds, ['habit-1', 'habit-2']);
+  });
+
   test(
     'update sends fields and synchronizes additions before removals',
     () async {
