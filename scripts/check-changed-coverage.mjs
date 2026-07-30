@@ -11,6 +11,7 @@ const defaultExcluded = [
   /^lib\/app\.dart$/,
   /^lib\/core\/router\//,
   /^lib\/core\/theme\//,
+  /^lib\/core\/config\/app_env\.dart$/,
   /^lib\/core\/network\/dio_client\.dart$/,
   /^lib\/features\/tracking\/domain\/repositories\/tracking_repository\.dart$/,
   /^lib\/features\/progress\/domain\/repositories\/progress_repository\.dart$/,
