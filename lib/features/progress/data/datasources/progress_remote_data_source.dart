@@ -13,25 +13,25 @@ class ProgressRemoteDataSource {
 
   Future<ProgressSummaryDto> getSummary(ProgressPeriod period) {
     return runApiCall(() async {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/progress',
+      final response = await _dio.get<List<dynamic>>(
+        '/v1/progreso',
         queryParameters: {'periodo': period.apiValue},
       );
-      return ProgressSummaryDto.fromJson(response.data!);
+      return ProgressSummaryDto.fromJson(response.data!, period);
     });
   }
 
   Future<StatisticsSummaryDto> getStatistics(StatisticsFilter filter) {
     return runApiCall(() async {
       final response = await _dio.get<Map<String, dynamic>>(
-        '/statistics',
+        '/v1/estadisticas',
         queryParameters: {
           'periodo': filter.period.apiValue,
-          if (filter.habitId != null) 'habitId': filter.habitId,
-          if (filter.categoryId != null) 'categoryId': filter.categoryId,
+          if (filter.habitId != null) 'habitoId': filter.habitId,
+          if (filter.categoryId != null) 'categoria': filter.categoryId,
         },
       );
-      return StatisticsSummaryDto.fromJson(response.data!);
+      return StatisticsSummaryDto.fromJson(response.data!, filter.period);
     });
   }
 }

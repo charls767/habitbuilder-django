@@ -1,32 +1,42 @@
 import '../../domain/entities/progress_summary.dart';
 
-class ProgressDayDto {
-  const ProgressDayDto({
-    required this.date,
+class HabitProgressDto {
+  const HabitProgressDto({
+    required this.habitId,
+    required this.from,
+    required this.to,
     required this.completionRate,
-    required this.completed,
-    required this.scheduled,
+    required this.currentStreak,
+    required this.longestStreak,
+    required this.hasData,
   });
 
-  factory ProgressDayDto.fromJson(Map<String, dynamic> json) {
-    return ProgressDayDto(
-      date: DateTime.parse(json['fecha'] as String),
-      completionRate: (json['porcentajeCumplimiento'] as num).toDouble(),
-      completed: json['completados'] as int,
-      scheduled: json['programados'] as int,
+  factory HabitProgressDto.fromJson(Map<String, dynamic> json) {
+    return HabitProgressDto(
+      habitId: json['habitoId'] as String,
+      from: DateTime.parse(json['periodoDesde'] as String),
+      to: DateTime.parse(json['periodoHasta'] as String),
+      completionRate: (json['porcentaje'] as num).toDouble() / 100,
+      currentStreak: json['rachaActual'] as int,
+      longestStreak: json['rachaMasLarga'] as int,
+      hasData: json['estado'] == 'con_datos',
     );
   }
 
-  final DateTime date;
+  final String habitId;
+  final DateTime from;
+  final DateTime to;
   final double completionRate;
-  final int completed;
-  final int scheduled;
+  final int currentStreak;
+  final int longestStreak;
+  final bool hasData;
 
-  ProgressDay toDomain() => ProgressDay(
-    date: date,
+  HabitProgress toDomain() => HabitProgress(
+    habitId: habitId,
     completionRate: completionRate,
-    completed: completed,
-    scheduled: scheduled,
+    currentStreak: currentStreak,
+    longestStreak: longestStreak,
+    hasData: hasData,
   );
 }
 
@@ -35,56 +45,56 @@ class ProgressSummaryDto {
     required this.period,
     required this.from,
     required this.to,
-    required this.completionRate,
-    required this.currentStreak,
-    required this.longestStreak,
-    required this.completed,
-    required this.scheduled,
-    required this.changeVsPrevious,
-    required this.days,
+    required this.habits,
   });
 
-  factory ProgressSummaryDto.fromJson(Map<String, dynamic> json) {
-    final periodValue = json['periodo'] as String;
+  factory ProgressSummaryDto.fromJson(
+    List<dynamic> json,
+    ProgressPeriod requestedPeriod, {
+    DateTime? fallbackDate,
+  }) {
+    final habits = json
+        .map((item) => HabitProgressDto.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
+    final fallback = fallbackDate ?? DateTime.now();
     return ProgressSummaryDto(
-      period: ProgressPeriod.values.firstWhere(
-        (period) => period.apiValue == periodValue,
-      ),
-      from: DateTime.parse(json['desde'] as String),
-      to: DateTime.parse(json['hasta'] as String),
-      completionRate: (json['porcentajeCumplimiento'] as num).toDouble(),
-      currentStreak: json['rachaActual'] as int,
-      longestStreak: json['rachaMasLarga'] as int,
-      completed: json['completados'] as int,
-      scheduled: json['programados'] as int,
-      changeVsPrevious: (json['cambioPeriodoAnterior'] as num).toDouble(),
-      days: (json['dias'] as List<dynamic>)
-          .map((item) => ProgressDayDto.fromJson(item as Map<String, dynamic>))
-          .toList(growable: false),
+      period: requestedPeriod,
+      from: habits.isEmpty ? fallback : habits.first.from,
+      to: habits.isEmpty ? fallback : habits.first.to,
+      habits: habits,
     );
   }
 
   final ProgressPeriod period;
   final DateTime from;
   final DateTime to;
-  final double completionRate;
-  final int currentStreak;
-  final int longestStreak;
-  final int completed;
-  final int scheduled;
-  final double changeVsPrevious;
-  final List<ProgressDayDto> days;
+  final List<HabitProgressDto> habits;
 
-  ProgressSummary toDomain() => ProgressSummary(
-    period: period,
-    from: from,
-    to: to,
-    completionRate: completionRate,
-    currentStreak: currentStreak,
-    longestStreak: longestStreak,
-    completed: completed,
-    scheduled: scheduled,
-    changeVsPrevious: changeVsPrevious,
-    days: days.map((day) => day.toDomain()).toList(growable: false),
-  );
+  ProgressSummary toDomain() {
+    final withData = habits.where((habit) => habit.hasData).toList();
+    final completionRate = withData.isEmpty
+        ? 0.0
+        : withData
+                  .map((habit) => habit.completionRate)
+                  .reduce((left, right) => left + right) /
+              withData.length;
+    final currentStreak = withData.fold(
+      0,
+      (best, habit) => habit.currentStreak > best ? habit.currentStreak : best,
+    );
+    final longestStreak = withData.fold(
+      0,
+      (best, habit) => habit.longestStreak > best ? habit.longestStreak : best,
+    );
+
+    return ProgressSummary(
+      period: period,
+      from: from,
+      to: to,
+      completionRate: completionRate,
+      currentStreak: currentStreak,
+      longestStreak: longestStreak,
+      habits: habits.map((habit) => habit.toDomain()).toList(growable: false),
+    );
+  }
 }

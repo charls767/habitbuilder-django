@@ -48,7 +48,7 @@ test('measures one cold request and configured warm requests after login', async
 
   const report = await runLatencyStudy({
     baseUrl: 'http://localhost:4010',
-    endpoint: '/progress?periodo=semana',
+    endpoint: '/v1/progreso?periodo=semana',
     warmRuns: 2,
     email: 'tester@example.com',
     password: 'not-reported',
@@ -105,7 +105,7 @@ test('rejects cross-host endpoints and missing credentials', async () => {
     () =>
       runLatencyStudy({
         baseUrl: 'https://api.example.com',
-        endpoint: '/progress',
+        endpoint: '/v1/progreso',
       }),
     /API_ACCESS_TOKEN/,
   );
@@ -126,7 +126,7 @@ test('writes a CLI report without persisting credentials', async () => {
       {
         API_BASE_URL: 'https://api.example.com',
         API_ACCESS_TOKEN: 'secret-token',
-        LATENCY_ENDPOINT: '/progress',
+        LATENCY_ENDPOINT: '/v1/progreso',
         LATENCY_WARM_RUNS: '1',
         LATENCY_ENVIRONMENT: 'test fixture',
         LATENCY_OUTPUT: output,

@@ -289,47 +289,48 @@ for (const field of ['id', 'habitoId', 'fecha', 'estado']) {
 await request('/habits/hab_001/logs', trackingRequest, 200);
 
 const progressResponse = await request(
-  '/progress?periodo=semana',
+  '/v1/progreso?periodo=semana',
   {headers: authenticated},
   200,
 );
 const progress = await progressResponse.json();
+if (!Array.isArray(progress) || progress.length === 0) {
+  throw new Error('GET progreso no devolvio una lista por habito');
+}
 for (const field of [
-  'periodo',
-  'desde',
-  'hasta',
-  'porcentajeCumplimiento',
+  'habitoId',
+  'periodoDesde',
+  'periodoHasta',
   'rachaActual',
   'rachaMasLarga',
-  'completados',
-  'programados',
-  'dias',
+  'porcentaje',
+  'estado',
 ]) {
-  if (!(field in progress)) {
-    throw new Error(`GET progress no incluyo ${field}`);
+  if (!(field in progress[0])) {
+    throw new Error(`GET progreso no incluyo ${field}`);
   }
 }
 
 const statisticsResponse = await request(
-  '/statistics?periodo=semana&habitId=hab_001&categoryId=cat_001',
+  '/v1/estadisticas?periodo=semana',
   {headers: authenticated},
   200,
 );
 const statistics = await statisticsResponse.json();
 for (const field of [
-  'periodo',
-  'desde',
-  'hasta',
-  'porcentajeCumplimiento',
+  'periodoDesde',
+  'periodoHasta',
+  'porcentaje',
   'mejorRacha',
-  'suficientesDatos',
-  'habitos',
+  'masConsistentes',
+  'masOmitidos',
+  'estado',
 ]) {
   if (!(field in statistics)) {
-    throw new Error(`GET statistics no incluyo ${field}`);
+    throw new Error(`GET estadisticas no incluyo ${field}`);
   }
 }
 
 console.log(
-  'Prism smoke test: auth + habits + goals + reminders + tracking + progress + statistics OK',
+  'Prism smoke test: auth + habits + goals + reminders + tracking + progreso + estadisticas OK',
 );

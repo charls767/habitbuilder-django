@@ -1,7 +1,6 @@
 enum ProgressPeriod {
   week('semana', 'Semana'),
-  month('mes', 'Mes'),
-  year('anio', 'Año');
+  month('mes', 'Mes');
 
   const ProgressPeriod(this.apiValue, this.label);
 
@@ -9,33 +8,32 @@ enum ProgressPeriod {
   final String label;
 }
 
-class ProgressDay {
-  const ProgressDay({
-    required this.date,
+class HabitProgress {
+  const HabitProgress({
+    required this.habitId,
     required this.completionRate,
-    required this.completed,
-    required this.scheduled,
+    required this.currentStreak,
+    required this.longestStreak,
+    required this.hasData,
   });
 
-  final DateTime date;
+  final String habitId;
   final double completionRate;
-  final int completed;
-  final int scheduled;
+  final int currentStreak;
+  final int longestStreak;
+  final bool hasData;
 }
 
 class ProgressSummary {
-  const ProgressSummary({
+  ProgressSummary({
     required this.period,
     required this.from,
     required this.to,
     required this.completionRate,
     required this.currentStreak,
     required this.longestStreak,
-    required this.completed,
-    required this.scheduled,
-    required this.changeVsPrevious,
-    required this.days,
-  });
+    required List<HabitProgress> habits,
+  }) : habits = List<HabitProgress>.unmodifiable(habits);
 
   final ProgressPeriod period;
   final DateTime from;
@@ -43,10 +41,7 @@ class ProgressSummary {
   final double completionRate;
   final int currentStreak;
   final int longestStreak;
-  final int completed;
-  final int scheduled;
-  final double changeVsPrevious;
-  final List<ProgressDay> days;
+  final List<HabitProgress> habits;
 
-  bool get hasData => scheduled > 0 || days.any((day) => day.scheduled > 0);
+  bool get hasData => habits.any((habit) => habit.hasData);
 }
