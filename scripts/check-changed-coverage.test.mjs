@@ -199,3 +199,16 @@ test('ignores the pure reminder repository interface with no executable lines', 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Changed-code coverage: 0\/0/);
 });
+
+test('ignores non-instrumentable HBM-14 test and declaration paths', () => {
+  for (const changedPath of [
+    'integration_test/reminder_android_smoke_test.dart',
+    'lib/features/reminders/domain/services/reminder_scheduler.dart',
+    'lib/features/reminders/infrastructure/notifications/reminder_scheduler_factory.dart',
+  ]) {
+    const result = runFixture({changedPath});
+
+    assert.equal(result.status, 0, `${changedPath}: ${result.stderr}`);
+    assert.match(result.stdout, /Changed-code coverage: 0\/0/);
+  }
+});

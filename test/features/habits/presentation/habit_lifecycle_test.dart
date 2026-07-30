@@ -7,6 +7,8 @@ import 'package:habitbuilder_mobile/features/habits/domain/entities/habito.dart'
 import 'package:habitbuilder_mobile/features/habits/domain/repositories/habit_repository.dart';
 import 'package:habitbuilder_mobile/features/habits/presentation/providers/habit_providers.dart';
 import 'package:habitbuilder_mobile/features/habits/presentation/screens/habits_list_screen.dart';
+import 'package:habitbuilder_mobile/features/reminders/application/reminder_reconciliation_coordinator.dart';
+import 'package:habitbuilder_mobile/features/reminders/presentation/providers/reminder_providers.dart';
 
 void main() {
   testWidgets('pause requires confirmation and cancel is side-effect free', (
@@ -89,6 +91,34 @@ void main() {
     expect(repository.resumeCalls, 1);
     expect(find.text('Hábito reanudado.'), findsOneWidget);
   });
+
+  test('pause, resume and complete reconcile only after success', () async {
+    final repository = _LifecycleRepository();
+    final requests = <bool>[];
+    final container = ProviderContainer(
+      overrides: [
+        habitRepositoryProvider.overrideWithValue(repository),
+        reminderReconciliationRequestProvider.overrideWithValue(({
+          bool requestPermission = false,
+        }) async {
+          requests.add(requestPermission);
+          return const ReminderDeliveryState.delivered();
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controller = container.read(habitControllerProvider.notifier);
+
+    expect(await controller.pauseHabit('hab_1'), isTrue);
+    expect(await controller.resumeHabit('hab_1'), isTrue);
+    expect(await controller.completeHabit('hab_1'), isTrue);
+
+    expect(requests, [false, true, false]);
+
+    repository.failure = StateError('backend');
+    expect(await controller.pauseHabit('hab_1'), isFalse);
+    expect(requests, [false, true, false]);
+  });
 }
 
 Future<void> _pumpLifecycle(
@@ -101,6 +131,10 @@ Future<void> _pumpLifecycle(
       overrides: [
         habitRepositoryProvider.overrideWithValue(repository),
         habitsListProvider.overrideWith((ref) async => [habit]),
+        reminderReconciliationRequestProvider.overrideWithValue(
+          ({bool requestPermission = false}) async =>
+              const ReminderDeliveryState.delivered(),
+        ),
       ],
       child: const MaterialApp(home: HabitsListScreen()),
     ),

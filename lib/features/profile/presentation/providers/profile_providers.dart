@@ -9,6 +9,7 @@ import '../../data/datasources/profile_remote_data_source.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/perfil_usuario.dart';
 import '../../domain/repositories/profile_repository.dart';
+import '../../../reminders/presentation/providers/reminder_providers.dart';
 
 part 'profile_providers.g.dart';
 
@@ -39,6 +40,7 @@ class ProfileController extends _$ProfileController {
     required AccessibilityPreferences accessibility,
     required NotificationPreferences notifications,
   }) async {
+    final reconcile = ref.read(reminderReconciliationRequestProvider);
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await ref
@@ -51,8 +53,13 @@ class ProfileController extends _$ProfileController {
             notifications: notifications,
           );
     });
-    if (!state.hasError) {
+    final success = !state.hasError;
+    if (success) {
       ref.invalidate(myProfileProvider);
+      await reconcile(
+        requestPermission:
+            notifications.enabled && notifications.habitReminders,
+      );
     }
   }
 

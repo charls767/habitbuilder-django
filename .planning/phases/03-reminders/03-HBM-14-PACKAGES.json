@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-07-29T23:02:17.234Z",
+  "mutationStartedAtUtc": "2026-07-29T23:02:17.236Z",
+  "packages": [
+    {
+      "name": "flutter_local_notifications",
+      "version": "22.2.0",
+      "sourceUrl": "https://pub.dev/api/packages/flutter_local_notifications/versions/22.2.0",
+      "archiveUrl": "https://pub.dev/api/archives/flutter_local_notifications-22.2.0.tar.gz",
+      "homepage": "https://github.com/MaikuB/flutter_local_notifications/tree/master/flutter_local_notifications",
+      "repository": null
+    },
+    {
+      "name": "timezone",
+      "version": "0.11.1",
+      "sourceUrl": "https://pub.dev/api/packages/timezone/versions/0.11.1",
+      "archiveUrl": "https://pub.dev/api/archives/timezone-0.11.1.tar.gz",
+      "homepage": null,
+      "repository": "https://github.com/dart-lang/labs/tree/main/pkgs/timezone"
+    }
+  ],
+  "files": {
+    "pubspec": {
+      "path": "C:\\Users\\USER\\Desktop\\DPPF\\HabitBuilder\\habitbuilder-mobile-hbm14\\pubspec.yaml",
+      "beforeSha256": "13966191205456E3C8DD8AA8D7141B9AADB54DA2B1FB84AECAC271E84208F80D",
+      "beforeMtimeUtc": "2026-07-29T22:54:55.517Z",
+      "afterSha256": "FE564D4596AABA78C6128AEA45F6EE405D76F3C2BF14810188AF2DBD8796A494",
+      "afterMtimeUtc": "2026-07-29T23:02:32.378Z"
+    },
+    "lockfile": {
+      "path": "C:\\Users\\USER\\Desktop\\DPPF\\HabitBuilder\\habitbuilder-mobile-hbm14\\pubspec.lock",
+      "beforeSha256": "1D999D4C98CE01DF147B0CC71418896C9C1934648065356A3DB80A916763AC54",
+      "beforeMtimeUtc": "2026-07-29T22:54:59.761Z",
+      "afterSha256": "8C724292C5BB504F0AD6CEE440CAA07A5FB3ABE82236FBCC3C1F236C7D4C93B9",
+      "afterMtimeUtc": "2026-07-29T23:02:35.654Z"
+    }
+  },
+  "postValidatedAtUtc": "2026-07-29T23:02:57.441Z",
+  "resolvedVersions": {
+    "flutter_local_notifications": "22.2.0",
+    "timezone": "0.11.1"
+  }
+}

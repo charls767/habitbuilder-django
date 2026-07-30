@@ -6,12 +6,15 @@ const defaultExcluded = [
   /\.g\.dart$/,
   /\.freezed\.dart$/,
   /^test\//,
+  /^integration_test\//,
   /^lib\/main\.dart$/,
   /^lib\/app\.dart$/,
   /^lib\/core\/router\//,
   /^lib\/core\/theme\//,
   /^lib\/core\/network\/dio_client\.dart$/,
   /^lib\/features\/reminders\/domain\/repositories\/reminder_repository\.dart$/,
+  /^lib\/features\/reminders\/domain\/services\/reminder_scheduler\.dart$/,
+  /^lib\/features\/reminders\/infrastructure\/notifications\/reminder_scheduler_factory\.dart$/,
 ];
 
 export function parseLcov(content) {
