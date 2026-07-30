@@ -139,8 +139,14 @@ class SecureTrackingLocalDataSource implements TrackingLocalDataSource {
       if (current == null || !current.hasSamePayload(write)) return false;
 
       state.removeWrite(write.key);
+      state.removeRecord(write.key);
       state.replaceRecord(
-        remoteRecord.copyWith(
+        RegistroHabito(
+          id: remoteRecord.id,
+          habitId: write.draft.habitId,
+          fecha: write.draft.fecha,
+          estado: remoteRecord.estado,
+          nota: remoteRecord.nota,
           sincronizacion: EstadoSincronizacion.sincronizado,
         ),
       );
@@ -246,6 +252,10 @@ class _TrackingState {
   void replaceRecord(RegistroHabito record) {
     records.removeWhere((item) => _recordKey(item) == _recordKey(record));
     records.add(record);
+  }
+
+  void removeRecord(String key) {
+    records.removeWhere((record) => _recordKey(record) == key);
   }
 
   void replaceWrite(PendingTrackingWrite write) {
