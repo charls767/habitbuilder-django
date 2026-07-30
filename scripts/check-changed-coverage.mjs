@@ -13,6 +13,7 @@ const defaultExcluded = [
   /^lib\/core\/theme\//,
   /^lib\/core\/network\/dio_client\.dart$/,
   /^lib\/features\/tracking\/domain\/repositories\/tracking_repository\.dart$/,
+  /^lib\/features\/progress\/domain\/repositories\/progress_repository\.dart$/,
   /^lib\/features\/reminders\/domain\/repositories\/reminder_repository\.dart$/,
   /^lib\/features\/reminders\/domain\/services\/reminder_scheduler\.dart$/,
   /^lib\/features\/reminders\/infrastructure\/notifications\/reminder_scheduler_factory\.dart$/,
