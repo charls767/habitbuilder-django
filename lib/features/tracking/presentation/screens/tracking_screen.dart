@@ -151,20 +151,27 @@ class _DateHeader extends StatelessWidget {
             icon: const Icon(Icons.chevron_left),
           ),
           Expanded(
-            child: Column(
-              children: [
-                Text(
-                  _isToday(date) ? 'Hoy' : _weekday(date.weekday),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _friendlyDate(date),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
-                ),
-              ],
+            child: Semantics(
+              header: true,
+              label:
+                  '${_isToday(date) ? 'Hoy' : _weekday(date.weekday)}, '
+                  '${_friendlyDate(date)}',
+              excludeSemantics: true,
+              child: Column(
+                children: [
+                  Text(
+                    _isToday(date) ? 'Hoy' : _weekday(date.weekday),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _friendlyDate(date),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           IconButton(
@@ -195,41 +202,51 @@ class _HabitTrackingCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: AppColors.mint,
-                    borderRadius: BorderRadius.circular(12),
+            Semantics(
+              container: true,
+              header: true,
+              label: 'Hábito ${habit.nombre}',
+              excludeSemantics: true,
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.mint,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_outline,
+                      color: AppColors.primary,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.check_circle_outline,
-                    color: AppColors.primary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      habit.nombre,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    habit.nombre,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                if (controller.isLoading)
-                  const SizedBox.square(
-                    dimension: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              ],
+                  if (controller.isLoading)
+                    const SizedBox.square(
+                      dimension: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        semanticsLabel: 'Guardando registro',
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 14),
             record.when(
               data: (value) => Column(
                 children: [
                   _StatusSelector(
+                    habitName: habit.nombre,
                     selected: value?.estado,
                     enabled: !controller.isLoading,
                     onSelected: (status) =>
@@ -258,21 +275,29 @@ class _HabitTrackingCard extends ConsumerWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppColors.muted),
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ),
                       IconButton(
                         onPressed: controller.isLoading
                             ? null
                             : () => _editNote(context, ref, value),
-                        tooltip: value == null ? 'Agregar nota' : 'Editar nota',
+                        tooltip: value == null
+                            ? 'Agregar nota para ${habit.nombre}'
+                            : 'Editar nota para ${habit.nombre}',
                         icon: const Icon(Icons.edit_note_outlined),
                       ),
                     ],
                   ),
                 ],
               ),
-              loading: () => const LinearProgressIndicator(),
+              loading: () => const LinearProgressIndicator(
+                semanticsLabel: 'Cargando registro del hábito',
+              ),
               error: (_, _) => Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
@@ -372,75 +397,91 @@ class _SyncStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final conflict = status == EstadoSincronizacion.conflicto;
-    final color = conflict ? AppColors.danger : AppColors.muted;
-    return Row(
-      children: [
-        Icon(
-          conflict ? Icons.sync_problem_outlined : Icons.cloud_upload_outlined,
-          size: 18,
-          color: color,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
+    final color = conflict
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final label = conflict
+        ? 'Conflicto de sincronización'
+        : 'Pendiente de sincronizar';
+    return Semantics(
+      liveRegion: true,
+      label: label,
+      child: Row(
+        children: [
+          Icon(
             conflict
-                ? 'Conflicto de sincronización'
-                : 'Pendiente de sincronizar',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: color),
+                ? Icons.sync_problem_outlined
+                : Icons.cloud_upload_outlined,
+            size: 18,
+            color: color,
           ),
-        ),
-        if (onRetry != null)
-          TextButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.sync, size: 18),
-            label: const Text('Reintentar'),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: color),
+            ),
           ),
-      ],
+          if (onRetry != null)
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.sync, size: 18),
+              label: const Text('Reintentar'),
+            ),
+        ],
+      ),
     );
   }
 }
 
 class _StatusSelector extends StatelessWidget {
   const _StatusSelector({
+    required this.habitName,
     required this.selected,
     required this.enabled,
     required this.onSelected,
   });
 
+  final String habitName;
   final EstadoRegistro? selected;
   final bool enabled;
   final ValueChanged<EstadoRegistro> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<EstadoRegistro>(
-      segments: const [
-        ButtonSegment(
-          value: EstadoRegistro.completado,
-          icon: Icon(Icons.check_rounded),
-          label: Text('Hecho'),
-        ),
-        ButtonSegment(
-          value: EstadoRegistro.parcial,
-          icon: Icon(Icons.timelapse_rounded),
-          label: Text('Parcial'),
-        ),
-        ButtonSegment(
-          value: EstadoRegistro.omitido,
-          icon: Icon(Icons.remove_rounded),
-          label: Text('Omitido'),
-        ),
-      ],
-      selected: selected == null ? const {} : {selected!},
-      emptySelectionAllowed: true,
-      showSelectedIcon: false,
-      onSelectionChanged: enabled
-          ? (values) {
-              if (values.isNotEmpty) onSelected(values.first);
-            }
-          : null,
+    return Semantics(
+      container: true,
+      label: 'Estado de $habitName',
+      explicitChildNodes: true,
+      child: SegmentedButton<EstadoRegistro>(
+        segments: const [
+          ButtonSegment(
+            value: EstadoRegistro.completado,
+            icon: Icon(Icons.check_rounded),
+            label: Text('Hecho'),
+          ),
+          ButtonSegment(
+            value: EstadoRegistro.parcial,
+            icon: Icon(Icons.timelapse_rounded),
+            label: Text('Parcial'),
+          ),
+          ButtonSegment(
+            value: EstadoRegistro.omitido,
+            icon: Icon(Icons.remove_rounded),
+            label: Text('Omitido'),
+          ),
+        ],
+        selected: selected == null ? const {} : {selected!},
+        emptySelectionAllowed: true,
+        showSelectedIcon: false,
+        onSelectionChanged: enabled
+            ? (values) {
+                if (values.isNotEmpty) onSelected(values.first);
+              }
+            : null,
+      ),
     );
   }
 }

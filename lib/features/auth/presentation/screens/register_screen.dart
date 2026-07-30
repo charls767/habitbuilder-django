@@ -227,7 +227,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 icon: authState.isLoading
                     ? const SizedBox.square(
                         dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          semanticsLabel: 'Creando cuenta',
+                        ),
                       )
                     : const Icon(Icons.person_add_alt_1),
                 label: const Text('Crear cuenta'),

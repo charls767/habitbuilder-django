@@ -129,12 +129,50 @@ void main() {
     expect(find.text('Aún no hay datos suficientes.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('announces summaries and fits 200% high-contrast text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final semantics = tester.ensureSemantics();
+    try {
+      await _pump(tester, _FakeProgressRepository(), highContrast: true);
+      await tester.scrollUntilVisible(
+        find.text('84%'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
+
+      expect(
+        find.bySemanticsLabel(
+          'Cumplimiento semana, 84 por ciento, más 6 por ciento frente al '
+          'periodo anterior, 28 de 35 completados',
+        ),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byTooltip('27 jul · 100%'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.byTooltip('27 jul · 100%'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
 }
 
 Future<void> _pump(
   WidgetTester tester,
-  _FakeProgressRepository repository,
-) async {
+  _FakeProgressRepository repository, {
+  bool highContrast = false,
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -144,7 +182,10 @@ Future<void> _pump(
           (ref) async => const [Categoria(id: 'cat_001', nombre: 'Bienestar')],
         ),
       ],
-      child: MaterialApp(theme: AppTheme.light(), home: const ProgressScreen()),
+      child: MaterialApp(
+        theme: AppTheme.light(highContrast: highContrast),
+        home: const ProgressScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

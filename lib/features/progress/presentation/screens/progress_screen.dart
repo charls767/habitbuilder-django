@@ -285,42 +285,49 @@ class _StatisticsCompletionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = (summary.completionRate * 100).round();
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Cumplimiento filtrado',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(color: AppColors.accent),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _dateRange(summary.from, summary.to),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-                ),
-              ],
+    return Semantics(
+      container: true,
+      label:
+          'Cumplimiento filtrado $percentage por ciento, '
+          'del ${_shortDate(summary.from)} al ${_shortDate(summary.to)}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cumplimiento filtrado',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(color: AppColors.accent),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _dateRange(summary.from, summary.to),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Text(
-            '$percentage%',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+            Text(
+              '$percentage%',
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -390,42 +397,47 @@ class _StatisticHighlightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: AppColors.muted),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  if (detail != null)
+    final semanticDetail = detail == null ? '' : ', $detail';
+    return Semantics(
+      label: '$label, $value$semanticDetail',
+      excludeSemantics: true,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      detail!,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: AppColors.primary),
+                      label,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                ],
+                    const SizedBox(height: 3),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (detail != null)
+                      Text(
+                        detail!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -469,35 +481,42 @@ class _HabitStatisticRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = (statistic.completionRate * 100).round();
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                statistic.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              Text(
-                '${statistic.streak} días de racha · ${statistic.skipped} omitidos',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
-              ),
-            ],
+    return Semantics(
+      label:
+          '${statistic.name}, $percentage por ciento, '
+          '${statistic.streak} días de racha, '
+          '${statistic.skipped} omitidos',
+      excludeSemantics: true,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  statistic.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  '${statistic.streak} días de racha · ${statistic.skipped} omitidos',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          '$percentage%',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: AppColors.primary),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Text(
+            '$percentage%',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.primary),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -561,60 +580,70 @@ class _CompletionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final percentage = (summary.completionRate * 100).round();
     final change = (summary.changeVsPrevious * 100).round();
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Cumplimiento ${summary.period.label.toLowerCase()}',
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(color: AppColors.accent),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$percentage%',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
+    return Semantics(
+      container: true,
+      label:
+          'Cumplimiento ${summary.period.label.toLowerCase()}, '
+          '$percentage por ciento, '
+          '${change >= 0 ? 'más' : 'menos'} ${change.abs()} por ciento '
+          'frente al periodo anterior, '
+          '${summary.completed} de ${summary.scheduled} completados',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Cumplimiento ${summary.period.label.toLowerCase()}',
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: AppColors.accent),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$percentage%',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '${change >= 0 ? '+' : ''}$change% vs. periodo anterior',
-                  textAlign: TextAlign.end,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${change >= 0 ? '+' : ''}$change% vs. periodo anterior',
+                    textAlign: TextAlign.end,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.white),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          LinearProgressIndicator(
-            value: summary.completionRate.clamp(0, 1),
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(4),
-            color: AppColors.accent,
-            backgroundColor: Colors.white24,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _dateRange(summary.from, summary.to),
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 14),
+            LinearProgressIndicator(
+              value: summary.completionRate.clamp(0, 1),
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
+              color: AppColors.accent,
+              backgroundColor: Colors.white24,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _dateRange(summary.from, summary.to),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -640,9 +669,9 @@ class _HeatmapCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Cada celda representa el cumplimiento de un día.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.muted),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 14),
             GridView.builder(
@@ -718,13 +747,15 @@ class _Metrics extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth < 340 ? 1 : 3;
+        final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+        final scaleAdjustment = 1 + ((textScale - 1).clamp(0, 1) * 0.35);
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: columns,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: columns == 1 ? 2.6 : 0.82,
+          childAspectRatio: (columns == 1 ? 2.6 : 0.82) / scaleAdjustment,
           children: cards,
         );
       },
@@ -745,33 +776,37 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: SizedBox(
-        height: 112,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: AppColors.primary, size: 22),
-              const SizedBox(height: 7),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleMedium,
+    return Semantics(
+      label: '$label, $value',
+      excludeSemantics: true,
+      child: Card(
+        child: SizedBox(
+          height: 112,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: AppColors.primary, size: 22),
+                const SizedBox(height: 7),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelSmall?.copyWith(color: AppColors.muted),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
