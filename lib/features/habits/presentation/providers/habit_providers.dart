@@ -10,6 +10,7 @@ import '../../domain/entities/frecuencia.dart';
 import '../../domain/entities/habito.dart';
 import '../../domain/entities/meta_option.dart';
 import '../../domain/repositories/habit_repository.dart';
+import '../../../reminders/presentation/providers/reminder_providers.dart';
 
 part 'habit_providers.g.dart';
 
@@ -110,6 +111,7 @@ class HabitController extends _$HabitController {
       habitId,
       () =>
           ref.read(habitRepositoryProvider).pauseHabit(habitId, DateTime.now()),
+      requestPermission: false,
     );
   }
 
@@ -117,6 +119,7 @@ class HabitController extends _$HabitController {
     return _mutateHabit(
       habitId,
       () => ref.read(habitRepositoryProvider).resumeHabit(habitId),
+      requestPermission: true,
     );
   }
 
@@ -124,6 +127,7 @@ class HabitController extends _$HabitController {
     return _mutateHabit(
       habitId,
       () => ref.read(habitRepositoryProvider).completeHabit(habitId),
+      requestPermission: false,
     );
   }
 
@@ -141,13 +145,17 @@ class HabitController extends _$HabitController {
 
   Future<bool> _mutateHabit(
     String habitId,
-    Future<Habito> Function() operation,
-  ) async {
+    Future<Habito> Function() operation, {
+    required bool requestPermission,
+  }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(operation);
     if (!state.hasError) {
       ref.invalidate(habitsListProvider);
       ref.invalidate(habitDetailProvider(habitId));
+      await ref.read(reminderReconciliationRequestProvider)(
+        requestPermission: requestPermission,
+      );
     }
     return !state.hasError;
   }

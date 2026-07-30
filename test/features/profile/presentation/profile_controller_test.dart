@@ -99,6 +99,18 @@ void main() {
           );
 
       expect(requests, [true]);
+
+      repository.failure = StateError('backend');
+      await container
+          .read(profileControllerProvider.notifier)
+          .updateProfile(
+            nombreCompleto: 'Camila Acevedo',
+            objetivoGeneral: 'No se guarda',
+            zonaHoraria: 'Etc/UTC',
+            accessibility: const AccessibilityPreferences.defaults(),
+            notifications: const NotificationPreferences.defaults(),
+          );
+      expect(requests, [true]);
     },
   );
 }
@@ -116,6 +128,7 @@ ProviderContainer _container(_FakeProfileRepository repository) {
 class _FakeProfileRepository implements ProfileRepository {
   PerfilUsuario profile = _profile();
   int updateCalls = 0;
+  Object? failure;
 
   @override
   Future<PerfilUsuario> getMyProfile() async => profile;
@@ -128,6 +141,8 @@ class _FakeProfileRepository implements ProfileRepository {
     required AccessibilityPreferences accessibility,
     required NotificationPreferences notifications,
   }) async {
+    final currentFailure = failure;
+    if (currentFailure != null) throw currentFailure;
     updateCalls++;
     profile = PerfilUsuario(
       usuarioId: profile.usuarioId,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_chrome.dart';
 import '../../../habits/domain/entities/habito.dart';
 import '../../../habits/presentation/providers/habit_providers.dart';
+import '../../application/reminder_reconciliation_coordinator.dart';
 import '../../domain/entities/recordatorio.dart';
 import '../providers/reminder_providers.dart';
 import '../widgets/reminder_card.dart';
@@ -22,6 +24,7 @@ class RemindersScreen extends ConsumerWidget {
     final reminders = ref.watch(remindersListProvider(habitId));
     final habit = ref.watch(habitDetailProvider(habitId));
     final mutation = ref.watch(reminderControllerProvider(habitId));
+    final delivery = ref.watch(reminderDeliveryStateProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recordatorios')),
@@ -30,6 +33,7 @@ class RemindersScreen extends ConsumerWidget {
           data: (items) => _ReminderList(
             reminders: items,
             habit: habit.value,
+            delivery: delivery,
             actionsEnabled: !mutation.isLoading,
             onAdd: () => _openForm(context, habit: habit.value),
             onEdit: (reminder) =>
@@ -37,6 +41,11 @@ class RemindersScreen extends ConsumerWidget {
             onToggle: (reminder, active) =>
                 _toggle(context, ref, reminder, active),
             onDelete: (reminder) => _confirmDelete(context, ref, reminder),
+            onRetryDelivery: () {
+              unawaited(
+                ref.read(reminderDeliveryStateProvider.notifier).retry(),
+              );
+            },
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => _LoadError(
@@ -134,20 +143,24 @@ class _ReminderList extends StatelessWidget {
   const _ReminderList({
     required this.reminders,
     required this.habit,
+    required this.delivery,
     required this.actionsEnabled,
     required this.onAdd,
     required this.onEdit,
     required this.onToggle,
     required this.onDelete,
+    required this.onRetryDelivery,
   });
 
   final List<Recordatorio> reminders;
   final Habito? habit;
+  final ReminderDeliveryState delivery;
   final bool actionsEnabled;
   final VoidCallback onAdd;
   final ValueChanged<Recordatorio> onEdit;
   final void Function(Recordatorio reminder, bool active) onToggle;
   final ValueChanged<Recordatorio> onDelete;
+  final VoidCallback onRetryDelivery;
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +169,8 @@ class _ReminderList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
-        _SummaryCard(reminders: reminders),
+        _SummaryCard(reminders: reminders, delivery: delivery),
+        _DeliveryNotice(delivery: delivery, onRetry: onRetryDelivery),
         const SizedBox(height: 20),
         const AppSectionLabel('Tus recordatorios'),
         const SizedBox(height: 10),
@@ -188,9 +202,10 @@ class _ReminderList extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.reminders});
+  const _SummaryCard({required this.reminders, required this.delivery});
 
   final List<Recordatorio> reminders;
+  final ReminderDeliveryState delivery;
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +213,13 @@ class _SummaryCard extends StatelessWidget {
     final programmedCopy = activeCount == 1
         ? '1 recordatorio programado'
         : '$activeCount recordatorios programados';
+    final title = switch (delivery.status) {
+      ReminderDeliveryStatus.denied => 'Recordatorios configurados',
+      ReminderDeliveryStatus.inexact => 'Entrega aproximada',
+      ReminderDeliveryStatus.unsupported => 'Recordatorios guardados',
+      ReminderDeliveryStatus.failed => 'Sincronización pendiente',
+      _ => 'Notificaciones activas',
+    };
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -223,7 +245,7 @@ class _SummaryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Notificaciones activas',
+                    title,
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium?.copyWith(color: Colors.white),
@@ -239,6 +261,75 @@ class _SummaryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DeliveryNotice extends StatelessWidget {
+  const _DeliveryNotice({required this.delivery, required this.onRetry});
+
+  final ReminderDeliveryState delivery;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final copy = switch (delivery.status) {
+      ReminderDeliveryStatus.denied => const (
+        Icons.notifications_off_outlined,
+        'Las notificaciones están desactivadas. Tus recordatorios siguen '
+            'guardados.',
+        'Permitir y reintentar',
+      ),
+      ReminderDeliveryStatus.inexact => const (
+        Icons.schedule_outlined,
+        'Los recordatorios están guardados, pero pueden entregarse con demora.',
+        'Reintentar entrega exacta',
+      ),
+      ReminderDeliveryStatus.unsupported => const (
+        Icons.devices_other_outlined,
+        'Este dispositivo no admite notificaciones locales. Tus recordatorios '
+            'siguen guardados.',
+        null,
+      ),
+      ReminderDeliveryStatus.failed => const (
+        Icons.sync_problem_outlined,
+        'No se pudo sincronizar la entrega local. Tus recordatorios siguen '
+            'guardados.',
+        'Reintentar',
+      ),
+      _ => null,
+    };
+    if (copy == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Card(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(copy.$1, color: AppColors.warning),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(copy.$2),
+                    if (copy.$3 case final label?) ...[
+                      const SizedBox(height: 8),
+                      TextButton(onPressed: onRetry, child: Text(label)),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

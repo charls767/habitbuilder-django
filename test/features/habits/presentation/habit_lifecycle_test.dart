@@ -114,6 +114,10 @@ void main() {
     expect(await controller.completeHabit('hab_1'), isTrue);
 
     expect(requests, [false, true, false]);
+
+    repository.failure = StateError('backend');
+    expect(await controller.pauseHabit('hab_1'), isFalse);
+    expect(requests, [false, true, false]);
   });
 }
 
@@ -127,6 +131,10 @@ Future<void> _pumpLifecycle(
       overrides: [
         habitRepositoryProvider.overrideWithValue(repository),
         habitsListProvider.overrideWith((ref) async => [habit]),
+        reminderReconciliationRequestProvider.overrideWithValue(
+          ({bool requestPermission = false}) async =>
+              const ReminderDeliveryState.delivered(),
+        ),
       ],
       child: const MaterialApp(home: HabitsListScreen()),
     ),

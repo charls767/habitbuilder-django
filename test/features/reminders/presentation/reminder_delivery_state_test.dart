@@ -126,9 +126,46 @@ void main() {
           find.textContaining('1 recordatorio programado'),
           findsOneWidget,
         );
+        expect(find.text('Notificaciones activas'), findsNothing);
       },
     );
   }
+
+  testWidgets('delivery retry requests permission and keeps server data', (
+    tester,
+  ) async {
+    final recorder = _ReconciliationRecorder();
+    final container = ProviderContainer(
+      overrides: [
+        remindersListProvider(
+          'habit-1',
+        ).overrideWith((ref) async => [_reminder(active: true)]),
+        habitDetailProvider('habit-1').overrideWith((ref) async => _habit()),
+        reminderReconciliationRequestProvider.overrideWithValue(recorder.call),
+      ],
+    );
+    addTearDown(container.dispose);
+    container
+        .read(reminderDeliveryStateProvider.notifier)
+        .update(const ReminderDeliveryState.denied());
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: RemindersScreen(habitId: 'habit-1')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Permitir y reintentar'));
+    await tester.pumpAndSettle();
+
+    expect(recorder.requests, [true]);
+    expect(
+      container.read(reminderDeliveryStateProvider).status,
+      ReminderDeliveryStatus.delivered,
+    );
+    expect(find.text('Tomar agua'), findsWidgets);
+  });
 }
 
 final class _ReconciliationRecorder {
