@@ -743,6 +743,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/Progreso'
 
+  /statistics:
+    get:
+      operationId: getStatisticsSummary
+      tags: [progress]
+      summary: Consultar estadísticas filtradas del usuario autenticado
+      description: >-
+        Contrato provisional exclusivo del cliente mobile. No reemplaza ni
+        cierra la definición del contrato backend asociada a HBB-34.
+      x-habitbuilder-provisional: true
+      parameters:
+        - name: periodo
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [semana, mes, anio]
+        - name: habitId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estadísticas filtradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenEstadisticas'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1516,6 +1550,96 @@ components:
           type: integer
           minimum: 0
           example: 5
+
+    ResumenEstadisticas:
+      type: object
+      description: Contrato provisional mobile para HBM-18.
+      required:
+        - periodo
+        - desde
+        - hasta
+        - porcentajeCumplimiento
+        - mejorRacha
+        - suficientesDatos
+        - habitos
+      properties:
+        periodo:
+          type: string
+          enum: [semana, mes, anio]
+          example: semana
+        desde:
+          type: string
+          format: date
+          example: '2026-07-27'
+        hasta:
+          type: string
+          format: date
+          example: '2026-08-02'
+        porcentajeCumplimiento:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          example: 0.84
+        mejorRacha:
+          type: integer
+          minimum: 0
+          example: 12
+        suficientesDatos:
+          type: boolean
+          example: true
+        habitoMasConstante:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/DestacadoEstadisticas'
+        habitoMasOmitido:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/DestacadoEstadisticas'
+        habitos:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+
+    DestacadoEstadisticas:
+      type: object
+      required: [id, nombre, valor]
+      properties:
+        id:
+          type: string
+          example: hab_001
+        nombre:
+          type: string
+          example: Leer 20 minutos
+        valor:
+          type: number
+          format: double
+          example: 0.92
+
+    EstadisticaHabito:
+      type: object
+      required: [id, nombre, porcentajeCumplimiento, racha, omitidos]
+      properties:
+        id:
+          type: string
+          example: hab_001
+        nombre:
+          type: string
+          example: Leer 20 minutos
+        porcentajeCumplimiento:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          example: 0.92
+        racha:
+          type: integer
+          minimum: 0
+          example: 12
+        omitidos:
+          type: integer
+          minimum: 0
+          example: 1
 
     Estadistica:
       type: object

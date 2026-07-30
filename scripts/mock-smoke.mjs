@@ -310,6 +310,26 @@ for (const field of [
   }
 }
 
+const statisticsResponse = await request(
+  '/statistics?periodo=semana&habitId=hab_001&categoryId=cat_001',
+  {headers: authenticated},
+  200,
+);
+const statistics = await statisticsResponse.json();
+for (const field of [
+  'periodo',
+  'desde',
+  'hasta',
+  'porcentajeCumplimiento',
+  'mejorRacha',
+  'suficientesDatos',
+  'habitos',
+]) {
+  if (!(field in statistics)) {
+    throw new Error(`GET statistics no incluyo ${field}`);
+  }
+}
+
 console.log(
-  'Prism smoke test: auth + habits + goals + reminders + tracking + progress OK',
+  'Prism smoke test: auth + habits + goals + reminders + tracking + progress + statistics OK',
 );
