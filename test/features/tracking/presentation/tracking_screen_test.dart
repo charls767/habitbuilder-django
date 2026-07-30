@@ -29,7 +29,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.savedDraft?.estado, EstadoRegistro.parcial);
-    expect(find.text('Cumplimiento guardado.'), findsOneWidget);
+    expect(find.text('Guardado en este dispositivo.'), findsOneWidget);
   });
 
   testWidgets('edits the note while preserving the selected status', (
@@ -87,6 +87,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sin nota'), findsOneWidget);
+  });
+
+  testWidgets('shows pending and retryable conflict states', (tester) async {
+    final repository = _FakeTrackingRepository(
+      initial: _record(syncStatus: EstadoSincronizacion.conflicto),
+    );
+    await _pumpScreen(tester, repository: repository);
+
+    expect(find.text('Conflicto de sincronización'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Reintentar'));
+    await tester.pumpAndSettle();
+    expect(repository.savedDraft?.estado, EstadoRegistro.completado);
+
+    repository.record = _record(syncStatus: EstadoSincronizacion.pendiente);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pumpScreen(tester, repository: repository);
+    expect(find.text('Pendiente de sincronizar'), findsOneWidget);
   });
 
   testWidgets('renders active controls without overflow at 320x640', (
@@ -180,7 +197,10 @@ Habito _habit({
   );
 }
 
-RegistroHabito _record({String? note}) {
+RegistroHabito _record({
+  String? note,
+  EstadoSincronizacion syncStatus = EstadoSincronizacion.sincronizado,
+}) {
   final now = DateTime.now();
   return RegistroHabito(
     id: 'log-1',
@@ -188,6 +208,7 @@ RegistroHabito _record({String? note}) {
     fecha: DateTime(now.year, now.month, now.day),
     estado: EstadoRegistro.completado,
     nota: note,
+    sincronizacion: syncStatus,
   );
 }
 

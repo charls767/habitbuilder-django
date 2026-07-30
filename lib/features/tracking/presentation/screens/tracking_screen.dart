@@ -49,12 +49,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
           return AppContent(
             child: RefreshIndicator(
               color: AppColors.primary,
-              onRefresh: () async {
-                ref.invalidate(habitsListProvider);
-                for (final habit in trackable) {
-                  ref.invalidate(trackingLogProvider(habit.id, _selectedDate));
-                }
-              },
+              onRefresh: () => _refresh(trackable),
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
@@ -118,6 +113,16 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     final next = _selectedDate.add(Duration(days: days));
     if (next.isAfter(DateTime.now())) return;
     setState(() => _selectedDate = next);
+  }
+
+  Future<void> _refresh(List<Habito> habits) async {
+    await ref.read(trackingSyncRequestProvider)();
+    final refresh = ref.read(trackingRefreshRequestProvider);
+    for (final habit in habits) {
+      await refresh(habit.id, from: _selectedDate, to: _selectedDate);
+      ref.invalidate(trackingLogProvider(habit.id, _selectedDate));
+    }
+    ref.invalidate(habitsListProvider);
   }
 }
 
@@ -230,6 +235,18 @@ class _HabitTrackingCard extends ConsumerWidget {
                     onSelected: (status) =>
                         _save(context, ref, status, value?.nota),
                   ),
+                  if (value != null &&
+                      value.sincronizacion !=
+                          EstadoSincronizacion.sincronizado) ...[
+                    const SizedBox(height: 8),
+                    _SyncStatus(
+                      status: value.sincronizacion,
+                      onRetry:
+                          value.sincronizacion == EstadoSincronizacion.conflicto
+                          ? () => _save(context, ref, value.estado, value.nota)
+                          : null,
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -329,7 +346,7 @@ class _HabitTrackingCard extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
     if (success) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Cumplimiento guardado.')),
+        const SnackBar(content: Text('Guardado en este dispositivo.')),
       );
       return;
     }
@@ -342,6 +359,45 @@ class _HabitTrackingCard extends ConsumerWidget {
               : 'No pudimos guardar el cumplimiento.',
         ),
       ),
+    );
+  }
+}
+
+class _SyncStatus extends StatelessWidget {
+  const _SyncStatus({required this.status, this.onRetry});
+
+  final EstadoSincronizacion status;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final conflict = status == EstadoSincronizacion.conflicto;
+    final color = conflict ? AppColors.danger : AppColors.muted;
+    return Row(
+      children: [
+        Icon(
+          conflict ? Icons.sync_problem_outlined : Icons.cloud_upload_outlined,
+          size: 18,
+          color: color,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            conflict
+                ? 'Conflicto de sincronización'
+                : 'Pendiente de sincronizar',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
+          ),
+        ),
+        if (onRetry != null)
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.sync, size: 18),
+            label: const Text('Reintentar'),
+          ),
+      ],
     );
   }
 }

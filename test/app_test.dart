@@ -16,6 +16,9 @@ import 'package:habitbuilder_mobile/features/profile/presentation/providers/prof
 import 'package:habitbuilder_mobile/features/reminders/application/reminder_reconciliation_coordinator.dart';
 import 'package:habitbuilder_mobile/features/reminders/presentation/providers/reminder_providers.dart';
 import 'package:habitbuilder_mobile/features/reminders/presentation/widgets/reminder_reconciliation_bootstrap.dart';
+import 'package:habitbuilder_mobile/features/tracking/domain/repositories/tracking_repository.dart';
+import 'package:habitbuilder_mobile/features/tracking/presentation/providers/tracking_providers.dart';
+import 'package:habitbuilder_mobile/features/tracking/presentation/widgets/tracking_sync_bootstrap.dart';
 
 void main() {
   testWidgets('app boots and shows the scaffold placeholder', (tester) async {
@@ -96,6 +99,7 @@ void main() {
     'authenticated startup, login and resume request reconciliation',
     (tester) async {
       final requests = <bool>[];
+      var trackingSyncs = 0;
       final container = ProviderContainer(
         overrides: [
           tokenStorageProvider.overrideWithValue(
@@ -108,6 +112,10 @@ void main() {
           }) async {
             requests.add(requestPermission);
             return const ReminderDeliveryState.delivered();
+          }),
+          trackingSyncRequestProvider.overrideWithValue(() async {
+            trackingSyncs++;
+            return const TrackingSyncReport.empty();
           }),
         ],
       );
@@ -122,15 +130,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ReminderReconciliationBootstrap), findsOneWidget);
+      expect(find.byType(TrackingSyncBootstrap), findsOneWidget);
       expect(
         container.read(reminderReconciliationActivationProvider).enabled,
         isTrue,
       );
       expect(requests, [false]);
+      expect(trackingSyncs, 1);
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pump();
       expect(requests, [false, false]);
+      expect(trackingSyncs, 2);
 
       await container
           .read(authSessionControllerProvider.notifier)
@@ -140,6 +151,7 @@ void main() {
           .markAuthenticated();
       await tester.pump();
       expect(requests, [false, false, false]);
+      expect(trackingSyncs, 3);
     },
   );
 }
