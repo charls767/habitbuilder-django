@@ -25,6 +25,7 @@ final class _ReminderReconciliationBootstrapState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    ref.read(reminderReconciliationActivationProvider).enable();
     _authSubscription = ref.listenManual(authSessionControllerProvider, (
       previous,
       next,

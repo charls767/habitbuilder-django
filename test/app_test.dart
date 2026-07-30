@@ -122,6 +122,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ReminderReconciliationBootstrap), findsOneWidget);
+      expect(
+        container.read(reminderReconciliationActivationProvider).enabled,
+        isTrue,
+      );
       expect(requests, [false]);
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);

@@ -24,6 +24,10 @@ void main() {
     container.read(reminderDeliveryStateProvider);
 
     expect(recorder.requests, isEmpty);
+    expect(
+      container.read(reminderReconciliationActivationProvider).enabled,
+      isFalse,
+    );
   });
 
   test(

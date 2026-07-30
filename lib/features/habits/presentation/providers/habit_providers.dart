@@ -148,15 +148,15 @@ class HabitController extends _$HabitController {
     Future<Habito> Function() operation, {
     required bool requestPermission,
   }) async {
+    final reconcile = ref.read(reminderReconciliationRequestProvider);
     state = const AsyncLoading();
     state = await AsyncValue.guard(operation);
-    if (!state.hasError) {
+    final success = !state.hasError;
+    if (success) {
       ref.invalidate(habitsListProvider);
       ref.invalidate(habitDetailProvider(habitId));
-      await ref.read(reminderReconciliationRequestProvider)(
-        requestPermission: requestPermission,
-      );
+      await reconcile(requestPermission: requestPermission);
     }
-    return !state.hasError;
+    return success;
   }
 }

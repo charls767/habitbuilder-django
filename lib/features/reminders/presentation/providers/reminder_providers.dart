@@ -41,12 +41,30 @@ typedef ReminderReconciliationRequest =
 final reminderReconciliationRequestProvider =
     Provider<ReminderReconciliationRequest>(
       (ref) => ({bool requestPermission = false}) {
+        if (!ref.read(reminderReconciliationActivationProvider).enabled) {
+          return Future.value(const ReminderDeliveryState.delivered());
+        }
         timezone_data.initializeTimeZones();
         return ref
             .read(reminderReconciliationCoordinatorProvider)
             .reconcile(requestPermission: requestPermission);
       },
     );
+
+final reminderReconciliationActivationProvider =
+    Provider<ReminderReconciliationActivation>(
+      (ref) => ReminderReconciliationActivation(),
+    );
+
+final class ReminderReconciliationActivation {
+  bool _enabled = false;
+
+  bool get enabled => _enabled;
+
+  void enable() {
+    _enabled = true;
+  }
+}
 
 final reminderSchedulerProvider = Provider<ReminderScheduler>(
   (ref) => createReminderScheduler(),
@@ -203,14 +221,14 @@ class ReminderController extends _$ReminderController {
   }) async {
     if (state.isLoading) return false;
 
+    final reconcile = ref.read(reminderReconciliationRequestProvider);
     state = const AsyncLoading();
     state = await AsyncValue.guard(operation);
-    if (!state.hasError) {
+    final success = !state.hasError;
+    if (success) {
       ref.invalidate(remindersListProvider(_habitId));
-      await ref.read(reminderReconciliationRequestProvider)(
-        requestPermission: requestPermission,
-      );
+      await reconcile(requestPermission: requestPermission);
     }
-    return !state.hasError;
+    return success;
   }
 }

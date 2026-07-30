@@ -40,6 +40,7 @@ class ProfileController extends _$ProfileController {
     required AccessibilityPreferences accessibility,
     required NotificationPreferences notifications,
   }) async {
+    final reconcile = ref.read(reminderReconciliationRequestProvider);
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await ref
@@ -52,9 +53,10 @@ class ProfileController extends _$ProfileController {
             notifications: notifications,
           );
     });
-    if (!state.hasError) {
+    final success = !state.hasError;
+    if (success) {
       ref.invalidate(myProfileProvider);
-      await ref.read(reminderReconciliationRequestProvider)(
+      await reconcile(
         requestPermission:
             notifications.enabled && notifications.habitReminders,
       );
