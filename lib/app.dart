@@ -6,6 +6,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/profile/presentation/providers/profile_providers.dart';
 import 'features/reminders/presentation/widgets/reminder_reconciliation_bootstrap.dart';
+import 'features/tracking/presentation/widgets/tracking_sync_bootstrap.dart';
 
 class HabitBuilderApp extends ConsumerWidget {
   const HabitBuilderApp({super.key});
@@ -30,14 +31,16 @@ class HabitBuilderApp extends ConsumerWidget {
       routerConfig: router,
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
-        return ReminderReconciliationBootstrap(
-          child: MediaQuery(
-            data: mediaQuery.copyWith(
-              textScaler: TextScaler.linear(
-                accessibility?.textSize.scaleFactor ?? 1,
+        return TrackingSyncBootstrap(
+          child: ReminderReconciliationBootstrap(
+            child: MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: TextScaler.linear(
+                  accessibility?.textSize.scaleFactor ?? 1,
+                ),
               ),
+              child: child ?? const SizedBox.shrink(),
             ),
-            child: child ?? const SizedBox.shrink(),
           ),
         );
       },

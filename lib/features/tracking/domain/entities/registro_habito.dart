@@ -16,6 +16,8 @@ enum EstadoRegistro {
   final String apiValue;
 }
 
+enum EstadoSincronizacion { sincronizado, pendiente, conflicto }
+
 class RegistroHabito {
   const RegistroHabito({
     required this.id,
@@ -23,6 +25,7 @@ class RegistroHabito {
     required this.fecha,
     required this.estado,
     this.nota,
+    this.sincronizacion = EstadoSincronizacion.sincronizado,
   });
 
   final String id;
@@ -30,6 +33,24 @@ class RegistroHabito {
   final DateTime fecha;
   final EstadoRegistro estado;
   final String? nota;
+  final EstadoSincronizacion sincronizacion;
+
+  RegistroHabito copyWith({
+    String? id,
+    EstadoRegistro? estado,
+    String? nota,
+    bool clearNote = false,
+    EstadoSincronizacion? sincronizacion,
+  }) {
+    return RegistroHabito(
+      id: id ?? this.id,
+      habitId: habitId,
+      fecha: fecha,
+      estado: estado ?? this.estado,
+      nota: clearNote ? null : nota ?? this.nota,
+      sincronizacion: sincronizacion ?? this.sincronizacion,
+    );
+  }
 }
 
 class RegistroHabitoDraft {

@@ -103,11 +103,67 @@ void main() {
     repository.pendingSave!.complete(_record());
     expect(await first, isTrue);
   });
+
+  test('refreshes the day after a successful background sync', () async {
+    final repository = _FakeTrackingRepository();
+    var syncCalls = 0;
+    final container = _container(
+      repository,
+      syncRequest: () async {
+        syncCalls++;
+        return const TrackingSyncReport(synced: 1, pending: 0, conflicts: 0);
+      },
+    );
+    addTearDown(container.dispose);
+    final day = DateTime(2026, 7, 30);
+    final subscription = container.listen(
+      trackingLogProvider('habit-1', day),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    await container.read(trackingLogProvider('habit-1', day).future);
+
+    expect(
+      await container
+          .read(trackingControllerProvider('habit-1').notifier)
+          .save(date: day, status: EstadoRegistro.completado),
+      isTrue,
+    );
+    await Future<void>.delayed(Duration.zero);
+    await container.read(trackingLogProvider('habit-1', day).future);
+
+    expect(syncCalls, 1);
+    expect(repository.listCalls['2026-07-30'], 2);
+  });
+
+  test('background sync failures do not undo a local save', () async {
+    final repository = _FakeTrackingRepository();
+    final container = _container(
+      repository,
+      syncRequest: () => Future.error(Exception('offline')),
+    );
+    addTearDown(container.dispose);
+
+    final success = await container
+        .read(trackingControllerProvider('habit-1').notifier)
+        .save(date: DateTime(2026, 7, 30), status: EstadoRegistro.parcial);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(success, isTrue);
+    expect(repository.saveCalls, 1);
+  });
 }
 
-ProviderContainer _container(_FakeTrackingRepository repository) {
+ProviderContainer _container(
+  _FakeTrackingRepository repository, {
+  TrackingSyncRequest? syncRequest,
+}) {
   return ProviderContainer(
-    overrides: [trackingRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      trackingRepositoryProvider.overrideWithValue(repository),
+      if (syncRequest != null)
+        trackingSyncRequestProvider.overrideWithValue(syncRequest),
+    ],
   );
 }
 
