@@ -727,6 +727,14 @@ paths:
       operationId: getProgressSummary
       tags: [progress]
       summary: Consultar el resumen de progreso del usuario autenticado
+      x-habitbuilder-provisional: true
+      parameters:
+        - name: periodo
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [semana, mes, anio]
       responses:
         '200':
           description: Resumen de progreso
@@ -1430,21 +1438,84 @@ components:
 
     Progreso:
       type: object
-      required: [usuarioId, habitosActivos, habitosCompletadosHoy, porcentajeCumplimientoSemana]
+      description: Contrato provisional mobile para HBM-17.
+      required:
+        - periodo
+        - desde
+        - hasta
+        - porcentajeCumplimiento
+        - rachaActual
+        - rachaMasLarga
+        - completados
+        - programados
+        - cambioPeriodoAnterior
+        - dias
       properties:
-        usuarioId:
+        periodo:
           type: string
-          example: usr_001
-        habitosActivos:
-          type: integer
-          example: 6
-        habitosCompletadosHoy:
-          type: integer
-          example: 4
-        porcentajeCumplimientoSemana:
+          enum: [semana, mes, anio]
+          example: semana
+        desde:
+          type: string
+          format: date
+          example: '2026-07-27'
+        hasta:
+          type: string
+          format: date
+          example: '2026-08-02'
+        porcentajeCumplimiento:
           type: number
           format: double
-          example: 0.78
+          minimum: 0
+          maximum: 1
+          example: 0.84
+        rachaActual:
+          type: integer
+          minimum: 0
+          example: 12
+        rachaMasLarga:
+          type: integer
+          minimum: 0
+          example: 28
+        completados:
+          type: integer
+          minimum: 0
+          example: 28
+        programados:
+          type: integer
+          minimum: 0
+          example: 35
+        cambioPeriodoAnterior:
+          type: number
+          format: double
+          example: 0.06
+        dias:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgresoDia'
+
+    ProgresoDia:
+      type: object
+      required: [fecha, porcentajeCumplimiento, completados, programados]
+      properties:
+        fecha:
+          type: string
+          format: date
+          example: '2026-07-30'
+        porcentajeCumplimiento:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          example: 0.8
+        completados:
+          type: integer
+          minimum: 0
+          example: 4
+        programados:
+          type: integer
+          minimum: 0
+          example: 5
 
     Estadistica:
       type: object
