@@ -13,12 +13,12 @@ import 'package:habitbuilder_mobile/features/progress/presentation/providers/pro
 import 'package:habitbuilder_mobile/features/progress/presentation/screens/progress_screen.dart';
 
 void main() {
-  testWidgets('renders summary metrics and heatmap from repository data', (
+  testWidgets('renders summary and per-habit progress from repository data', (
     tester,
   ) async {
     await _pump(tester, _FakeProgressRepository());
 
-    expect(find.text('84%'), findsOneWidget);
+    expect(find.text('84%'), findsNWidgets(2));
     await tester.scrollUntilVisible(
       find.text('12 días'),
       220,
@@ -26,9 +26,9 @@ void main() {
     );
     expect(find.text('12 días'), findsOneWidget);
     expect(find.text('28 días'), findsOneWidget);
-    expect(find.text('28/35'), findsOneWidget);
-    expect(find.text('Actividad del periodo'), findsOneWidget);
-    expect(find.byTooltip('27 jul · 100%'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Progreso por hábito'), findsOneWidget);
+    expect(find.text('Leer 20 minutos'), findsOneWidget);
   });
 
   testWidgets('defaults to week and reloads when period changes', (
@@ -42,7 +42,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.requests, [ProgressPeriod.week, ProgressPeriod.month]);
-    expect(find.text('Cumplimiento mes'), findsOneWidget);
+    expect(find.text('Promedio por hábito (mes)'), findsOneWidget);
   });
 
   testWidgets('shows empty and retryable error states', (tester) async {
@@ -60,7 +60,7 @@ void main() {
     repository.failure = null;
     await tester.tap(find.text('Reintentar'));
     await tester.pumpAndSettle();
-    expect(find.text('84%'), findsOneWidget);
+    expect(find.text('84%'), findsNWidgets(2));
   });
 
   testWidgets('fits progress controls at 320x640', (tester) async {
@@ -142,25 +142,18 @@ void main() {
     final semantics = tester.ensureSemantics();
     try {
       await _pump(tester, _FakeProgressRepository(), highContrast: true);
-      await tester.scrollUntilVisible(
-        find.text('84%'),
-        180,
-        scrollable: find.byType(Scrollable).last,
-      );
-
       expect(
         find.bySemanticsLabel(
-          'Cumplimiento semana, 84 por ciento, más 6 por ciento frente al '
-          'periodo anterior, 28 de 35 completados',
+          'Promedio por hábito en semana, 84 por ciento, 1 hábitos con datos',
         ),
         findsOneWidget,
       );
       await tester.scrollUntilVisible(
-        find.byTooltip('27 jul · 100%'),
+        find.text('Progreso por hábito'),
         180,
         scrollable: find.byType(Scrollable).last,
       );
-      expect(find.byTooltip('27 jul · 100%'), findsOneWidget);
+      expect(find.text('Progreso por hábito'), findsOneWidget);
       expect(tester.takeException(), isNull);
     } finally {
       semantics.dispose();
@@ -216,10 +209,15 @@ class _FakeProgressRepository implements ProgressRepository {
         completionRate: 0,
         currentStreak: 0,
         longestStreak: 0,
-        completed: 0,
-        scheduled: 0,
-        changeVsPrevious: 0,
-        days: const [],
+        habits: const [
+          HabitProgress(
+            habitId: 'hab_001',
+            completionRate: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            hasData: false,
+          ),
+        ],
       );
     }
     return ProgressSummary(
@@ -229,17 +227,14 @@ class _FakeProgressRepository implements ProgressRepository {
       completionRate: 0.84,
       currentStreak: 12,
       longestStreak: 28,
-      completed: 28,
-      scheduled: 35,
-      changeVsPrevious: 0.06,
-      days: [
-        for (var index = 0; index < 7; index++)
-          ProgressDay(
-            date: DateTime(2026, 7, 27 + index),
-            completionRate: index == 0 ? 1 : 0.8,
-            completed: index == 0 ? 5 : 4,
-            scheduled: 5,
-          ),
+      habits: const [
+        HabitProgress(
+          habitId: 'hab_001',
+          completionRate: 0.84,
+          currentStreak: 12,
+          longestStreak: 28,
+          hasData: true,
+        ),
       ],
     );
   }
@@ -281,6 +276,7 @@ class _FakeProgressRepository implements ProgressRepository {
           name: 'Leer 20 minutos',
           completionRate: 0.92,
           streak: 12,
+          completed: 28,
           skipped: 1,
         ),
       ],

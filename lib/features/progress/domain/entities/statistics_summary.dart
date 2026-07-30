@@ -40,6 +40,7 @@ class HabitStatistic {
     required this.name,
     required this.completionRate,
     required this.streak,
+    required this.completed,
     required this.skipped,
   });
 
@@ -47,6 +48,7 @@ class HabitStatistic {
   final String name;
   final double completionRate;
   final int streak;
+  final int completed;
   final int skipped;
 }
 

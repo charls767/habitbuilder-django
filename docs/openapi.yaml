@@ -722,49 +722,65 @@ paths:
               schema:
                 $ref: '#/components/schemas/Estadistica'
 
-  /progress:
+  /v1/progreso:
     get:
-      operationId: getProgressSummary
+      operationId: verProgreso
       tags: [progress]
-      summary: Consultar el resumen de progreso del usuario autenticado
-      x-habitbuilder-provisional: true
+      summary: Consultar el progreso calculado de los hábitos del usuario
       parameters:
         - name: periodo
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [semana, mes, anio]
-      responses:
-        '200':
-          description: Resumen de progreso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Progreso'
-
-  /statistics:
-    get:
-      operationId: getStatisticsSummary
-      tags: [progress]
-      summary: Consultar estadísticas filtradas del usuario autenticado
-      description: >-
-        Contrato provisional exclusivo del cliente mobile. No reemplaza ni
-        cierra la definición del contrato backend asociada a HBB-34.
-      x-habitbuilder-provisional: true
-      parameters:
-        - name: periodo
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [semana, mes, anio]
-        - name: habitId
           in: query
           required: false
           schema:
             type: string
-        - name: categoryId
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Progreso por hábito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgresoResponse'
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token ausente o inválido
+
+  /v1/estadisticas:
+    get:
+      operationId: verEstadisticas
+      tags: [progress]
+      summary: Consultar estadísticas agregadas y filtradas
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: habitoId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: categoria
           in: query
           required: false
           schema:
@@ -775,7 +791,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResumenEstadisticas'
+                $ref: '#/components/schemas/EstadisticasResponse'
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Token ausente o inválido
+        '404':
+          description: Hábito o categoría no encontrados
 
 components:
   securitySchemes:
@@ -1470,39 +1492,23 @@ components:
           nullable: true
           example: '2026-07-24'
 
-    Progreso:
+    ProgresoResponse:
       type: object
-      description: Contrato provisional mobile para HBM-17.
-      required:
-        - periodo
-        - desde
-        - hasta
-        - porcentajeCumplimiento
-        - rachaActual
-        - rachaMasLarga
-        - completados
-        - programados
-        - cambioPeriodoAnterior
-        - dias
+      description: Progreso calculado de un hábito para el periodo solicitado.
+      required: [habitoId, periodoDesde, periodoHasta, rachaActual, rachaMasLarga, porcentaje, estado]
       properties:
-        periodo:
+        habitoId:
           type: string
-          enum: [semana, mes, anio]
-          example: semana
-        desde:
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
+        periodoDesde:
           type: string
           format: date
           example: '2026-07-27'
-        hasta:
+        periodoHasta:
           type: string
           format: date
           example: '2026-08-02'
-        porcentajeCumplimiento:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 1
-          example: 0.84
         rachaActual:
           type: integer
           minimum: 0
@@ -1511,135 +1517,79 @@ components:
           type: integer
           minimum: 0
           example: 28
-        completados:
-          type: integer
-          minimum: 0
-          example: 28
-        programados:
-          type: integer
-          minimum: 0
-          example: 35
-        cambioPeriodoAnterior:
+        porcentaje:
           type: number
-          format: double
-          example: 0.06
-        dias:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProgresoDia'
-
-    ProgresoDia:
-      type: object
-      required: [fecha, porcentajeCumplimiento, completados, programados]
-      properties:
-        fecha:
+          minimum: 0
+          maximum: 100
+          example: 84
+        estado:
           type: string
-          format: date
-          example: '2026-07-30'
-        porcentajeCumplimiento:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 1
-          example: 0.8
-        completados:
-          type: integer
-          minimum: 0
-          example: 4
-        programados:
-          type: integer
-          minimum: 0
-          example: 5
+          enum: [con_datos, sin_datos]
+          example: con_datos
 
-    ResumenEstadisticas:
+    EstadisticasResponse:
       type: object
-      description: Contrato provisional mobile para HBM-18.
-      required:
-        - periodo
-        - desde
-        - hasta
-        - porcentajeCumplimiento
-        - mejorRacha
-        - suficientesDatos
-        - habitos
+      description: Estadísticas agregadas para el periodo y filtros solicitados.
+      required: [periodoDesde, periodoHasta, porcentaje, mejorRacha, masConsistentes, masOmitidos, estado]
       properties:
-        periodo:
-          type: string
-          enum: [semana, mes, anio]
-          example: semana
-        desde:
+        periodoDesde:
           type: string
           format: date
           example: '2026-07-27'
-        hasta:
+        periodoHasta:
           type: string
           format: date
           example: '2026-08-02'
-        porcentajeCumplimiento:
+        porcentaje:
           type: number
-          format: double
           minimum: 0
-          maximum: 1
-          example: 0.84
+          maximum: 100
+          example: 84
         mejorRacha:
           type: integer
           minimum: 0
           example: 12
-        suficientesDatos:
-          type: boolean
-          example: true
-        habitoMasConstante:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/DestacadoEstadisticas'
-        habitoMasOmitido:
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/DestacadoEstadisticas'
-        habitos:
+        masConsistentes:
           type: array
           items:
             $ref: '#/components/schemas/EstadisticaHabito'
-
-    DestacadoEstadisticas:
-      type: object
-      required: [id, nombre, valor]
-      properties:
-        id:
+        masOmitidos:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+        estado:
           type: string
-          example: hab_001
-        nombre:
-          type: string
-          example: Leer 20 minutos
-        valor:
-          type: number
-          format: double
-          example: 0.92
+          enum: [con_datos, insuficiente]
+          example: con_datos
 
     EstadisticaHabito:
       type: object
-      required: [id, nombre, porcentajeCumplimiento, racha, omitidos]
+      required: [habitoId, nombre, porcentaje, rachaMasLarga, totalHecho, totalOmitido]
       properties:
-        id:
+        habitoId:
           type: string
-          example: hab_001
+          format: uuid
+          example: 11111111-1111-4111-8111-111111111111
         nombre:
           type: string
           example: Leer 20 minutos
-        porcentajeCumplimiento:
+        porcentaje:
           type: number
-          format: double
           minimum: 0
-          maximum: 1
-          example: 0.92
-        racha:
+          maximum: 100
+          example: 92
+        rachaMasLarga:
           type: integer
           minimum: 0
           example: 12
-        omitidos:
+        totalHecho:
           type: integer
           minimum: 0
-          example: 1
+          example: 28
+        totalOmitido:
+          type: integer
+          minimum: 0
+          example: 3
 
     Estadistica:
       type: object

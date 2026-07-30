@@ -67,6 +67,8 @@ class _ProgressBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final period = ref.watch(selectedProgressPeriodProvider);
     final summary = ref.watch(progressSummaryProvider);
+    final habits = ref.watch(habitsListProvider).value ?? const <Habito>[];
+    final habitNames = {for (final habit in habits) habit.id: habit.nombre};
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: () => ref.refresh(progressSummaryProvider.future),
@@ -92,7 +94,10 @@ class _ProgressBody extends ConsumerWidget {
                       children: [
                         _CompletionCard(summary: value),
                         const SizedBox(height: 14),
-                        _HeatmapCard(summary: value),
+                        _HabitProgressCard(
+                          habits: value.habits,
+                          habitNames: habitNames,
+                        ),
                         const SizedBox(height: 14),
                         _Metrics(summary: value),
                       ],
@@ -485,6 +490,7 @@ class _HabitStatisticRow extends StatelessWidget {
       label:
           '${statistic.name}, $percentage por ciento, '
           '${statistic.streak} días de racha, '
+          '${statistic.completed} completados, '
           '${statistic.skipped} omitidos',
       excludeSemantics: true,
       child: Row(
@@ -500,7 +506,8 @@ class _HabitStatisticRow extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Text(
-                  '${statistic.streak} días de racha · ${statistic.skipped} omitidos',
+                  '${statistic.streak} días de racha · '
+                  '${statistic.completed} hechos · ${statistic.skipped} omitidos',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -579,15 +586,13 @@ class _CompletionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = (summary.completionRate * 100).round();
-    final change = (summary.changeVsPrevious * 100).round();
     return Semantics(
       container: true,
       label:
-          'Cumplimiento ${summary.period.label.toLowerCase()}, '
+          'Promedio por hábito en ${summary.period.label.toLowerCase()}, '
           '$percentage por ciento, '
-          '${change >= 0 ? 'más' : 'menos'} ${change.abs()} por ciento '
-          'frente al periodo anterior, '
-          '${summary.completed} de ${summary.scheduled} completados',
+          '${summary.habits.where((habit) => habit.hasData).length} hábitos '
+          'con datos',
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -599,7 +604,7 @@ class _CompletionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Cumplimiento ${summary.period.label.toLowerCase()}',
+              'Promedio por hábito (${summary.period.label.toLowerCase()})',
               style: Theme.of(
                 context,
               ).textTheme.labelLarge?.copyWith(color: AppColors.accent),
@@ -613,16 +618,6 @@ class _CompletionCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${change >= 0 ? '+' : ''}$change% vs. periodo anterior',
-                    textAlign: TextAlign.end,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.white),
                   ),
                 ),
               ],
@@ -649,10 +644,11 @@ class _CompletionCard extends StatelessWidget {
   }
 }
 
-class _HeatmapCard extends StatelessWidget {
-  const _HeatmapCard({required this.summary});
+class _HabitProgressCard extends StatelessWidget {
+  const _HabitProgressCard({required this.habits, required this.habitNames});
 
-  final ProgressSummary summary;
+  final List<HabitProgress> habits;
+  final Map<String, String> habitNames;
 
   @override
   Widget build(BuildContext context) {
@@ -663,56 +659,63 @@ class _HeatmapCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Actividad del periodo',
+              'Progreso por hábito',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
             Text(
-              'Cada celda representa el cumplimiento de un día.',
+              'Cumplimiento y rachas calculados por el backend.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 14),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                crossAxisSpacing: 6,
-                mainAxisSpacing: 6,
-              ),
-              itemCount: summary.days.length,
-              itemBuilder: (context, index) {
-                final day = summary.days[index];
-                final percent = (day.completionRate * 100).round();
-                return Semantics(
-                  label: '${_shortDate(day.date)}: $percent% de cumplimiento',
-                  child: Tooltip(
-                    message: '${_shortDate(day.date)} · $percent%',
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: _heatColor(day.completionRate, day.scheduled),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${day.date.day}',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: day.completionRate >= 0.65
-                                    ? Colors.white
-                                    : AppColors.body,
-                                fontWeight: FontWeight.w800,
-                              ),
-                        ),
+            for (var index = 0; index < habits.length; index++) ...[
+              Semantics(
+                label:
+                    '${habitNames[habits[index].habitId] ?? 'Hábito'}, '
+                    '${(habits[index].completionRate * 100).round()} por ciento, '
+                    'racha actual ${habits[index].currentStreak} días',
+                excludeSemantics: true,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            habitNames[habits[index].habitId] ??
+                                'Hábito ${index + 1}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          Text(
+                            habits[index].hasData
+                                ? 'Racha actual: ${habits[index].currentStreak} días'
+                                : 'Sin registros en este periodo',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${(habits[index].completionRate * 100).round()}%',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (index < habits.length - 1) const Divider(height: 20),
+            ],
           ],
         ),
       ),
@@ -731,17 +734,17 @@ class _Metrics extends StatelessWidget {
       _MetricCard(
         icon: Icons.local_fire_department_outlined,
         value: '${summary.currentStreak} días',
-        label: 'Racha actual',
+        label: 'Mejor racha actual',
       ),
       _MetricCard(
         icon: Icons.emoji_events_outlined,
         value: '${summary.longestStreak} días',
-        label: 'Mejor racha',
+        label: 'Mejor racha histórica',
       ),
       _MetricCard(
         icon: Icons.check_circle_outline,
-        value: '${summary.completed}/${summary.scheduled}',
-        label: 'Completados',
+        value: '${summary.habits.where((habit) => habit.hasData).length}',
+        label: 'Hábitos con datos',
       ),
     ];
     return LayoutBuilder(
@@ -858,14 +861,6 @@ class _ProgressError extends StatelessWidget {
       ),
     );
   }
-}
-
-Color _heatColor(double rate, int scheduled) {
-  if (scheduled == 0) return AppColors.canvas;
-  if (rate >= 0.85) return AppColors.primary;
-  if (rate >= 0.5) return const Color(0xFF7FD7C7);
-  if (rate > 0) return const Color(0xFFCDEFE8);
-  return const Color(0xFFF1F5F4);
 }
 
 String _dateRange(DateTime from, DateTime to) {

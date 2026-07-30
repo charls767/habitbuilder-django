@@ -1,59 +1,40 @@
 import '../../domain/entities/progress_summary.dart';
 import '../../domain/entities/statistics_summary.dart';
 
-class StatisticHighlightDto {
-  const StatisticHighlightDto({
-    required this.id,
-    required this.name,
-    required this.value,
-  });
-
-  factory StatisticHighlightDto.fromJson(Map<String, dynamic> json) {
-    return StatisticHighlightDto(
-      id: json['id'] as String,
-      name: json['nombre'] as String,
-      value: (json['valor'] as num).toDouble(),
-    );
-  }
-
-  final String id;
-  final String name;
-  final double value;
-
-  StatisticHighlight toDomain() =>
-      StatisticHighlight(id: id, name: name, value: value);
-}
-
 class HabitStatisticDto {
   const HabitStatisticDto({
     required this.id,
     required this.name,
     required this.completionRate,
-    required this.streak,
+    required this.longestStreak,
+    required this.completed,
     required this.skipped,
   });
 
   factory HabitStatisticDto.fromJson(Map<String, dynamic> json) {
     return HabitStatisticDto(
-      id: json['id'] as String,
+      id: json['habitoId'] as String,
       name: json['nombre'] as String,
-      completionRate: (json['porcentajeCumplimiento'] as num).toDouble(),
-      streak: json['racha'] as int,
-      skipped: json['omitidos'] as int,
+      completionRate: (json['porcentaje'] as num).toDouble() / 100,
+      longestStreak: json['rachaMasLarga'] as int,
+      completed: json['totalHecho'] as int,
+      skipped: json['totalOmitido'] as int,
     );
   }
 
   final String id;
   final String name;
   final double completionRate;
-  final int streak;
+  final int longestStreak;
+  final int completed;
   final int skipped;
 
   HabitStatistic toDomain() => HabitStatistic(
     id: id,
     name: name,
     completionRate: completionRate,
-    streak: streak,
+    streak: longestStreak,
+    completed: completed,
     skipped: skipped,
   );
 }
@@ -66,33 +47,27 @@ class StatisticsSummaryDto {
     required this.completionRate,
     required this.bestStreak,
     required this.sufficientData,
-    required this.habits,
-    this.mostConsistent,
-    this.mostSkipped,
+    required this.mostConsistent,
+    required this.mostSkipped,
   });
 
-  factory StatisticsSummaryDto.fromJson(Map<String, dynamic> json) {
-    final periodValue = json['periodo'] as String;
-    final mostConsistent = json['habitoMasConstante'];
-    final mostSkipped = json['habitoMasOmitido'];
+  factory StatisticsSummaryDto.fromJson(
+    Map<String, dynamic> json,
+    ProgressPeriod requestedPeriod,
+  ) {
     return StatisticsSummaryDto(
-      period: ProgressPeriod.values.firstWhere(
-        (period) => period.apiValue == periodValue,
-      ),
-      from: DateTime.parse(json['desde'] as String),
-      to: DateTime.parse(json['hasta'] as String),
-      completionRate: (json['porcentajeCumplimiento'] as num).toDouble(),
+      period: requestedPeriod,
+      from: DateTime.parse(json['periodoDesde'] as String),
+      to: DateTime.parse(json['periodoHasta'] as String),
+      completionRate: (json['porcentaje'] as num).toDouble() / 100,
       bestStreak: json['mejorRacha'] as int,
-      sufficientData: json['suficientesDatos'] as bool,
-      mostConsistent: mostConsistent == null
-          ? null
-          : StatisticHighlightDto.fromJson(
-              mostConsistent as Map<String, dynamic>,
-            ),
-      mostSkipped: mostSkipped == null
-          ? null
-          : StatisticHighlightDto.fromJson(mostSkipped as Map<String, dynamic>),
-      habits: (json['habitos'] as List<dynamic>)
+      sufficientData: json['estado'] == 'con_datos',
+      mostConsistent: (json['masConsistentes'] as List<dynamic>)
+          .map(
+            (item) => HabitStatisticDto.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(growable: false),
+      mostSkipped: (json['masOmitidos'] as List<dynamic>)
           .map(
             (item) => HabitStatisticDto.fromJson(item as Map<String, dynamic>),
           )
@@ -106,19 +81,37 @@ class StatisticsSummaryDto {
   final double completionRate;
   final int bestStreak;
   final bool sufficientData;
-  final StatisticHighlightDto? mostConsistent;
-  final StatisticHighlightDto? mostSkipped;
-  final List<HabitStatisticDto> habits;
+  final List<HabitStatisticDto> mostConsistent;
+  final List<HabitStatisticDto> mostSkipped;
 
-  StatisticsSummary toDomain() => StatisticsSummary(
-    period: period,
-    from: from,
-    to: to,
-    completionRate: completionRate,
-    bestStreak: bestStreak,
-    sufficientData: sufficientData,
-    mostConsistent: mostConsistent?.toDomain(),
-    mostSkipped: mostSkipped?.toDomain(),
-    habits: habits.map((habit) => habit.toDomain()).toList(growable: false),
-  );
+  StatisticsSummary toDomain() {
+    final habitsById = <String, HabitStatisticDto>{
+      for (final habit in [...mostConsistent, ...mostSkipped]) habit.id: habit,
+    };
+    return StatisticsSummary(
+      period: period,
+      from: from,
+      to: to,
+      completionRate: completionRate,
+      bestStreak: bestStreak,
+      sufficientData: sufficientData,
+      mostConsistent: mostConsistent.isEmpty
+          ? null
+          : StatisticHighlight(
+              id: mostConsistent.first.id,
+              name: mostConsistent.first.name,
+              value: mostConsistent.first.completionRate,
+            ),
+      mostSkipped: mostSkipped.isEmpty
+          ? null
+          : StatisticHighlight(
+              id: mostSkipped.first.id,
+              name: mostSkipped.first.name,
+              value: mostSkipped.first.skipped.toDouble(),
+            ),
+      habits: habitsById.values
+          .map((habit) => habit.toDomain())
+          .toList(growable: false),
+    );
+  }
 }
