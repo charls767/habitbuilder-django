@@ -60,7 +60,8 @@ class AppDestinationBar extends StatelessWidget {
                 onDestinationSelected: (index) {
                   final route = switch (index) {
                     0 => AppRoutes.habits,
-                    1 => AppRoutes.goals,
+                    1 => AppRoutes.tracking,
+                    2 => AppRoutes.goals,
                     _ => AppRoutes.profile,
                   };
                   context.go(route);
@@ -70,6 +71,11 @@ class AppDestinationBar extends StatelessWidget {
                     icon: Icon(Icons.home_outlined),
                     selectedIcon: Icon(Icons.home),
                     label: 'Hábitos',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.task_alt_outlined),
+                    selectedIcon: Icon(Icons.task_alt),
+                    label: 'Hoy',
                   ),
                   NavigationDestination(
                     icon: Icon(Icons.flag_outlined),

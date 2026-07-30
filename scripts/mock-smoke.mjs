@@ -253,6 +253,41 @@ await request(
   200,
 );
 
+const trackingResponse = await request(
+  '/habits/hab_001/logs?desde=2026-07-30&hasta=2026-07-30',
+  {headers: authenticated},
+  200,
+);
+const trackingRecords = await trackingResponse.json();
+if (!Array.isArray(trackingRecords)) {
+  throw new Error('GET /habits/hab_001/logs no devolvio una lista');
+}
+
+const trackingRequest = {
+  method: 'POST',
+  headers: {
+    ...authenticated,
+    'Idempotency-Key': 'hab_001:2026-07-30',
+  },
+  body: JSON.stringify({
+    fecha: '2026-07-30',
+    estado: 'parcial',
+    nota: 'Sesion completada parcialmente',
+  }),
+};
+const createdTrackingResponse = await request(
+  '/habits/hab_001/logs',
+  trackingRequest,
+  201,
+);
+const createdTracking = await createdTrackingResponse.json();
+for (const field of ['id', 'habitoId', 'fecha', 'estado']) {
+  if (!(field in createdTracking)) {
+    throw new Error(`POST tracking no incluyo ${field}`);
+  }
+}
+await request('/habits/hab_001/logs', trackingRequest, 200);
+
 console.log(
-  'Prism smoke test: Phase 1 + habits + goals + reminders lifecycle OK',
+  'Prism smoke test: auth + habits + goals + reminders + tracking OK',
 );

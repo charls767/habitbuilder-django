@@ -2,6 +2,7 @@ abstract final class AppRoutes {
   static const String home = habits;
   static const String habits = '/habits';
   static const String habitCreate = '/habits/new';
+  static const String tracking = '/tracking';
   static const String goals = '/goals';
   static const String goalCreate = '/goals/new';
   static const String login = '/login';

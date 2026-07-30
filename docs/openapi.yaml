@@ -637,12 +637,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/RegistroHabito'
     post:
-      operationId: createHabitLog
+      operationId: upsertHabitLog
       tags: [tracking]
-      summary: Registrar el cumplimiento de un hábito en una fecha
+      summary: Crear o editar el cumplimiento de un hábito en una fecha
       description: >
-        Un usuario no debe tener más de un registro para el mismo hábito
-        en una misma fecha.
+        Realiza un upsert por hábito y fecha. Repetir la misma solicitud con
+        la misma clave de idempotencia devuelve el mismo resultado sin crear
+        duplicados.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Clave estable por hábito y fecha generada por el cliente.
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -650,6 +658,12 @@ paths:
             schema:
               $ref: '#/components/schemas/RegistroHabitoRequest'
       responses:
+        '200':
+          description: Registro existente actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroHabito'
         '201':
           description: Registro creado
           content:
@@ -657,7 +671,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegistroHabito'
         '409':
-          description: Ya existe un registro para ese hábito en esa fecha
+          description: La clave de idempotencia ya se usó con otra solicitud
           content:
             application/json:
               schema:
@@ -1358,7 +1372,7 @@ components:
 
     RegistroHabito:
       type: object
-      required: [id, habitoId, fecha, completado]
+      required: [id, habitoId, fecha, estado]
       properties:
         id:
           type: string
@@ -1370,26 +1384,30 @@ components:
           type: string
           format: date
           example: '2026-07-24'
-        completado:
-          type: boolean
-          example: true
-        notas:
+        estado:
+          $ref: '#/components/schemas/EstadoRegistro'
+        nota:
           type: string
           nullable: true
           example: Sesión completa sin interrupciones
 
     RegistroHabitoRequest:
       type: object
-      required: [fecha, completado]
+      required: [fecha, estado]
       properties:
         fecha:
           type: string
           format: date
-        completado:
-          type: boolean
-        notas:
+        estado:
+          $ref: '#/components/schemas/EstadoRegistro'
+        nota:
           type: string
           nullable: true
+          maxLength: 240
+
+    EstadoRegistro:
+      type: string
+      enum: [completado, parcial, omitido]
 
     Racha:
       type: object

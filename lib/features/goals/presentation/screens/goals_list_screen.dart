@@ -55,7 +55,7 @@ class GoalsListScreen extends ConsumerWidget {
         tooltip: 'Crear meta',
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: const AppDestinationBar(selectedIndex: 1),
+      bottomNavigationBar: const AppDestinationBar(selectedIndex: 2),
     );
   }
 }

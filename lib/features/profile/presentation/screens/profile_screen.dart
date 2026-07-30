@@ -321,7 +321,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (error, stackTrace) =>
             _ProfileLoadError(onRetry: () => ref.invalidate(myProfileProvider)),
       ),
-      bottomNavigationBar: const AppDestinationBar(selectedIndex: 2),
+      bottomNavigationBar: const AppDestinationBar(selectedIndex: 3),
     );
   }
 }

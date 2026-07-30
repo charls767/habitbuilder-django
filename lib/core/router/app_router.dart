@@ -13,6 +13,7 @@ import '../../features/habits/presentation/screens/habit_form_screen.dart';
 import '../../features/habits/presentation/screens/habits_list_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reminders/presentation/screens/reminders_screen.dart';
+import '../../features/tracking/presentation/screens/tracking_screen.dart';
 import '../network/auth_session_controller.dart';
 import 'app_routes.dart';
 
@@ -64,6 +65,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.habits,
         builder: (context, state) => const HabitsListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.tracking,
+        builder: (context, state) => const TrackingScreen(),
       ),
       GoRoute(
         path: AppRoutes.habitCreate,
