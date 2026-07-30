@@ -13,9 +13,7 @@ void main() {
         boundary: boundary,
       );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: false,
-      );
+      final state = await policy.resolve(requestFromEligibleActivation: false);
 
       expect(state.notificationsGranted, isTrue);
       expect(state.precision, ReminderSchedulePrecision.exact);
@@ -23,50 +21,52 @@ void main() {
       expect(boundary.exactRequestCount, 0);
     });
 
-    test('does not prompt when reconciliation finds notifications denied',
-        () async {
-      final boundary = _FakeNotificationPermissionBoundary(
-        notificationsEnabled: false,
-        exactSchedulingEnabled: true,
-      );
-      final policy = NotificationPermissionPolicy(
-        platform: NotificationGatewayPlatform.android,
-        boundary: boundary,
-      );
+    test(
+      'does not prompt when reconciliation finds notifications denied',
+      () async {
+        final boundary = _FakeNotificationPermissionBoundary(
+          notificationsEnabled: false,
+          exactSchedulingEnabled: true,
+        );
+        final policy = NotificationPermissionPolicy(
+          platform: NotificationGatewayPlatform.android,
+          boundary: boundary,
+        );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: false,
-      );
+        final state = await policy.resolve(
+          requestFromEligibleActivation: false,
+        );
 
-      expect(state.notificationsGranted, isFalse);
-      expect(state.precision, ReminderSchedulePrecision.unavailable);
-      expect(boundary.notificationRequestCount, 0);
-      expect(boundary.exactCheckCount, 0);
-    });
+        expect(state.notificationsGranted, isFalse);
+        expect(state.precision, ReminderSchedulePrecision.unavailable);
+        expect(boundary.notificationRequestCount, 0);
+        expect(boundary.exactCheckCount, 0);
+      },
+    );
 
-    test('eligible activation requests notification and exact permissions',
-        () async {
-      final boundary = _FakeNotificationPermissionBoundary(
-        notificationsEnabled: false,
-        notificationRequestResult: true,
-        exactSchedulingEnabled: false,
-        exactRequestResult: false,
-      );
-      final policy = NotificationPermissionPolicy(
-        platform: NotificationGatewayPlatform.android,
-        boundary: boundary,
-      );
+    test(
+      'eligible activation requests notification and exact permissions',
+      () async {
+        final boundary = _FakeNotificationPermissionBoundary(
+          notificationsEnabled: false,
+          notificationRequestResult: true,
+          exactSchedulingEnabled: false,
+          exactRequestResult: false,
+        );
+        final policy = NotificationPermissionPolicy(
+          platform: NotificationGatewayPlatform.android,
+          boundary: boundary,
+        );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: true,
-      );
+        final state = await policy.resolve(requestFromEligibleActivation: true);
 
-      expect(state.notificationsGranted, isTrue);
-      expect(state.precision, ReminderSchedulePrecision.inexact);
-      expect(boundary.notificationRequestCount, 1);
-      expect(boundary.exactRequestCount, 1);
-      expect(boundary.exactCheckCount, 2);
-    });
+        expect(state.notificationsGranted, isTrue);
+        expect(state.precision, ReminderSchedulePrecision.inexact);
+        expect(boundary.notificationRequestCount, 1);
+        expect(boundary.exactRequestCount, 1);
+        expect(boundary.exactCheckCount, 2);
+      },
+    );
 
     test('rechecks exact permission on every reconciliation', () async {
       final boundary = _FakeNotificationPermissionBoundary(
@@ -103,9 +103,7 @@ void main() {
         boundary: boundary,
       );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: true,
-      );
+      final state = await policy.resolve(requestFromEligibleActivation: true);
 
       expect(state.precision, ReminderSchedulePrecision.exact);
       expect(boundary.exactRequestCount, 1);
