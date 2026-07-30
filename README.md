@@ -39,24 +39,23 @@ lib/
 
 Each feature folder has its own short README pointing at its Jira epic/tickets — check there before starting one.
 
-## ⚠️ One-time setup required
+## Prerequisites
 
-This project was scaffolded **without** the Flutter CLI available (not installed on the machine that generated it) — `pubspec.yaml`, `lib/`, and `test/` are hand-authored and correct, but the native platform runners are missing. Before you can `flutter run` this, do once per machine:
-
-```bash
-flutter create . --project-name habitbuilder_mobile --org com.habitbuilder
-flutter pub get
-```
-
-`flutter create .` on an existing project only **adds** the missing `android/`, `ios/`, etc. folders — it will not touch `lib/`, `pubspec.yaml`, or anything already there.
+- Flutter 3.44.x (this repo was verified against 3.44.8, Dart 3.12.2)
+- Chrome, if you want the quickest possible target (no extra install)
+- **For a real Android build:** Android Studio + Android SDK (not required just to `analyze`/`test`/web-build)
+- **For a real Windows desktop build:** Developer Mode enabled (Settings → Privacy & security → For developers) **and** the Visual Studio "Desktop development with C++" workload
+- iOS builds require a Mac — not possible from Windows
 
 ## Running locally
 
 Point the app at your local backend or the OpenAPI mock server (Prism, see `HBB-7`/`HBM` setup tickets):
 
 ```bash
-flutter run --dart-define=API_BASE_URL=http://localhost:4010
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:4010
 ```
+
+Swap `-d chrome` for `-d windows` or a connected Android device/emulator once their toolchains are set up (see Prerequisites). Run `flutter doctor -v` to see exactly what's missing on your machine.
 
 ## Tests
 
@@ -71,4 +70,6 @@ flutter test
 
 ## Status
 
-Initial scaffold only — dependencies, folder structure, theme, and a placeholder screen. No real screens or logic yet; that starts with the tickets in Jira epic `HBM-1` (Identity, Profile & Contract Foundation).
+Scaffold verified working: `flutter analyze` is clean, `flutter test` passes (1/1), and `flutter build web` succeeds end-to-end. Native platform folders (`android/`, `ios/`, `web/`, `windows/`) were generated via `flutter create .` — additive only, `lib/` untouched. No real screens or logic yet; that starts with the tickets in Jira epic `HBM-1` (Identity, Profile & Contract Foundation).
+
+Note: `build_runner` is pinned to `^2.4.0` rather than the latest `2.15.x` — the newest `build_runner` and the newest `riverpod_generator` require incompatible `analyzer` versions of each other, so `pub get` fails above that if you bump it. Re-check this constraint next time you touch codegen deps.
