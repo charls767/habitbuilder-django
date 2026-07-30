@@ -200,6 +200,16 @@ test('ignores the pure reminder repository interface with no executable lines', 
   assert.match(result.stdout, /Changed-code coverage: 0\/0/);
 });
 
+test('ignores the pure progress repository interface with no executable lines', () => {
+  const result = runFixture({
+    changedPath:
+      'lib/features/progress/domain/repositories/progress_repository.dart',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Changed-code coverage: 0\/0/);
+});
+
 test('ignores non-instrumentable HBM-14 test and declaration paths', () => {
   for (const changedPath of [
     'integration_test/reminder_android_smoke_test.dart',

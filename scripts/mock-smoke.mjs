@@ -288,6 +288,28 @@ for (const field of ['id', 'habitoId', 'fecha', 'estado']) {
 }
 await request('/habits/hab_001/logs', trackingRequest, 200);
 
+const progressResponse = await request(
+  '/progress?periodo=semana',
+  {headers: authenticated},
+  200,
+);
+const progress = await progressResponse.json();
+for (const field of [
+  'periodo',
+  'desde',
+  'hasta',
+  'porcentajeCumplimiento',
+  'rachaActual',
+  'rachaMasLarga',
+  'completados',
+  'programados',
+  'dias',
+]) {
+  if (!(field in progress)) {
+    throw new Error(`GET progress no incluyo ${field}`);
+  }
+}
+
 console.log(
-  'Prism smoke test: auth + habits + goals + reminders + tracking OK',
+  'Prism smoke test: auth + habits + goals + reminders + tracking + progress OK',
 );
