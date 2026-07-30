@@ -122,9 +122,7 @@ void main() {
         boundary: boundary,
       );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: false,
-      );
+      final state = await policy.resolve(requestFromEligibleActivation: false);
 
       expect(state.notificationsGranted, isFalse);
       expect(state.precision, ReminderSchedulePrecision.unavailable);
@@ -132,54 +130,56 @@ void main() {
       expect(boundary.exactCheckCount, 0);
     });
 
-    test('eligible activation requests alert and sound permission once',
-        () async {
-      final boundary = _FakeNotificationPermissionBoundary(
-        notificationsEnabled: false,
-        notificationRequestResult: true,
-        exactSchedulingEnabled: false,
-      );
-      final policy = NotificationPermissionPolicy(
-        platform: NotificationGatewayPlatform.ios,
-        boundary: boundary,
-      );
+    test(
+      'eligible activation requests alert and sound permission once',
+      () async {
+        final boundary = _FakeNotificationPermissionBoundary(
+          notificationsEnabled: false,
+          notificationRequestResult: true,
+          exactSchedulingEnabled: false,
+        );
+        final policy = NotificationPermissionPolicy(
+          platform: NotificationGatewayPlatform.ios,
+          boundary: boundary,
+        );
 
-      final state = await policy.resolve(
-        requestFromEligibleActivation: true,
-      );
-      final repeated = await policy.resolve(
-        requestFromEligibleActivation: true,
-      );
+        final state = await policy.resolve(requestFromEligibleActivation: true);
+        final repeated = await policy.resolve(
+          requestFromEligibleActivation: true,
+        );
 
-      expect(state.notificationsGranted, isTrue);
-      expect(state.precision, ReminderSchedulePrecision.exact);
-      expect(repeated.notificationsGranted, isTrue);
-      expect(boundary.notificationRequestCount, 1);
-      expect(boundary.exactCheckCount, 0);
-    });
+        expect(state.notificationsGranted, isTrue);
+        expect(state.precision, ReminderSchedulePrecision.exact);
+        expect(repeated.notificationsGranted, isTrue);
+        expect(boundary.notificationRequestCount, 1);
+        expect(boundary.exactCheckCount, 0);
+      },
+    );
 
-    test('denied permission is not requested repeatedly in one process',
-        () async {
-      final boundary = _FakeNotificationPermissionBoundary(
-        notificationsEnabled: false,
-        notificationRequestResult: false,
-        exactSchedulingEnabled: false,
-      );
-      final policy = NotificationPermissionPolicy(
-        platform: NotificationGatewayPlatform.ios,
-        boundary: boundary,
-      );
+    test(
+      'denied permission is not requested repeatedly in one process',
+      () async {
+        final boundary = _FakeNotificationPermissionBoundary(
+          notificationsEnabled: false,
+          notificationRequestResult: false,
+          exactSchedulingEnabled: false,
+        );
+        final policy = NotificationPermissionPolicy(
+          platform: NotificationGatewayPlatform.ios,
+          boundary: boundary,
+        );
 
-      await policy.resolve(requestFromEligibleActivation: true);
-      final repeated = await policy.resolve(
-        requestFromEligibleActivation: true,
-      );
+        await policy.resolve(requestFromEligibleActivation: true);
+        final repeated = await policy.resolve(
+          requestFromEligibleActivation: true,
+        );
 
-      expect(repeated.notificationsGranted, isFalse);
-      expect(repeated.precision, ReminderSchedulePrecision.unavailable);
-      expect(boundary.notificationRequestCount, 1);
-      expect(boundary.exactCheckCount, 0);
-    });
+        expect(repeated.notificationsGranted, isFalse);
+        expect(repeated.precision, ReminderSchedulePrecision.unavailable);
+        expect(boundary.notificationRequestCount, 1);
+        expect(boundary.exactCheckCount, 0);
+      },
+    );
   });
 }
 
