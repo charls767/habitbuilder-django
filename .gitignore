@@ -1,5 +1,15 @@
 # Entorno y cachés en la raíz del monorepo.
 # Cada subproyecto mantiene además su propio .gitignore (backend/, mobile/).
+
+# Credenciales: notas sueltas con cadenas de conexión o claves. El repositorio
+# es público, así que cualquier archivo con secretos debe quedar fuera.
+Neon.txt
+*credenciales*
+*secrets*
+.env
+.env.*
+!.env.example
+
 .venv/
 venv/
 __pycache__/
