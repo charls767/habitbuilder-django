@@ -28,3 +28,8 @@ final inspirationProvider = FutureProvider.autoDispose
       (ref, type) =>
           ref.watch(communityRepositoryProvider).listInspiration(type),
     );
+
+final inspirationDetailProvider = FutureProvider.autoDispose
+    .family<InspirationItem, String>(
+      (ref, id) => ref.watch(communityRepositoryProvider).getInspiration(id),
+    );

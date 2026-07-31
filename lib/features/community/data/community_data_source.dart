@@ -11,7 +11,10 @@ class CommunityDataSource {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
         '/v1/comunidad/publicaciones',
-        queryParameters: {'limit': 50, if (type != null) 'tipo': type},
+        queryParameters: {
+          'limit': 50,
+          ...?type == null ? null : {'tipo': type},
+        },
       );
       return response.data!
           .map((item) => Map<String, dynamic>.from(item as Map))
@@ -69,15 +72,32 @@ class CommunityDataSource {
         ),
       );
 
-  Future<List<Map<String, dynamic>>> listInspiration({String? type}) {
+  Future<List<Map<String, dynamic>>> listInspiration({
+    String? type,
+    int limit = 50,
+    int offset = 0,
+  }) {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
         '/v1/inspiracion',
-        queryParameters: {'limit': 50, if (type != null) 'tipo': type},
+        queryParameters: {
+          'limit': limit.clamp(1, 50),
+          'offset': offset,
+          ...?type == null ? null : {'tipo': type},
+        },
       );
       return response.data!
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList();
+    });
+  }
+
+  Future<Map<String, dynamic>> getInspiration(String id) {
+    return runApiCall(() async {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/inspiracion/$id',
+      );
+      return response.data!;
     });
   }
 }

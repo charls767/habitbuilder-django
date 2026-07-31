@@ -12,8 +12,8 @@ class AdminDataSource {
       final response = await _dio.get<Map<String, dynamic>>(
         '/v1/admin/reportes/uso',
         queryParameters: {
-          if (from != null) 'desde': from,
-          if (to != null) 'hasta': to,
+          ...?from == null ? null : {'desde': from},
+          ...?to == null ? null : {'hasta': to},
         },
       );
       return response.data!;

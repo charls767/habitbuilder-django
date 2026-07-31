@@ -1,11 +1,12 @@
 enum InspirationType {
-  all('todos'),
-  article('articulo'),
-  video('video'),
-  audio('audio');
+  all('todos', 'Todos'),
+  article('articulo', 'Artículos'),
+  video('video', 'Videos'),
+  audio('audio', 'Audio');
 
-  const InspirationType(this.apiValue);
+  const InspirationType(this.apiValue, this.label);
   final String apiValue;
+  final String label;
 }
 
 class CommunityPost {

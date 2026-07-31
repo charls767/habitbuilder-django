@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_chrome.dart';
 import '../domain/entities/community_content.dart';
 import 'community_providers.dart';
+import 'inspiration_media.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
@@ -217,7 +220,7 @@ class _InspirationFeed extends ConsumerWidget {
               children: InspirationType.values
                   .map(
                     (type) => ChoiceChip(
-                      label: Text(type.apiValue),
+                      label: Text(type.label),
                       selected: selected == type,
                       onSelected: (_) => onTypeChanged(type),
                     ),
@@ -227,13 +230,12 @@ class _InspirationFeed extends ConsumerWidget {
           ),
           Expanded(
             child: items.when(
-              data: (content) => ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-                itemCount: content.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (_, index) =>
-                    _InspirationCard(item: content[index]),
-              ),
+              data: (content) => content.isEmpty
+                  ? const _EmptyInspiration()
+                  : _PaginatedInspirationList(
+                      type: selected,
+                      initialItems: content,
+                    ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => _RetryView(
                 onRetry: () => ref.invalidate(inspirationProvider(selected)),
@@ -246,37 +248,149 @@ class _InspirationFeed extends ConsumerWidget {
   }
 }
 
+class _PaginatedInspirationList extends ConsumerStatefulWidget {
+  const _PaginatedInspirationList({
+    required this.type,
+    required this.initialItems,
+  });
+
+  final InspirationType type;
+  final List<InspirationItem> initialItems;
+
+  @override
+  ConsumerState<_PaginatedInspirationList> createState() =>
+      _PaginatedInspirationListState();
+}
+
+class _PaginatedInspirationListState
+    extends ConsumerState<_PaginatedInspirationList> {
+  static const _pageSize = 50;
+
+  late List<InspirationItem> _items;
+  var _loadingMore = false;
+  var _hasMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = [...widget.initialItems];
+    _hasMore = _items.length == _pageSize;
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore) return;
+    setState(() => _loadingMore = true);
+    try {
+      final next = await ref
+          .read(communityRepositoryProvider)
+          .listInspiration(widget.type, offset: _items.length);
+      if (!mounted) return;
+      setState(() {
+        _items.addAll(next);
+        _hasMore = next.length == _pageSize;
+      });
+    } finally {
+      if (mounted) setState(() => _loadingMore = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasHero = widget.type == InspirationType.all && _items.isNotEmpty;
+    final footerCount = _loadingMore ? 1 : 0;
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.extentAfter < 240) _loadMore();
+        return false;
+      },
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+        itemCount: _items.length + footerCount,
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          if (hasHero && index == 0) {
+            return _InspirationHero(item: _items.first);
+          }
+          if (_loadingMore && index == _items.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return _InspirationCard(item: _items[index]);
+        },
+      ),
+    );
+  }
+}
+
+class _InspirationHero extends StatelessWidget {
+  const _InspirationHero({required this.item});
+
+  final InspirationItem item;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InspirationCover(item: item, height: 190),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Destacado',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(color: AppColors.primary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                item.title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Text(item.summary),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _ViewContentButton(item: item),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _InspirationCard extends StatelessWidget {
   const _InspirationCard({required this.item});
   final InspirationItem item;
 
   @override
   Widget build(BuildContext context) => Card(
+    clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () => showDialog<void>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(item.title),
-          content: Text('${item.summary}\n\n${item.url}'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar'),
-            ),
-          ],
-        ),
-      ),
+      onTap: () => context.push(AppRoutes.inspirationDetail(item.id)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            InspirationCover(item: item, height: 120),
+            const SizedBox(height: 14),
             Row(
               children: [
-                Icon(_iconFor(item.type), color: AppColors.primary),
+                Icon(inspirationIcon(item.type), color: AppColors.primary),
                 const SizedBox(width: 8),
                 Text(
-                  item.type.apiValue.toUpperCase(),
+                  item.type.label,
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
               ],
@@ -291,10 +405,45 @@ class _InspirationCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(item.summary),
             const SizedBox(height: 10),
-            Text(item.author, style: Theme.of(context).textTheme.bodySmall),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    item.author,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                _ViewContentButton(item: item),
+              ],
+            ),
           ],
         ),
       ),
+    ),
+  );
+}
+
+class _ViewContentButton extends StatelessWidget {
+  const _ViewContentButton({required this.item});
+
+  final InspirationItem item;
+
+  @override
+  Widget build(BuildContext context) => FilledButton.icon(
+    onPressed: () => context.push(AppRoutes.inspirationDetail(item.id)),
+    icon: const Icon(Icons.arrow_forward, size: 18),
+    label: const Text('Ver contenido'),
+  );
+}
+
+class _EmptyInspiration extends StatelessWidget {
+  const _EmptyInspiration();
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Padding(
+      padding: EdgeInsets.all(32),
+      child: Text('Todavía no hay contenido de inspiración.'),
     ),
   );
 }
@@ -324,12 +473,6 @@ class _RetryView extends StatelessWidget {
     ),
   );
 }
-
-IconData _iconFor(InspirationType type) => switch (type) {
-  InspirationType.video => Icons.play_circle_outline,
-  InspirationType.audio => Icons.headphones_outlined,
-  _ => Icons.article_outlined,
-};
 
 String _dateLabel(DateTime value) =>
     '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';

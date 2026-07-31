@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,6 +15,7 @@ BaseOptions _baseOptions() => BaseOptions(
   connectTimeout: AppEnv.connectTimeout,
   receiveTimeout: AppEnv.receiveTimeout,
   headers: const {'Content-Type': 'application/json'},
+  responseDecoder: (bytes, _, _) => utf8.decode(bytes, allowMalformed: true),
 );
 
 /// Bare Dio instance retained for compatibility with the network provider.

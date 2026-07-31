@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:habitbuilder_mobile/features/community/data/community_repository.dart';
 import 'package:habitbuilder_mobile/features/community/domain/entities/community_content.dart';
 import 'package:habitbuilder_mobile/features/community/presentation/community_providers.dart';
 import 'package:habitbuilder_mobile/features/community/presentation/community_screen.dart';
+import 'package:habitbuilder_mobile/features/community/presentation/inspiration_detail_screen.dart';
 
 void main() {
   testWidgets('renders forum and inspiration flows', (tester) async {
@@ -17,6 +19,23 @@ void main() {
     });
 
     final repository = _FakeCommunityRepository();
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const CommunityScreen(),
+        ),
+        GoRoute(
+          path: '/inspiration/:id',
+          builder: (context, state) => InspirationDetailScreen(
+            inspirationId: state.pathParameters['id']!,
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -26,7 +45,7 @@ void main() {
             InspirationType.all,
           ).overrideWith((ref) async => [_inspiration]),
         ],
-        child: const MaterialApp(home: CommunityScreen()),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();
@@ -47,10 +66,11 @@ void main() {
 
     await tester.tap(find.text('Inspírate'));
     await tester.pumpAndSettle();
-    expect(find.text('Constancia'), findsOneWidget);
-    await tester.tap(find.text('Constancia'));
+    expect(find.text('Cómo crear un hábito'), findsOneWidget);
+    await tester.tap(find.text('Ver contenido'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('https://example.com'), findsOneWidget);
+    expect(find.text('Un paso cada dia'), findsOneWidget);
+    expect(find.textContaining('https://example.com'), findsNothing);
   });
 }
 
@@ -68,7 +88,7 @@ final _post = CommunityPost(
 final _inspiration = InspirationItem(
   id: 'content-1',
   type: InspirationType.article,
-  title: 'Constancia',
+  title: 'Cómo crear un hábito',
   summary: 'Un paso cada dia',
   url: 'https://example.com',
   author: 'HabitBuilder',
@@ -108,7 +128,11 @@ class _FakeCommunityRepository implements CommunityRepository {
   Future<void> report(String postId, String reason, String detail) async {}
 
   @override
-  Future<List<InspirationItem>> listInspiration(InspirationType type) async => [
-    _inspiration,
-  ];
+  Future<List<InspirationItem>> listInspiration(
+    InspirationType type, {
+    int offset = 0,
+  }) async => [_inspiration];
+
+  @override
+  Future<InspirationItem> getInspiration(String id) async => _inspiration;
 }

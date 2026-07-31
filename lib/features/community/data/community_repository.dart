@@ -8,7 +8,11 @@ abstract interface class CommunityRepository {
   Future<List<CommunityComment>> listComments(String postId);
   Future<CommunityComment> createComment(String postId, String content);
   Future<void> report(String postId, String reason, String detail);
-  Future<List<InspirationItem>> listInspiration(InspirationType type);
+  Future<List<InspirationItem>> listInspiration(
+    InspirationType type, {
+    int offset = 0,
+  });
+  Future<InspirationItem> getInspiration(String id);
 }
 
 class CommunityRepositoryImpl implements CommunityRepository {
@@ -41,10 +45,17 @@ class CommunityRepositoryImpl implements CommunityRepository {
       _remote.report(postId, reason, detail);
 
   @override
-  Future<List<InspirationItem>> listInspiration(InspirationType type) async =>
-      (await _remote.listInspiration(
-        type: type == InspirationType.all ? null : type.apiValue,
-      )).map(_inspirationFromJson).toList();
+  Future<List<InspirationItem>> listInspiration(
+    InspirationType type, {
+    int offset = 0,
+  }) async => (await _remote.listInspiration(
+    type: type == InspirationType.all ? null : type.apiValue,
+    offset: offset,
+  )).map(_inspirationFromJson).toList();
+
+  @override
+  Future<InspirationItem> getInspiration(String id) async =>
+      _inspirationFromJson(await _remote.getInspiration(id));
 }
 
 CommunityPost _postFromJson(Map<String, dynamic> json) => CommunityPost(

@@ -9,6 +9,42 @@ import 'package:habitbuilder_mobile/features/community/data/community_repository
 import 'package:habitbuilder_mobile/features/community/domain/entities/community_content.dart';
 
 void main() {
+  test('decodes raw UTF-8 inspiration bytes', () async {
+    final dio =
+        Dio(
+            BaseOptions(
+              responseDecoder: (bytes, _, _) =>
+                  utf8.decode(bytes, allowMalformed: true),
+            ),
+          )
+          ..httpClientAdapter = _CallbackAdapter((options) {
+            final body = jsonEncode([
+              {
+                'id': 'content-utf8',
+                'tipo': 'articulo',
+                'titulo': 'Cómo crear un hábito',
+                'resumen': 'Lectura de 5 minutos.',
+                'url': 'internal-content-id',
+                'autor': 'Dra. Ana Soto',
+                'destacado': true,
+                'creadoEn': '2026-07-30T10:00:00Z',
+                'actualizadoEn': '2026-07-30T10:00:00Z',
+              },
+            ]);
+            return ResponseBody(
+              Stream.value(Uint8List.fromList(utf8.encode(body))),
+              200,
+              headers: {
+                Headers.contentTypeHeader: [Headers.jsonContentType],
+              },
+            );
+          });
+
+    final result = await CommunityDataSource(dio).listInspiration();
+
+    expect(result.single['titulo'], 'Cómo crear un hábito');
+  });
+
   test(
     'maps feed, inspiration and protected interactions to API paths',
     () async {
@@ -57,6 +93,19 @@ void main() {
               },
             ]);
           }
+          if (options.path == '/v1/inspiracion/content-1') {
+            return _jsonResponse({
+              'id': 'content-1',
+              'tipo': 'video',
+              'titulo': 'Constancia',
+              'resumen': 'Un paso cada dia',
+              'url': 'https://example.com',
+              'autor': 'HabitBuilder',
+              'destacado': true,
+              'creadoEn': '2026-07-30T10:00:00Z',
+              'actualizadoEn': '2026-07-30T10:00:00Z',
+            });
+          }
           if (options.path.endsWith('/comentarios') &&
               options.method == 'GET') {
             return _jsonResponse([
@@ -88,6 +137,7 @@ void main() {
       final inspiration = await repository.listInspiration(
         InspirationType.video,
       );
+      final detail = await repository.getInspiration('content-1');
       await repository.react('post-1', reacted: false);
       await repository.react('post-1', reacted: true);
       final comments = await repository.listComments('post-1');
@@ -100,10 +150,12 @@ void main() {
       expect(posts.single.authorName, 'Ana');
       expect(createdPost.id, 'post-2');
       expect(inspiration.single.type, InspirationType.video);
+      expect(detail.title, 'Constancia');
       expect(comments.single.content, 'Buen avance');
       expect(createdComment.id, 'comment-2');
       expect(requests, contains('GET /v1/comunidad/publicaciones'));
       expect(requests, contains('GET /v1/inspiracion'));
+      expect(requests, contains('GET /v1/inspiracion/content-1'));
       expect(
         requests,
         contains('POST /v1/comunidad/publicaciones/post-1/reaccion'),

@@ -171,10 +171,11 @@ class _UserCard extends ConsumerWidget {
           .read(adminRepositoryProvider)
           .changeUserStatus(user.id, next, reason);
       ref.invalidate(adminUsersProvider);
-      if (context.mounted)
+      if (context.mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Estado actualizado.')));
+      }
     } on ApiException catch (error) {
       if (context.mounted) _showError(context, error.message);
     }
@@ -193,10 +194,11 @@ class _UserCard extends ConsumerWidget {
           .read(adminRepositoryProvider)
           .changeUserRole(user.id, role, reason);
       ref.invalidate(adminUsersProvider);
-      if (context.mounted)
+      if (context.mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Rol actualizado.')));
+      }
     } on ApiException catch (error) {
       if (context.mounted) _showError(context, error.message);
     }
@@ -258,10 +260,11 @@ class _ReportCard extends ConsumerWidget {
                 .read(adminRepositoryProvider)
                 .resolveModeration(report.id, resolution, reason);
             ref.invalidate(moderationQueueProvider);
-            if (context.mounted)
+            if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Reporte resuelto.')),
               );
+            }
           } on ApiException catch (error) {
             if (context.mounted) _showError(context, error.message);
           }
