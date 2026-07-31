@@ -1,0 +1,11 @@
+# Entorno y cachés en la raíz del monorepo.
+# Cada subproyecto mantiene además su propio .gitignore (backend/, mobile/).
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+.DS_Store
+Thumbs.db

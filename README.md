@@ -1,0 +1,112 @@
+# HabitBuilder
+
+Aplicación de seguimiento de hábitos: permite crear hábitos y metas, registrar el
+cumplimiento diario, configurar recordatorios, consultar progreso y estadísticas, y
+participar en una comunidad con contenido de inspiración y funciones administrativas.
+
+Este repositorio reúne las dos mitades de la aplicación:
+
+| Carpeta | Qué es | Tecnología |
+|---|---|---|
+| [`backend/`](backend/) | API REST | Python 3.12, Django 5.2, DRF, PostgreSQL |
+| [`mobile/`](mobile/) | Cliente móvil | Flutter 3.44, Dart 3.12, Riverpod, go_router, Dio |
+
+Ambas partes se comunican mediante el contrato **OpenAPI** que vive en
+[`backend/docs/openapi.yaml`](backend/docs/openapi.yaml). Ese contrato es la fuente de
+verdad: define cada endpoint, payload y código de estado, y ninguna de las dos partes
+lo cambia por su cuenta.
+
+## Contexto: la migración del backend
+
+El backend se implementó originalmente en **Go 1.25** (repositorio
+`habitbuilder-backend` en Bitbucket) y fue migrado a **Django + DRF** manteniendo
+paridad byte a byte con el contrato, de modo que el cliente Flutter no necesitó ningún
+cambio. La equivalencia se verificó ejecutando ambos backends en paralelo contra bases
+de datos gemelas y comparando sus respuestas ante la misma secuencia de peticiones:
+**110 de 110 pasos idénticos**. El detalle está en el
+[README del backend](backend/README.md) y el arnés de comparación en
+[`backend/tools/parity.py`](backend/tools/parity.py).
+
+## Levantar la aplicación completa
+
+### 1. Backend
+
+Necesitas PostgreSQL. La forma más rápida es con Docker:
+
+```bash
+docker run -d --name habitbuilder-pg -e POSTGRES_PASSWORD=hb -e POSTGRES_USER=hb -e POSTGRES_DB=habitbuilder -p 5432:5432 postgres:16
+```
+
+Luego, desde `backend/`, prepara el entorno y arranca el servidor:
+
+```bash
+python -m venv .venv && .venv/Scripts/activate && pip install -r requirements.txt
+```
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con tus credenciales (para el PostgreSQL de arriba:
+`DATABASE_URL=postgres://hb:hb@localhost:5432/habitbuilder` y `DB_SSLMODE=disable`), y
+después:
+
+```bash
+python manage.py migrate && python manage.py runserver 0.0.0.0:8000
+```
+
+La API queda en `http://localhost:8000`; `GET /health` confirma que responde y que la
+base de datos está accesible.
+
+### 2. Cliente móvil
+
+El cliente lee la URL del backend en tiempo de compilación mediante `API_BASE_URL`
+(por defecto apunta a `http://localhost:4010`, el mock de Prism). Desde `mobile/`:
+
+```bash
+flutter pub get
+```
+
+En un emulador de Android, `localhost` se refiere al propio emulador, así que el host
+se alcanza por la dirección especial `10.0.2.2`:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+En escritorio, web o iOS simulador, usa `localhost` directamente:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+## Pruebas
+
+El backend tiene 190 pruebas de contrato (228 casos con parametrización) que se ejecutan
+contra un PostgreSQL real, con una puerta de cobertura del 80%. Desde `backend/`:
+
+```bash
+pytest
+```
+
+Desde `mobile/`, la suite del cliente:
+
+```bash
+flutter test
+```
+
+## Despliegue
+
+El backend se despliega a **Google Cloud Run** desde su `Dockerfile` de producción
+(gunicorn, migraciones automáticas al arrancar). Con las credenciales en
+`backend/.env.deploy`:
+
+```bash
+bash backend/scripts/deploy.sh
+```
+
+## Créditos
+
+Proyecto académico de calidad de software, desarrollado por Carlos Alberto Acevedo
+Carmona y Omar Andrés Zambrano Arias. El historial de commits conserva la trazabilidad
+con los tickets de Jira (`HBM-*` para el cliente móvil, `HBB-*` para el backend).
