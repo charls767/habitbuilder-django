@@ -37,6 +37,10 @@ jobs:
       DB_SSLMODE: disable
       DJANGO_SECRET_KEY: clave-solo-para-ci
       JWT_SIGNING_KEY: jwt-solo-para-ci
+      # Con DEBUG=False la configuración activa la redirección a HTTPS, y el
+      # cliente de pruebas recibiría un 301 en HTML en lugar del JSON. Se
+      # desactiva solo aquí para conservar el resto del perfil de producción.
+      SSL_REDIRECT: "False"
 
     steps:
       - uses: actions/checkout@v4
