@@ -65,7 +65,8 @@ class AppDestinationBar extends StatelessWidget {
                     1 => AppRoutes.tracking,
                     2 => AppRoutes.goals,
                     3 => AppRoutes.progress,
-                    _ => AppRoutes.profile,
+                    4 => AppRoutes.profile,
+                    _ => AppRoutes.community,
                   };
                   context.go(route);
                 },
@@ -94,6 +95,11 @@ class AppDestinationBar extends StatelessWidget {
                     icon: Icon(Icons.person_outline),
                     selectedIcon: Icon(Icons.person),
                     label: 'Perfil',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.forum_outlined),
+                    selectedIcon: Icon(Icons.forum),
+                    label: 'Comunidad',
                   ),
                 ],
               ),

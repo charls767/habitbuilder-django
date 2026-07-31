@@ -11,10 +11,16 @@ abstract final class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String profile = '/profile';
+  static const String community = '/community';
+  static const String inspiration = '/inspiration';
+  static const String admin = '/admin';
+  static const String adminRequest = '/admin-request';
 
   static String habitEdit(String habitId) => '/habits/$habitId/edit';
   static String habitReminders(String habitId) =>
       '/habits/${Uri.encodeComponent(habitId)}/reminders';
   static String goalDetail(String goalId) => '/goals/$goalId';
   static String goalEdit(String goalId) => '/goals/$goalId/edit';
+  static String inspirationDetail(String inspirationId) =>
+      '$inspiration/${Uri.encodeComponent(inspirationId)}';
 }

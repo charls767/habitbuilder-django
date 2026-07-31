@@ -6,6 +6,10 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/community/presentation/community_screen.dart';
+import '../../features/community/presentation/inspiration_detail_screen.dart';
+import '../../features/admin/presentation/admin_screen.dart';
+import '../../features/admin/presentation/admin_access_request_screen.dart';
 import '../../features/goals/presentation/screens/goal_detail_screen.dart';
 import '../../features/goals/presentation/screens/goal_form_screen.dart';
 import '../../features/goals/presentation/screens/goals_list_screen.dart';
@@ -110,6 +114,24 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.community,
+        builder: (context, state) => const CommunityScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.inspiration}/:inspirationId',
+        builder: (context, state) => InspirationDetailScreen(
+          inspirationId: state.pathParameters['inspirationId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.admin,
+        builder: (context, state) => const AdminScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminRequest,
+        builder: (context, state) => const AdminAccessRequestScreen(),
       ),
     ],
   );

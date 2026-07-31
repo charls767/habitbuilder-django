@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_chrome.dart';
+import '../../../../core/router/app_routes.dart';
+import '../../../admin/presentation/admin_providers.dart';
 import '../../domain/entities/perfil_usuario.dart';
 import '../providers/profile_providers.dart';
 
@@ -160,6 +163,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 children: [
                   _ProfileHeader(profile: profile),
                   const SizedBox(height: 32),
+                  ref
+                      .watch(adminAccessProvider)
+                      .maybeWhen(
+                        data: (isAdmin) => isAdmin
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Card(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.admin_panel_settings_outlined,
+                                    ),
+                                    title: const Text('Administraci\u00F3n'),
+                                    subtitle: const Text(
+                                      'Gestiona usuarios, moderaci\u00F3n e inspiraci\u00F3n.',
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => context.push(AppRoutes.admin),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                  ref
+                      .watch(adminAccessProvider)
+                      .maybeWhen(
+                        data: (isAdmin) => !isAdmin
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Card(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.how_to_reg_outlined,
+                                    ),
+                                    title: const Text(
+                                      'Solicitar administración',
+                                    ),
+                                    subtitle: const Text(
+                                      'Envía una solicitud para apoyar la gestión.',
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () =>
+                                        context.push(AppRoutes.adminRequest),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                   _SectionTitle(
                     icon: Icons.person_outline,
                     title: 'Información general',
