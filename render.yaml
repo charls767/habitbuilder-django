@@ -41,3 +41,31 @@ services:
         value: "7"
       - key: LOG_LEVEL
         value: INFO
+
+      # El navegador aplica política de origen cruzado: sin esto, el cliente
+      # web recibe las respuestas bloqueadas aunque la API responda 200.
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://habitbuilder-web.onrender.com
+
+  # ---------------------------------------------------------------------
+  # Cliente Flutter compilado para navegador. Es el mismo codigo que la app
+  # movil; solo cambia el objetivo de compilacion.
+  # ---------------------------------------------------------------------
+  - type: web
+    name: habitbuilder-web
+    runtime: static
+    rootDir: mobile
+    buildCommand: >-
+      git clone https://github.com/flutter/flutter.git -b stable --depth 1 "$HOME/flutter" &&
+      export PATH="$HOME/flutter/bin:$PATH" &&
+      flutter pub get &&
+      dart run build_runner build --delete-conflicting-outputs &&
+      flutter build web --release
+      --dart-define=API_BASE_URL=https://habitbuilder-api.onrender.com
+    staticPublishPath: build/web
+    routes:
+      # go_router usa rutas del lado del cliente: cualquier ruta profunda
+      # debe servir index.html o una recarga daria 404.
+      - type: rewrite
+        source: /*
+        destination: /index.html
