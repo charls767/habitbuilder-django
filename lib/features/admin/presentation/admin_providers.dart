@@ -36,3 +36,9 @@ final moderationQueueProvider =
     FutureProvider.autoDispose<List<ModerationReport>>(
       (ref) => ref.watch(adminRepositoryProvider).moderationQueue(),
     );
+
+final adminInspirationProvider = FutureProvider.autoDispose
+    .family<List<AdminInspiration>, String>(
+      (ref, search) =>
+          ref.watch(adminRepositoryProvider).inspiration(search: search),
+    );

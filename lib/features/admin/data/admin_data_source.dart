@@ -20,11 +20,24 @@ class AdminDataSource {
     });
   }
 
-  Future<List<Map<String, dynamic>>> users() {
+  Future<List<Map<String, dynamic>>> users({
+    String? search,
+    String? status,
+    String? role,
+    int offset = 0,
+  }) {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
         '/v1/admin/usuarios',
-        queryParameters: const {'limit': 50, 'offset': 0},
+        queryParameters: {
+          'limit': 50,
+          'offset': offset,
+          ...?search == null || search.trim().isEmpty
+              ? null
+              : {'buscar': search.trim()},
+          ...?status == null ? null : {'estado': status},
+          ...?role == null ? null : {'rol': role},
+        },
       );
       return response.data!
           .map((item) => Map<String, dynamic>.from(item as Map))
@@ -48,15 +61,14 @@ class AdminDataSource {
         ),
       );
 
-  Future<List<Map<String, dynamic>>> moderationQueue() {
+  Future<List<Map<String, dynamic>>> moderationQueue({
+    String status = 'pendiente',
+    int offset = 0,
+  }) {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
         '/v1/admin/moderacion/reportes',
-        queryParameters: const {
-          'estado': 'pendiente',
-          'limit': 50,
-          'offset': 0,
-        },
+        queryParameters: {'estado': status, 'limit': 50, 'offset': offset},
       );
       return response.data!
           .map((item) => Map<String, dynamic>.from(item as Map))
@@ -71,4 +83,68 @@ class AdminDataSource {
           data: {'resolucion': resolution, 'razon': reason},
         ),
       );
+
+  Future<Map<String, dynamic>> getPublication(String id) async {
+    return runApiCall(() async {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/comunidad/publicaciones/$id',
+      );
+      return response.data!;
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> inspiration({
+    String? type,
+    String? search,
+    bool? published,
+    bool? featured,
+    int offset = 0,
+  }) {
+    return runApiCall(() async {
+      final response = await _dio.get<List<dynamic>>(
+        '/v1/admin/inspiracion',
+        queryParameters: {
+          'limit': 50,
+          'offset': offset,
+          ...?type == null ? null : {'tipo': type},
+          ...?search == null || search.trim().isEmpty
+              ? null
+              : {'buscar': search.trim()},
+          ...?published == null ? null : {'publicado': published},
+          ...?featured == null ? null : {'destacado': featured},
+        },
+      );
+      return response.data!
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+    });
+  }
+
+  Future<Map<String, dynamic>> createInspiration(
+    Map<String, dynamic> data,
+  ) async {
+    return runApiCall(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/v1/admin/inspiracion',
+        data: data,
+      );
+      return response.data!;
+    });
+  }
+
+  Future<Map<String, dynamic>> updateInspiration(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    return runApiCall(() async {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/v1/admin/inspiracion/$id',
+        data: data,
+      );
+      return response.data!;
+    });
+  }
+
+  Future<void> deleteInspiration(String id) =>
+      runApiCall(() => _dio.delete<void>('/v1/admin/inspiracion/$id'));
 }

@@ -32,7 +32,7 @@ void main() {
     expect(find.text('Ana'), findsOneWidget);
     await tester.tap(find.byTooltip('Suspender usuario'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'incumplimiento');
+    await tester.enterText(find.byType(TextField).last, 'incumplimiento');
     await tester.tap(find.text('Confirmar'));
     await tester.pumpAndSettle();
     expect(repository.statusChanges, 1);
@@ -42,9 +42,9 @@ void main() {
     expect(find.textContaining('post-1'), findsOneWidget);
     await tester.tap(find.byTooltip('Resolver reporte'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ocultar publicación'));
+    await tester.tap(find.text('Ocultar publicaci\u00F3n'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'revisado');
+    await tester.enterText(find.byType(TextField).last, 'revisado');
     await tester.tap(find.text('Confirmar'));
     await tester.pumpAndSettle();
     expect(repository.resolutions, 1);
@@ -89,7 +89,12 @@ class _FakeAdminRepository implements AdminRepository {
   Future<AdminUsage> usage({String? from, String? to}) async => _usage;
 
   @override
-  Future<List<AdminUser>> users() async => [_user];
+  Future<List<AdminUser>> users({
+    String? search,
+    String? status,
+    String? role,
+    int offset = 0,
+  }) async => [_user];
 
   @override
   Future<void> changeUserStatus(String id, String status, String reason) async {
@@ -100,7 +105,10 @@ class _FakeAdminRepository implements AdminRepository {
   Future<void> changeUserRole(String id, String role, String reason) async {}
 
   @override
-  Future<List<ModerationReport>> moderationQueue() async => [_report];
+  Future<List<ModerationReport>> moderationQueue({
+    String status = 'pendiente',
+    int offset = 0,
+  }) async => [_report];
 
   @override
   Future<void> resolveModeration(
@@ -110,4 +118,34 @@ class _FakeAdminRepository implements AdminRepository {
   ) async {
     resolutions++;
   }
+
+  @override
+  Future<CommunityPostData> publication(String id) async => CommunityPostData(
+    author: 'Ana',
+    content: 'Contenido de prueba',
+    createdAt: _dateTo,
+    status: 'visible',
+  );
+
+  @override
+  Future<List<AdminInspiration>> inspiration({
+    String? type,
+    String? search,
+    bool? published,
+    bool? featured,
+    int offset = 0,
+  }) async => [];
+
+  @override
+  Future<AdminInspiration> createInspiration(Map<String, dynamic> data) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AdminInspiration> updateInspiration(
+    String id,
+    Map<String, dynamic> data,
+  ) async => throw UnimplementedError();
+
+  @override
+  Future<void> deleteInspiration(String id) async {}
 }

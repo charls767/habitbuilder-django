@@ -81,3 +81,50 @@ class ModerationReport {
   final String status;
   final DateTime createdAt;
 }
+
+class AdminInspiration {
+  const AdminInspiration({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.summary,
+    required this.url,
+    required this.author,
+    required this.featured,
+    required this.published,
+    required this.createdAt,
+    required this.updatedAt,
+    this.imageUrl,
+  });
+
+  factory AdminInspiration.fromJson(Map<String, dynamic> json) =>
+      AdminInspiration(
+        id: json['id'] as String,
+        type: json['tipo'] as String? ?? 'articulo',
+        title: json['titulo'] as String? ?? '',
+        summary: json['resumen'] as String? ?? '',
+        url: json['url'] as String? ?? '',
+        author: json['autor'] as String? ?? '',
+        featured: json['destacado'] as bool? ?? false,
+        published: json['publicado'] as bool? ?? false,
+        createdAt:
+            DateTime.tryParse(json['creadoEn'] as String? ?? '') ??
+            DateTime.now(),
+        updatedAt:
+            DateTime.tryParse(json['actualizadoEn'] as String? ?? '') ??
+            DateTime.now(),
+        imageUrl: json['imagenUrl'] as String?,
+      );
+
+  final String id;
+  final String type;
+  final String title;
+  final String summary;
+  final String url;
+  final String author;
+  final bool featured;
+  final bool published;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String? imageUrl;
+}
