@@ -94,6 +94,29 @@ En escritorio, web o iOS simulador, usa `localhost` directamente:
 flutter run --dart-define=API_BASE_URL=http://localhost:8000
 ```
 
+### Plataforma web
+
+No existe un frontend web aparte: el mismo proyecto Flutter compila para navegador, así
+que las 19 pantallas y toda la lógica son idénticas a las de móvil. Para ejecutarlo:
+
+```bash
+flutter run -d chrome --web-port=8080 --dart-define=API_BASE_URL=http://localhost:8000
+```
+
+Dos diferencias reales frente a móvil, ambas de plataforma y no de funcionalidad:
+
+- **CORS es obligatorio.** El navegador aplica la política de origen cruzado, así que el
+  backend debe declarar `CORS_ALLOWED_ORIGINS=http://localhost:8080` en `backend/.env`.
+  Sin eso, Django responde sin la cabecera `Access-Control-Allow-Origin` y el navegador
+  bloquea todas las peticiones (en móvil no ocurre: no hay origen que validar).
+- **Sin notificaciones locales.** `flutter_local_notifications` no soporta web, y el
+  código lo contempla: `reminder_scheduler_factory.dart` usa importación condicional y
+  en navegador recurre a un planificador `noop`. Los recordatorios se crean, editan y
+  consultan igual contra la API; lo único que no ocurre es la notificación del sistema.
+
+El almacenamiento del token sí funciona: `flutter_secure_storage` tiene implementación
+web oficial.
+
 ## Pruebas
 
 El backend tiene 190 pruebas de contrato (228 casos con parametrización) que se ejecutan
