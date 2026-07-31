@@ -8,6 +8,8 @@ Neon.txt
 *secrets*
 .env
 .env.*
+env.deploy
+*.deploy
 !.env.example
 
 .venv/
