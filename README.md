@@ -67,6 +67,14 @@ El cliente lee la URL del backend en tiempo de compilación mediante `API_BASE_U
 flutter pub get
 ```
 
+Riverpod genera parte del código (`*.g.dart`), que no se versiona. Es obligatorio
+generarlo antes de compilar o ejecutar pruebas, o fallarán con errores de símbolos no
+definidos:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
 En un emulador de Android, `localhost` se refiere al propio emulador, así que el host
 se alcanza por la dirección especial `10.0.2.2`:
 
