@@ -9,6 +9,13 @@ import 'package:habitbuilder_mobile/features/community/presentation/community_sc
 
 void main() {
   testWidgets('renders forum and inspiration flows', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     final repository = _FakeCommunityRepository();
     await tester.pumpWidget(
       ProviderScope(
@@ -24,6 +31,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('Comunidad'), findsNWidgets(2));
+    expect(find.text('Foro'), findsOneWidget);
+    expect(find.textContaining('Insp'), findsOneWidget);
     expect(find.text('avance'), findsOneWidget);
     await tester.tap(find.byTooltip('Ver comentarios'));
     await tester.pumpAndSettle();

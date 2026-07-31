@@ -40,6 +40,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             ),
           ],
         ),
+        bottomNavigationBar: const AppDestinationBar(selectedIndex: 5),
       ),
     );
   }
@@ -52,29 +53,39 @@ class _CommunityFeed extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final feed = ref.watch(communityFeedProvider);
     return AppContent(
-      child: feed.when(
-        data: (posts) => RefreshIndicator(
-          onRefresh: () async => ref.refresh(communityFeedProvider.future),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
-            children: [
-              _ComposerCard(onTap: () => _showComposer(context, ref)),
-              const SizedBox(height: 16),
-              if (posts.isEmpty)
-                const _EmptyCommunity()
-              else
-                ...posts.map(
-                  (post) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _PostCard(post: post),
+      child: RefreshIndicator(
+        onRefresh: () async => ref.refresh(communityFeedProvider.future),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
+          children: [
+            _ComposerCard(onTap: () => _showComposer(context, ref)),
+            const SizedBox(height: 16),
+            ...feed.when(
+              data: (posts) => [
+                if (posts.isEmpty)
+                  const _EmptyCommunity()
+                else
+                  ...posts.map(
+                    (post) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _PostCard(post: post),
+                    ),
                   ),
+              ],
+              loading: () => [
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-            ],
-          ),
+              ],
+              error: (_, _) => [
+                _RetryView(
+                  onRetry: () => ref.invalidate(communityFeedProvider),
+                ),
+              ],
+            ),
+          ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) =>
-            _RetryView(onRetry: () => ref.invalidate(communityFeedProvider)),
       ),
     );
   }
@@ -487,8 +498,9 @@ Future<void> _showReport(
   );
   if (reason == null) return;
   await ref.read(communityRepositoryProvider).report(postId, reason, '');
-  if (context.mounted)
+  if (context.mounted) {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Reporte enviado.')));
+  }
 }
