@@ -4,4 +4,11 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Debug-only: Android 9+ blocks cleartext HTTP by default, which stops
+         the emulator from reaching a backend served over http:// on the host
+         (10.0.2.2). Declared here and not in main/ so release builds keep the
+         secure default and only ever talk HTTPS.
+    -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

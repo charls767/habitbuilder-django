@@ -82,6 +82,12 @@ se alcanza por la dirección especial `10.0.2.2`:
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
 ```
 
+Para que esa conexión funcione, el backend debe aceptar ese nombre de host: añade
+`10.0.2.2` a `ALLOWED_HOSTS` en `backend/.env`. Si falta, Django responde `400 Bad
+Request` (DisallowedHost) a todas las peticiones del emulador, sin mensaje JSON, lo
+que despista bastante. El cliente también necesita permiso para hablar HTTP sin cifrar,
+ya concedido solo en el perfil de depuración de Android.
+
 En escritorio, web o iOS simulador, usa `localhost` directamente:
 
 ```bash
