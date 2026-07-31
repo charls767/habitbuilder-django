@@ -58,12 +58,16 @@ class CommunityDataSource {
     });
   }
 
-  Future<void> report(String postId, String reason, String detail) => runApiCall(
-    () => _dio.post<void>(
-      '/v1/comunidad/publicaciones/$postId/reportes',
-      data: {'motivo': reason, if (detail.trim().isNotEmpty) 'detalle': detail},
-    ),
-  );
+  Future<void> report(String postId, String reason, String detail) =>
+      runApiCall(
+        () => _dio.post<void>(
+          '/v1/comunidad/publicaciones/$postId/reportes',
+          data: {
+            'motivo': reason,
+            if (detail.trim().isNotEmpty) 'detalle': detail,
+          },
+        ),
+      );
 
   Future<List<Map<String, dynamic>>> listInspiration({String? type}) {
     return runApiCall(() async {

@@ -17,9 +17,8 @@ class CommunityRepositoryImpl implements CommunityRepository {
   final CommunityDataSource _remote;
 
   @override
-  Future<List<CommunityPost>> listPosts() async => (await _remote.listPosts())
-      .map(_postFromJson)
-      .toList();
+  Future<List<CommunityPost>> listPosts() async =>
+      (await _remote.listPosts()).map(_postFromJson).toList();
 
   @override
   Future<CommunityPost> createPost(String content) async =>
@@ -60,13 +59,14 @@ CommunityPost _postFromJson(Map<String, dynamic> json) => CommunityPost(
   habitId: json['habitoId'] as String?,
 );
 
-CommunityComment _commentFromJson(Map<String, dynamic> json) => CommunityComment(
-  id: json['id'] as String,
-  postId: json['publicacionId'] as String,
-  authorName: json['autorNombre'] as String? ?? 'HabitBuilder',
-  content: json['contenido'] as String? ?? '',
-  createdAt: DateTime.parse(json['creadoEn'] as String),
-);
+CommunityComment _commentFromJson(Map<String, dynamic> json) =>
+    CommunityComment(
+      id: json['id'] as String,
+      postId: json['publicacionId'] as String,
+      authorName: json['autorNombre'] as String? ?? 'HabitBuilder',
+      content: json['contenido'] as String? ?? '',
+      createdAt: DateTime.parse(json['creadoEn'] as String),
+    );
 
 InspirationItem _inspirationFromJson(Map<String, dynamic> json) {
   final rawType = json['tipo'] as String? ?? 'articulo';

@@ -26,12 +26,25 @@ void main() {
         }
         if (options.path == '/v1/admin/usuarios') {
           return _jsonResponse([
-            {'id': 'user-1', 'nombre': 'Ana', 'email': 'ana@example.com', 'rol': 'admin', 'estado': 'activo'},
+            {
+              'id': 'user-1',
+              'nombre': 'Ana',
+              'email': 'ana@example.com',
+              'rol': 'admin',
+              'estado': 'activo',
+            },
           ]);
         }
         if (options.path == '/v1/admin/moderacion/reportes') {
           return _jsonResponse([
-            {'id': 'report-1', 'publicacionId': 'post-1', 'motivo': 'spam', 'detalle': '', 'estado': 'pendiente', 'creadoEn': '2026-07-30T10:00:00Z'},
+            {
+              'id': 'report-1',
+              'publicacionId': 'post-1',
+              'motivo': 'spam',
+              'detalle': '',
+              'estado': 'pendiente',
+              'creadoEn': '2026-07-30T10:00:00Z',
+            },
           ]);
         }
         return ResponseBody.fromString('', 204);
@@ -75,5 +88,7 @@ class _CallbackAdapter implements HttpClientAdapter {
 ResponseBody _jsonResponse(Object body) => ResponseBody.fromString(
   jsonEncode(body),
   200,
-  headers: {Headers.contentTypeHeader: [Headers.jsonContentType]},
+  headers: {
+    Headers.contentTypeHeader: [Headers.jsonContentType],
+  },
 );

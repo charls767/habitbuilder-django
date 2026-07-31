@@ -52,7 +52,11 @@ class AdminDataSource {
     return runApiCall(() async {
       final response = await _dio.get<List<dynamic>>(
         '/v1/admin/moderacion/reportes',
-        queryParameters: const {'estado': 'pendiente', 'limit': 50, 'offset': 0},
+        queryParameters: const {
+          'estado': 'pendiente',
+          'limit': 50,
+          'offset': 0,
+        },
       );
       return response.data!
           .map((item) => Map<String, dynamic>.from(item as Map))
@@ -60,11 +64,7 @@ class AdminDataSource {
     });
   }
 
-  Future<void> resolveModeration(
-    String id,
-    String resolution,
-    String reason,
-  ) =>
+  Future<void> resolveModeration(String id, String resolution, String reason) =>
       runApiCall(
         () => _dio.patch<void>(
           '/v1/admin/moderacion/reportes/$id',

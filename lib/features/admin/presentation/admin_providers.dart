@@ -32,6 +32,7 @@ final adminUsersProvider = FutureProvider.autoDispose<List<AdminUser>>(
   (ref) => ref.watch(adminRepositoryProvider).users(),
 );
 
-final moderationQueueProvider = FutureProvider.autoDispose<List<ModerationReport>>(
-  (ref) => ref.watch(adminRepositoryProvider).moderationQueue(),
-);
+final moderationQueueProvider =
+    FutureProvider.autoDispose<List<ModerationReport>>(
+      (ref) => ref.watch(adminRepositoryProvider).moderationQueue(),
+    );

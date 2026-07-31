@@ -19,10 +19,12 @@ final communityFeedProvider = FutureProvider.autoDispose<List<CommunityPost>>(
 
 final communityCommentsProvider = FutureProvider.autoDispose
     .family<List<CommunityComment>, String>(
-      (ref, postId) => ref.watch(communityRepositoryProvider).listComments(postId),
+      (ref, postId) =>
+          ref.watch(communityRepositoryProvider).listComments(postId),
     );
 
 final inspirationProvider = FutureProvider.autoDispose
     .family<List<InspirationItem>, InspirationType>(
-      (ref, type) => ref.watch(communityRepositoryProvider).listInspiration(type),
+      (ref, type) =>
+          ref.watch(communityRepositoryProvider).listInspiration(type),
     );

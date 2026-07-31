@@ -15,8 +15,12 @@ class AdminUsage {
     habits: (json['habitosCreados'] as num?)?.toInt() ?? 0,
     records: (json['registrosCreados'] as num?)?.toInt() ?? 0,
     publications: (json['publicaciones'] as num?)?.toInt() ?? 0,
-    from: DateTime.tryParse(json['periodoDesde'] as String? ?? '') ?? DateTime.now(),
-    to: DateTime.tryParse(json['periodoHasta'] as String? ?? '') ?? DateTime.now(),
+    from:
+        DateTime.tryParse(json['periodoDesde'] as String? ?? '') ??
+        DateTime.now(),
+    to:
+        DateTime.tryParse(json['periodoHasta'] as String? ?? '') ??
+        DateTime.now(),
   );
 
   final int registeredUsers;
@@ -29,7 +33,13 @@ class AdminUsage {
 }
 
 class AdminUser {
-  const AdminUser({required this.id, required this.name, required this.email, required this.role, required this.status});
+  const AdminUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.status,
+  });
   factory AdminUser.fromJson(Map<String, dynamic> json) => AdminUser(
     id: json['id'] as String,
     name: json['nombre'] as String? ?? '',
@@ -45,15 +55,25 @@ class AdminUser {
 }
 
 class ModerationReport {
-  const ModerationReport({required this.id, required this.publicationId, required this.reason, required this.detail, required this.status, required this.createdAt});
-  factory ModerationReport.fromJson(Map<String, dynamic> json) => ModerationReport(
-    id: json['id'] as String,
-    publicationId: json['publicacionId'] as String? ?? '',
-    reason: json['motivo'] as String? ?? '',
-    detail: json['detalle'] as String? ?? '',
-    status: json['estado'] as String? ?? 'pendiente',
-    createdAt: DateTime.tryParse(json['creadoEn'] as String? ?? '') ?? DateTime.now(),
-  );
+  const ModerationReport({
+    required this.id,
+    required this.publicationId,
+    required this.reason,
+    required this.detail,
+    required this.status,
+    required this.createdAt,
+  });
+  factory ModerationReport.fromJson(Map<String, dynamic> json) =>
+      ModerationReport(
+        id: json['id'] as String,
+        publicationId: json['publicacionId'] as String? ?? '',
+        reason: json['motivo'] as String? ?? '',
+        detail: json['detalle'] as String? ?? '',
+        status: json['estado'] as String? ?? 'pendiente',
+        createdAt:
+            DateTime.tryParse(json['creadoEn'] as String? ?? '') ??
+            DateTime.now(),
+      );
   final String id;
   final String publicationId;
   final String reason;
