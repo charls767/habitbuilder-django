@@ -21,6 +21,9 @@ ignore = [
 # Harness local de paridad: credenciales de prueba, docker exec y SQL fijo
 # contra contenedores efímeros propios — los avisos S no aplican.
 "tools/parity.py" = ["S106", "S603", "S607", "S608", "B905"]
+# Suites E2E: credenciales sintéticas creadas por la propia prueba.
+"tools/e2e_despliegue.py" = ["S105", "B007"]
+"tools/e2e_dominios.py" = ["S105", "B007"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"

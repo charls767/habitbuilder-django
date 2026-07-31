@@ -42,6 +42,22 @@ los hábitos más constantes y más omitidos.
 **Comunidad e inspiración.** Publicaciones con comentarios, reacciones y reportes, más
 un catálogo de contenidos de inspiración (artículos, videos y audios).
 
+**Accesibilidad y privacidad.** El perfil permite ajustar el tamaño del texto, activar
+alto contraste y enriquecer las descripciones para lectura en voz alta. Esa lectura la
+realiza **el lector de pantalla del sistema** —TalkBack en Android, VoiceOver en iOS, o
+el del navegador en web—: la aplicación no incorpora un motor de voz propio, sino que
+expone semántica accesible para que el lector del dispositivo la aproveche. Es la opción
+recomendada porque respeta la voz, la velocidad y los gestos que cada persona ya tiene
+configurados en su sistema.
+
+En cuanto a protección de datos, cualquier persona puede **exportar todo lo que el
+sistema guarda sobre ella** (`GET /v1/usuarios/me/datos`) y **eliminar su cuenta**
+(`DELETE /v1/usuarios/me`), cubriendo los derechos de acceso y supresión del GDPR. El
+borrado elimina todo el contenido personal y anonimiza la cuenta; la fila se conserva
+únicamente para que la bitácora de auditoría administrativa mantenga su integridad, y
+una vez anonimizada ya no identifica a nadie. La eliminación exige reintroducir la
+contraseña, de modo que un token robado no baste para destruir una cuenta.
+
 **Administración.** Gestión de usuarios con cambio de rol y suspensión o reactivación,
 reportes de uso agregados, moderación de la comunidad, CRUD del catálogo de inspiración
 y un flujo de solicitud y aprobación de acceso administrativo. Toda acción administrativa

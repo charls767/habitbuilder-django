@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.text('Europe/Madrid').last);
     await tester.pump();
 
-    await _tapVisible(tester, 'Lectura de texto');
+    await _tapVisible(tester, 'Descripciones para lectura en voz alta');
     await _tapVisible(tester, 'Extra grande');
     await _tapVisible(tester, 'Alto contraste');
     await _tapVisible(tester, 'Permitir notificaciones');

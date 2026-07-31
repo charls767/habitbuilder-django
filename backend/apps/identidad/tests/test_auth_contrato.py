@@ -44,12 +44,34 @@ class TestRegistro:
         assert perfil.notif_habilitadas is True
         assert perfil.resumen_progreso_habilitado is True
 
-    def test_hash_argon2id_con_parametros_de_go(self, api_client):
+    def test_hash_argon2id_con_el_perfil_calibrado(self, api_client):
+        """El coste está calibrado al requisito de <2s por acción; el perfil
+        se mantiene por encima del mínimo OWASP (19 MiB, t=2, p=1)."""
         _registrar(api_client)
         u = Usuario.objects.get(email="ana.prueba@example.com")
-        # Prefijo Django + PHC con los costes de Go: m=65536, t=3, p=4
         assert u.password.startswith("argon2$argon2id$")
-        assert "m=65536,t=3,p=4" in u.password
+        assert "m=32768,t=2,p=1" in u.password
+
+    def test_verifica_y_recodifica_hashes_con_perfil_anterior(self, api_client):
+        """Un hash creado con el perfil antiguo sigue siendo válido y se
+        recodifica solo en el siguiente inicio de sesión."""
+        from django.contrib.auth.hashers import Argon2PasswordHasher
+
+        _registrar(api_client)
+        antiguo = Argon2PasswordHasher()
+        antiguo.memory_cost, antiguo.time_cost, antiguo.parallelism = 65536, 3, 4
+        hash_antiguo = antiguo.encode("S3gura-123", "sal12345678901234")
+        Usuario.objects.filter(email="ana.prueba@example.com").update(password=hash_antiguo)
+
+        resp = api_client.post(
+            "/v1/auth/login",
+            {"email": "ana.prueba@example.com", "password": "S3gura-123"},
+            format="json",
+        )
+        assert resp.status_code == 200
+
+        u = Usuario.objects.get(email="ana.prueba@example.com")
+        assert "m=32768,t=2,p=1" in u.password  # recodificado al perfil actual
 
     def test_422_reporta_todos_los_campos_a_la_vez(self, api_client):
         resp = api_client.post("/v1/auth/register", {}, format="json")

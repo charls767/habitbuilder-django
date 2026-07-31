@@ -178,6 +178,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Permanently erase the authenticated user's account
+      operationId: eliminarCuenta
+      tags: [usuarios]
+      security:
+        - bearerAuth: []
+      description: >
+        Right to erasure (GDPR art. 17). Deletes every piece of the caller's
+        personal content — profile, habits, goals, reminders, tracking
+        records and community activity — and anonymises the account record
+        itself, which is retained only so administrative audit entries keep
+        their referential integrity. The password is required in the body so
+        a stolen token alone cannot destroy an account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EliminarCuentaRequest'
+      responses:
+        '204':
+          description: Account erased. The bearer token is no longer usable.
+        '400':
+          description: Missing password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token, or wrong password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/usuarios/me/datos:
+    get:
+      summary: Export every piece of the authenticated user's data
+      operationId: exportarDatos
+      tags: [usuarios]
+      security:
+        - bearerAuth: []
+      description: >
+        Right of access (GDPR art. 15). Returns a portable JSON document with
+        everything the system stores about the caller, in a structured and
+        commonly used format.
+      responses:
+        '200':
+          description: Portable copy of the caller's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportacionDatosResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /v1/habitos:
     get:
@@ -1970,6 +2029,69 @@ components:
           $ref: '#/components/schemas/AccesibilidadPrefs'
         notificaciones:
           $ref: '#/components/schemas/NotificacionPrefs'
+
+    EliminarCuentaRequest:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          format: password
+          description: Current password, re-entered to confirm the erasure.
+
+    ExportacionDatosResponse:
+      type: object
+      description: >
+        Portable copy of everything stored about the caller. Each section
+        mirrors the corresponding resource, so the document is readable
+        without consulting the rest of the API.
+      required: [generadoEn, usuario, perfil, habitos, metas, recordatorios, registros, comunidad]
+      properties:
+        generadoEn:
+          type: string
+          format: date-time
+        usuario:
+          type: object
+          required: [id, nombre, email, rol, estado, creadoEn]
+          properties:
+            id: {type: string, format: uuid}
+            nombre: {type: string}
+            email: {type: string, format: email}
+            rol: {type: string, enum: [regular, admin]}
+            estado: {type: string, enum: [activo, suspendido]}
+            creadoEn: {type: string, format: date-time}
+            consentimiento:
+              type: object
+              properties:
+                aceptadoEn: {type: string, format: date-time}
+                version: {type: string}
+        perfil:
+          $ref: '#/components/schemas/PerfilResponse'
+        habitos:
+          type: array
+          items: {$ref: '#/components/schemas/HabitoResponse'}
+        metas:
+          type: array
+          items: {$ref: '#/components/schemas/MetaResponse'}
+        recordatorios:
+          type: array
+          items: {$ref: '#/components/schemas/RecordatorioResponse'}
+        registros:
+          type: array
+          items: {$ref: '#/components/schemas/RegistroResponse'}
+        comunidad:
+          type: object
+          required: [publicaciones, comentarios]
+          properties:
+            publicaciones:
+              type: array
+              items: {$ref: '#/components/schemas/PublicacionResponse'}
+            comentarios:
+              type: array
+              items: {$ref: '#/components/schemas/ComentarioResponse'}
+        solicitudesAdministrativas:
+          type: array
+          items: {$ref: '#/components/schemas/SolicitudAdministrativaResponse'}
 
     PerfilUpdateRequest:
       type: object

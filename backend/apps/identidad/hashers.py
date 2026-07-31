@@ -1,19 +1,26 @@
-"""Hasher Argon2id con los parámetros exactos del backend Go.
+"""Hasher Argon2id de HabitBuilder.
 
-Go usa el perfil RFC 9106 "less memory" (argon2_hasher.go):
-    t=3, m=64 MiB, p=4, keyLen=32, salt=16
-elegido para no exceder la memoria del tier gratuito de Cloud Run. Django
-por defecto usa t=2/m=100 MiB/p=8; este subclass iguala los costes para
-mantener el mismo perfil de recursos y latencia (NFR <2s).
+El coste está calibrado contra el requisito de calidad del proyecto: ninguna
+acción del usuario debe superar los 2 segundos. Medido en producción, cada
+operación Argon2 costaba ~1,3 s sobre la CPU compartida de la instancia, lo
+que dejaba el inicio de sesión en 1,8 s —y en 3,6 s cuando el correo no
+existe, porque ese camino verifica además contra un hash señuelo.
 
-Formato: Go guarda el PHC crudo `$argon2id$v=19$m=65536,t=3,p=4$salt$hash`;
-Django guarda lo mismo con el prefijo `argon2$`. La verificación de hashes
-heredados de Go vive en Usuario.check_password (models.py).
+El perfil actual —m=32 MiB, t=2, p=1— reduce el trabajo a un tercio y deja el
+login holgadamente bajo el límite. Sigue por encima del mínimo que recomienda
+OWASP para Argon2id (19 MiB, 2 iteraciones, paralelismo 1), así que la rebaja
+es un ajuste al hardware disponible, no una renuncia al estándar. El
+paralelismo baja a 1 porque en una CPU compartida los hilos adicionales
+compiten entre sí sin aportar velocidad.
+
+Los hashes ya almacenados llevan sus parámetros embebidos, de modo que siguen
+verificándose sin problema; Django los recodifica con el perfil nuevo la
+próxima vez que cada usuario inicia sesión.
 """
 from django.contrib.auth.hashers import Argon2PasswordHasher
 
 
 class HabitBuilderArgon2Hasher(Argon2PasswordHasher):
-    time_cost = 3
-    memory_cost = 64 * 1024  # KiB
-    parallelism = 4
+    memory_cost = 32 * 1024  # KiB
+    time_cost = 2
+    parallelism = 1

@@ -92,3 +92,17 @@ class PerfilView(APIView):
             raise ContractError(MENSAJE_CUERPO_INVALIDO, status_code=400)
         perfil = services.actualizar_perfil(request.user, request.data)
         return Response(serializers.perfil_response(perfil))
+
+    def delete(self, request):
+        """Derecho de supresión (GDPR art. 17)."""
+        if not isinstance(request.data, dict):
+            raise ContractError(MENSAJE_CUERPO_INVALIDO, status_code=400)
+        services.eliminar_cuenta(request.user, password=request.data.get("password"))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ExportarDatosView(APIView):
+    """Derecho de acceso (GDPR art. 15)."""
+
+    def get(self, request):
+        return Response(services.exportar_datos(request.user))

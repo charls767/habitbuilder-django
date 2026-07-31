@@ -11,4 +11,5 @@ urlpatterns = [
     path("auth/reset/confirm", views.ResetConfirmView.as_view(), name="auth-reset-confirm"),
     path("auth/logout", views.LogoutView.as_view(), name="auth-logout"),
     path("usuarios/me", views.PerfilView.as_view(), name="usuarios-me"),
+    path("usuarios/me/datos", views.ExportarDatosView.as_view(), name="usuarios-datos"),
 ]

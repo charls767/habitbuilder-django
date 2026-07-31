@@ -13,6 +13,7 @@ import hashlib
 import logging
 import re
 import secrets
+import uuid as uuid_lib
 import zoneinfo
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -224,6 +225,145 @@ def confirmar_reset(*, token: str, nueva_password: str) -> None:
 # ---------------------------------------------------------------------------
 def ver_perfil(usuario: Usuario) -> Perfil:
     return Perfil.objects.select_related("usuario").get(usuario=usuario)
+
+
+def exportar_datos(usuario: Usuario) -> dict:
+    """Derecho de acceso (GDPR art. 15): copia portable de todo lo que el
+    sistema guarda sobre quien la pide, en un único documento JSON."""
+    from apps.administracion.models import SolicitudAdministrativa
+    from apps.administracion.serializers import solicitud_response
+    from apps.comunidad.models import ComentarioComunidad, PublicacionComunidad
+    from apps.comunidad.serializers import comentario_response, publicacion_response
+    from apps.comunidad.services import _con_contadores
+    from apps.habitosymetas.models import Habito, MetaPersonal
+    from apps.habitosymetas.serializers import habito_response, meta_response
+    from apps.recordatorios.models import Recordatorio
+    from apps.recordatorios.serializers import recordatorio_response
+    from apps.seguimiento.models import RegistroHabito
+    from apps.seguimiento.serializers import registro_response
+
+    from .serializers import perfil_response
+
+    perfil = ver_perfil(usuario)
+    publicaciones = _con_contadores(
+        PublicacionComunidad.objects.filter(usuario=usuario, eliminado_en__isnull=True),
+        usuario,
+    )
+    return {
+        "generadoEn": timezone.now().isoformat().replace("+00:00", "Z"),
+        "usuario": {
+            "id": str(usuario.id),
+            "nombre": usuario.nombre,
+            "email": usuario.email,
+            "rol": usuario.rol,
+            "estado": usuario.estado,
+            "creadoEn": usuario.creado_en.isoformat().replace("+00:00", "Z"),
+            "consentimiento": {
+                "aceptadoEn": usuario.consentimiento_aceptado_en.isoformat().replace(
+                    "+00:00", "Z"
+                ),
+                "version": usuario.consentimiento_version,
+            },
+        },
+        "perfil": perfil_response(perfil),
+        "habitos": [
+            habito_response(h)
+            for h in Habito.objects.filter(usuario=usuario).order_by("creado_en")
+        ],
+        "metas": [
+            meta_response(m)
+            for m in MetaPersonal.objects.filter(usuario=usuario).order_by("creado_en")
+        ],
+        "recordatorios": [
+            recordatorio_response(r)
+            for r in Recordatorio.objects.filter(usuario=usuario).order_by("creado_en")
+        ],
+        "registros": [
+            registro_response(r)
+            for r in RegistroHabito.objects.filter(usuario=usuario).order_by("fecha_local")
+        ],
+        "comunidad": {
+            "publicaciones": [publicacion_response(p) for p in publicaciones],
+            "comentarios": [
+                comentario_response(c)
+                for c in ComentarioComunidad.objects.filter(
+                    usuario=usuario, eliminado_en__isnull=True
+                ).select_related("usuario").order_by("creado_en")
+            ],
+        },
+        "solicitudesAdministrativas": [
+            solicitud_response(s)
+            for s in SolicitudAdministrativa.objects.filter(usuario=usuario)
+            .select_related("usuario")
+            .order_by("creado_en")
+        ],
+    }
+
+
+def eliminar_cuenta(usuario: Usuario, *, password) -> None:
+    """Derecho de supresión (GDPR art. 17).
+
+    Borra todo el contenido personal y anonimiza la fila del usuario. No se
+    elimina esa fila porque la bitácora de auditoría administrativa la
+    referencia y debe conservarse; una vez anonimizada deja de identificar a
+    nadie, que es lo que exige la norma.
+
+    Se pide la contraseña para que un token robado no baste para destruir
+    una cuenta.
+    """
+    if not isinstance(password, str) or not password:
+        raise ContractError(MENSAJE_ERRORES_VALIDACION, status_code=400,
+                            errores={"password": "la contraseña es obligatoria"})
+    if not usuario.check_password(password):
+        raise ContractError(MENSAJE_CREDENCIALES_INVALIDAS, status_code=401)
+
+    from apps.administracion.models import SolicitudAdministrativa
+    from apps.comunidad.models import (
+        ComentarioComunidad,
+        PublicacionComunidad,
+        ReaccionComunidad,
+        ReporteComunidad,
+    )
+    from apps.habitosymetas.models import Habito, HabitoPausa, MetaPersonal
+    from apps.progreso.models import RachaHabito
+    from apps.recordatorios.models import Recordatorio
+    from apps.seguimiento.models import RegistroHabito
+
+    with transaction.atomic():
+        # Orden inverso a las dependencias: primero lo que referencia hábitos.
+        RegistroHabito.objects.filter(usuario=usuario).delete()
+        RachaHabito.objects.filter(usuario=usuario).delete()
+        Recordatorio.objects.filter(usuario=usuario).delete()
+        HabitoPausa.objects.filter(habito__usuario=usuario).delete()
+
+        ReaccionComunidad.objects.filter(usuario=usuario).delete()
+        ReporteComunidad.objects.filter(reportante=usuario).delete()
+        ComentarioComunidad.objects.filter(usuario=usuario).delete()
+        # Reportes y comentarios ajenos sobre publicaciones propias impedirían
+        # borrarlas, así que se retiran primero.
+        propias = PublicacionComunidad.objects.filter(usuario=usuario)
+        ReporteComunidad.objects.filter(publicacion__in=propias).delete()
+        ComentarioComunidad.objects.filter(publicacion__in=propias).delete()
+        ReaccionComunidad.objects.filter(publicacion__in=propias).delete()
+        propias.delete()
+
+        Habito.objects.filter(usuario=usuario).update(meta=None)
+        Habito.objects.filter(usuario=usuario).delete()
+        MetaPersonal.objects.filter(usuario=usuario).delete()
+
+        SolicitudAdministrativa.objects.filter(usuario=usuario).delete()
+        PasswordResetToken.objects.filter(usuario=usuario).delete()
+        Perfil.objects.filter(usuario=usuario).delete()
+
+        # Anonimización: el correo cambia a uno no enrutable e irrepetible, de
+        # modo que iniciar sesión con el antiguo responde el 401 genérico.
+        usuario.nombre = "Cuenta eliminada"
+        usuario.email = f"eliminado-{uuid_lib.uuid4()}@invalid"
+        usuario.set_unusable_password()
+        usuario.consentimiento_version = ""
+        usuario.save(update_fields=[
+            "nombre", "email", "password", "consentimiento_version",
+        ])
 
 
 def actualizar_perfil(usuario: Usuario, cambios: dict) -> Perfil:

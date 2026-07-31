@@ -1,0 +1,113 @@
+name: CI
+
+# Requisito de calidad del proyecto: mantenibilidad con actualizaciones
+# regulares sin interrupciones. Cada cambio se valida antes de integrarse.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend · ruff y pruebas
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: habitbuilder_test
+          POSTGRES_USER: hb
+          POSTGRES_PASSWORD: hb
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      DATABASE_URL: postgres://hb:hb@localhost:5432/habitbuilder_test
+      DB_SSLMODE: disable
+      DJANGO_SECRET_KEY: clave-solo-para-ci
+      JWT_SIGNING_KEY: jwt-solo-para-ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Análisis estático
+        run: ruff check .
+
+      - name: Migraciones sin generar
+        # Falla si alguien cambió un modelo sin crear su migración.
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Pruebas con puerta de cobertura del 80%
+        run: pytest
+
+  cliente:
+    name: Cliente · analyze y pruebas
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Generar código de Riverpod
+        # Los *.g.dart no se versionan: sin este paso la compilación falla
+        # con errores de símbolos no definidos.
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Análisis estático
+        run: flutter analyze
+
+      - name: Pruebas
+        run: flutter test
+
+  contrato:
+    name: Contrato · suites contra el despliegue
+    runs-on: ubuntu-latest
+    # Solo tras integrar en main: valida que lo desplegado sigue cumpliendo
+    # el contrato. No bloquea los pull requests.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [backend, cliente]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar cliente HTTP
+        run: pip install requests
+
+      - name: Suite de contrato
+        run: python backend/tools/e2e_despliegue.py https://habitbuilder-api.onrender.com

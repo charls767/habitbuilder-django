@@ -273,9 +273,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Lectura de texto'),
+                    // La lectura en voz alta la realiza el lector de pantalla
+                    // del sistema (TalkBack, VoiceOver o el del navegador).
+                    // Este ajuste enriquece las descripciones que la app le
+                    // entrega; no incorpora un motor de voz propio.
+                    title: const Text('Descripciones para lectura en voz alta'),
                     subtitle: const Text(
-                      'Permite que la app lea contenido compatible en voz alta.',
+                      'Amplía las descripciones que la app entrega al lector de '
+                      'pantalla de tu dispositivo (TalkBack o VoiceOver).',
                     ),
                     value: _textToSpeech,
                     onChanged: controllerState.isLoading
