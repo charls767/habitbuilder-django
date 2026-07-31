@@ -147,4 +147,56 @@ class AdminDataSource {
 
   Future<void> deleteInspiration(String id) =>
       runApiCall(() => _dio.delete<void>('/v1/admin/inspiracion/$id'));
+
+  Future<Map<String, dynamic>> createAdminRequest(String reason) async {
+    return runApiCall(() async {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/v1/solicitudes-administrador',
+        data: {'motivo': reason},
+      );
+      return response.data!;
+    });
+  }
+
+  Future<Map<String, dynamic>> myAdminRequest() async {
+    return runApiCall(() async {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/solicitudes-administrador/me',
+      );
+      return response.data!;
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> adminRequests({
+    String? status,
+    int offset = 0,
+  }) {
+    return runApiCall(() async {
+      final response = await _dio.get<List<dynamic>>(
+        '/v1/admin/solicitudes-administrador',
+        queryParameters: {
+          'limit': 50,
+          'offset': offset,
+          ...?status == null ? null : {'estado': status},
+        },
+      );
+      return response.data!
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+    });
+  }
+
+  Future<Map<String, dynamic>> resolveAdminRequest(
+    String id,
+    String decision,
+    String reason,
+  ) async {
+    return runApiCall(() async {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/v1/admin/solicitudes-administrador/$id',
+        data: {'decision': decision, 'razon': reason},
+      );
+      return response.data!;
+    });
+  }
 }

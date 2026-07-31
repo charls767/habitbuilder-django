@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/community/presentation/community_screen.dart';
 import '../../features/community/presentation/inspiration_detail_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
+import '../../features/admin/presentation/admin_access_request_screen.dart';
 import '../../features/goals/presentation/screens/goal_detail_screen.dart';
 import '../../features/goals/presentation/screens/goal_form_screen.dart';
 import '../../features/goals/presentation/screens/goals_list_screen.dart';
@@ -127,6 +128,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.admin,
         builder: (context, state) => const AdminScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminRequest,
+        builder: (context, state) => const AdminAccessRequestScreen(),
       ),
     ],
   );

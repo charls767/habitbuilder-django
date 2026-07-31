@@ -148,4 +148,25 @@ class _FakeAdminRepository implements AdminRepository {
 
   @override
   Future<void> deleteInspiration(String id) async {}
+
+  @override
+  Future<AdminAccessRequest> createAdminRequest(String reason) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<AdminAccessRequest> myAdminRequest() async =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<AdminAccessRequest>> adminRequests({
+    String? status,
+    int offset = 0,
+  }) async => [];
+
+  @override
+  Future<AdminAccessRequest> resolveAdminRequest(
+    String id,
+    String decision,
+    String reason,
+  ) async => throw UnimplementedError();
 }

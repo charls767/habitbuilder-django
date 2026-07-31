@@ -30,6 +30,17 @@ abstract interface class AdminRepository {
     Map<String, dynamic> data,
   );
   Future<void> deleteInspiration(String id);
+  Future<AdminAccessRequest> createAdminRequest(String reason);
+  Future<AdminAccessRequest> myAdminRequest();
+  Future<List<AdminAccessRequest>> adminRequests({
+    String? status,
+    int offset = 0,
+  });
+  Future<AdminAccessRequest> resolveAdminRequest(
+    String id,
+    String decision,
+    String reason,
+  );
 }
 
 class AdminRepositoryImpl implements AdminRepository {
@@ -106,6 +117,32 @@ class AdminRepositoryImpl implements AdminRepository {
 
   @override
   Future<void> deleteInspiration(String id) => _remote.deleteInspiration(id);
+
+  @override
+  Future<AdminAccessRequest> createAdminRequest(String reason) async =>
+      AdminAccessRequest.fromJson(await _remote.createAdminRequest(reason));
+
+  @override
+  Future<AdminAccessRequest> myAdminRequest() async =>
+      AdminAccessRequest.fromJson(await _remote.myAdminRequest());
+
+  @override
+  Future<List<AdminAccessRequest>> adminRequests({
+    String? status,
+    int offset = 0,
+  }) async => (await _remote.adminRequests(
+    status: status,
+    offset: offset,
+  )).map(AdminAccessRequest.fromJson).toList();
+
+  @override
+  Future<AdminAccessRequest> resolveAdminRequest(
+    String id,
+    String decision,
+    String reason,
+  ) async => AdminAccessRequest.fromJson(
+    await _remote.resolveAdminRequest(id, decision, reason),
+  );
 }
 
 class CommunityPostData {

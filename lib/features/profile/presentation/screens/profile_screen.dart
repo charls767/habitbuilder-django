@@ -186,6 +186,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             : const SizedBox.shrink(),
                         orElse: () => const SizedBox.shrink(),
                       ),
+                  ref
+                      .watch(adminAccessProvider)
+                      .maybeWhen(
+                        data: (isAdmin) => !isAdmin
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Card(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.how_to_reg_outlined,
+                                    ),
+                                    title: const Text(
+                                      'Solicitar administración',
+                                    ),
+                                    subtitle: const Text(
+                                      'Envía una solicitud para apoyar la gestión.',
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () =>
+                                        context.push(AppRoutes.adminRequest),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
                   _SectionTitle(
                     icon: Icons.person_outline,
                     title: 'Información general',

@@ -128,3 +128,42 @@ class AdminInspiration {
   final DateTime updatedAt;
   final String? imageUrl;
 }
+
+class AdminAccessRequest {
+  const AdminAccessRequest({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.userEmail,
+    required this.reason,
+    required this.status,
+    required this.createdAt,
+    this.decisionReason,
+    this.reviewedAt,
+  });
+
+  factory AdminAccessRequest.fromJson(Map<String, dynamic> json) =>
+      AdminAccessRequest(
+        id: json['id'] as String? ?? '',
+        userId: json['usuarioId'] as String? ?? '',
+        userName: json['usuarioNombre'] as String? ?? '',
+        userEmail: json['usuarioEmail'] as String? ?? '',
+        reason: json['motivo'] as String? ?? '',
+        status: json['estado'] as String? ?? 'pendiente',
+        decisionReason: json['razonDecision'] as String?,
+        createdAt:
+            DateTime.tryParse(json['creadoEn'] as String? ?? '') ??
+            DateTime.now(),
+        reviewedAt: DateTime.tryParse(json['revisadoEn'] as String? ?? ''),
+      );
+
+  final String id;
+  final String userId;
+  final String userName;
+  final String userEmail;
+  final String reason;
+  final String status;
+  final DateTime createdAt;
+  final String? decisionReason;
+  final DateTime? reviewedAt;
+}
