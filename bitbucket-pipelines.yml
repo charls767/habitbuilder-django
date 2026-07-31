@@ -1,0 +1,34 @@
+# CI del backend Django — equivalente al pipeline Go (build + vet + test -short):
+#   ruff  ~ go vet
+#   pytest con postgres de servicio ~ go test (Testcontainers se reemplaza por
+#   el contenedor de servicio de Bitbucket, más simple y suficiente en CI).
+# La puerta de cobertura (>=80%) la aplica pytest-cov via --cov-fail-under.
+
+image: python:3.12-slim
+
+definitions:
+  services:
+    postgres:
+      image: postgres:16
+      variables:
+        POSTGRES_DB: habitbuilder_test
+        POSTGRES_USER: hb
+        POSTGRES_PASSWORD: hb
+
+pipelines:
+  default:
+    - step:
+        name: Lint + Tests + Cobertura
+        services:
+          - postgres
+        caches:
+          - pip
+        script:
+          - pip install -r requirements.txt
+          - ruff check .
+          - export DJANGO_SECRET_KEY=ci-secret
+          - export JWT_SIGNING_KEY=ci-jwt-secret
+          - export DATABASE_URL=postgres://hb:hb@localhost:5432/habitbuilder_test
+          - export DB_SSLMODE=disable
+          - python manage.py makemigrations --check --dry-run  # sin migraciones olvidadas
+          - pytest

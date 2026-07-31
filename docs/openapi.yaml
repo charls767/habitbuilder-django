@@ -1,0 +1,2647 @@
+openapi: 3.0.3
+info:
+  title: HabitBuilder API
+  version: 1.0.0
+  description: >
+    Contract for the HabitBuilder backend. This is the single synchronization
+    point between habitbuilder-backend and habitbuilder-mobile: both repos
+    build against this file. Auth, usuarios (profile), habitos, metas,
+    recordatorios, registros, progreso, and estadisticas are fully specified.
+servers:
+  - url: https://habitbuilder-backend-1010445743481.us-central1.run.app
+    description: Production (Google Cloud Run)
+  - url: http://localhost:8080
+    description: Local development
+
+security: []
+
+paths:
+  /v1/auth/register:
+    post:
+      summary: Register a new user
+      operationId: registrarUsuario
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroUsuarioRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroUsuarioResponse'
+        '422':
+          description: Validation error (email taken, weak password, terms not accepted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/auth/login:
+    post:
+      summary: Log in with email and password
+      operationId: iniciarSesion
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated session issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SesionResponse'
+        '401':
+          description: Invalid credentials (generic — does not reveal account existence)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Account suspended
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/auth/reset/request:
+    post:
+      summary: Request a password-reset link by email
+      operationId: solicitarReset
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+      responses:
+        '200':
+          description: >
+            Reset request accepted. Always returns 200 regardless of whether
+            the email is registered, to avoid revealing account existence.
+
+  /v1/auth/reset/confirm:
+    post:
+      summary: Confirm a password reset with a token and new password
+      operationId: confirmarReset
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetConfirmRequest'
+      responses:
+        '200':
+          description: Password updated successfully
+        '400':
+          description: Invalid, expired, or already-used reset token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/auth/logout:
+    post:
+      summary: Log out the current session (stateless no-op; client discards its JWT)
+      operationId: cerrarSesion
+      tags: [auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logged out. Stateless no-op — the client discards its JWT; the token itself is not server-side revoked and remains valid until it expires.
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/usuarios/me:
+    get:
+      summary: View the authenticated user's profile
+      operationId: verPerfil
+      tags: [usuarios]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update the authenticated user's profile
+      operationId: actualizarPerfil
+      tags: [usuarios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUpdateRequest'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilResponse'
+        '400':
+          description: Validation error (invalid timezone, invalid accessibility/notification value)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos:
+    get:
+      summary: List the authenticated user's habits
+      operationId: listarHabitos
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Habits listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HabitoResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new habit
+      operationId: crearHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearHabitoRequest'
+      responses:
+        '201':
+          description: Habit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '400':
+          description: Validation error (invalid frequency shape, missing required field)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get one of the authenticated user's habits by id
+      operationId: obtenerHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Habit found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: >
+            Habit not found, or not owned by the authenticated user
+            (indistinguishable from not-found to avoid leaking existence).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Edit an existing habit's mutable fields
+      operationId: editarHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarHabitoRequest'
+      responses:
+        '200':
+          description: Habit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Soft-delete a habit after confirmation
+      operationId: eliminarHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: >
+            Habit soft-deleted. Returns counts of related records affected,
+            so mobile can present a confirmation dialog before the caller
+            deletes. Both counts are always zero in this phase — no
+            reminders or tracking records exist yet to reference habits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EliminarHabitoResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos/{id}/pausar:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Pause an active habit for a date range
+      operationId: pausarHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PausarHabitoRequest'
+      responses:
+        '200':
+          description: Habit paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '400':
+          description: Invalid transition (habit is not currently active)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos/{id}/reanudar:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Resume a paused habit
+      operationId: reanudarHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Habit resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '400':
+          description: Invalid transition (habit is not currently paused)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos/{id}/completar:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Mark a habit as completed
+      operationId: completarHabito
+      tags: [habitos]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Habit marked completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitoResponse'
+        '400':
+          description: Invalid transition (habit is already deleted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Habit not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/metas:
+    get:
+      summary: List the authenticated user's goals
+      operationId: listarMetas
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Goals listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetaResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new goal
+      operationId: crearMeta
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearMetaRequest'
+      responses:
+        '201':
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/metas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get one of the authenticated user's goals by id
+      operationId: obtenerMeta
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Goal found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: >
+            Goal not found, or not owned by the authenticated user
+            (indistinguishable from not-found to avoid leaking existence).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Edit a goal's description and/or target date
+      operationId: editarMeta
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarMetaRequest'
+      responses:
+        '200':
+          description: Goal updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/metas/{id}/estado:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: >
+        Update a goal's status directly. Status is caller-set and never
+        derived from linked habits' own states.
+      operationId: actualizarEstadoMeta
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActualizarEstadoMetaRequest'
+      responses:
+        '200':
+          description: Goal status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaResponse'
+        '400':
+          description: Validation error (invalid estado value)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/metas/{id}/habitos:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Link one or more of the caller's existing habits to this goal
+      operationId: vincularHabitos
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VincularHabitosRequest'
+      responses:
+        '200':
+          description: Habits linked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: >
+            Goal not found (or not owned), or one of the referenced habitos
+            not found/not owned by the authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/metas/{id}/habitos/{habitoId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: habitoId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      summary: Unlink a single habit from this goal
+      operationId: desvincularHabito
+      tags: [metas]
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Habit unlinked
+        '401':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal or habito not found, or not owned by the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/habitos/{id}/recordatorios:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Habit UUID.
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: List every reminder configured for one habit
+      operationId: listarRecordatoriosDeHabito
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: >
+            Reminders configured for the habit. A habit may have any number
+            of reminders; an empty array means none are configured.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Create an additional reminder for one habit
+      operationId: crearRecordatorio
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearRecordatorioRequest'
+      responses:
+        '201':
+          description: Reminder created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ReminderConflict'
+
+  /v1/recordatorios/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Reminder UUID.
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: Replace the writable configuration of one reminder
+      operationId: editarRecordatorio
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarRecordatorioRequest'
+      responses:
+        '200':
+          description: Reminder updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ReminderConflict'
+    delete:
+      summary: Delete one reminder and cancel its future notifications
+      operationId: eliminarRecordatorio
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Reminder deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /habits/{habitId}/reminders:
+    x-alias-of: /v1/habitos/{id}/recordatorios
+    parameters:
+      - name: habitId
+        in: path
+        required: true
+        description: Habit UUID.
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: List every reminder configured for one habit (mobile alias)
+      operationId: listHabitReminders
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: >
+            Reminders configured for the habit. A habit may have any number
+            of reminders; an empty array means none are configured.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Create an additional reminder for one habit (mobile alias)
+      operationId: createHabitReminder
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearRecordatorioRequest'
+      responses:
+        '201':
+          description: Reminder created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ReminderConflict'
+
+  /reminders/{reminderId}:
+    x-alias-of: /v1/recordatorios/{id}
+    parameters:
+      - name: reminderId
+        in: path
+        required: true
+        description: Reminder UUID.
+        schema:
+          type: string
+          format: uuid
+    patch:
+      summary: Replace the writable configuration of one reminder (mobile alias)
+      operationId: updateReminder
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditarRecordatorioRequest'
+      responses:
+        '200':
+          description: Reminder updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordatorioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ReminderConflict'
+    delete:
+      summary: Delete one reminder and cancel future notifications (mobile alias)
+      operationId: deleteReminder
+      tags: [recordatorios]
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Reminder deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/habitos/{id}/registros:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Habit UUID.
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: List a habit's daily completion records
+      operationId: listarRegistrosDeHabito
+      tags: [registros]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: desde
+          in: query
+          required: false
+          description: Inclusive lower bound of the fechaLocal range filter.
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          description: Inclusive upper bound of the fechaLocal range filter.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: >
+            Completion records for the habit, ordered for progress/stats
+            consumption. An empty array means no completions are logged yet.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistroResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Log or edit a habit's completion for one local day (idempotent upsert)
+      operationId: registrarCompletitud
+      tags: [registros]
+      security:
+        - bearerAuth: []
+      description: >
+        Idempotent upsert keyed by the (habitoId, usuarioId, fechaLocal)
+        natural key. 201 means a fresh record was created; 200 means an
+        existing same-day record was overwritten (edited) — this 201-vs-200
+        distinction is the unambiguous create-vs-edit signal the mobile
+        offline queue relies on to tell a genuine new record apart from an
+        upsert collision. There is deliberately no 409 on the natural key:
+        a same-day collision is the expected success path, not an error. The
+        idempotency key is carried in the request body as fechaLocal, not an
+        Idempotency-Key HTTP header, because it IS the domain's
+        (habitoId, usuarioId, fechaLocal) uniqueness constraint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrarCompletitudRequest'
+      responses:
+        '201':
+          description: A fresh completion record was created for this local day.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroResponse'
+        '200':
+          description: >
+            An existing same-day completion record was overwritten (edited).
+            This is the expected outcome of a re-POST with the same
+            fechaLocal — not an error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/habitos/{id}/progreso:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Habit UUID.
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: View one habit's computed streak and progress for a period
+      operationId: verProgresoHabito
+      tags: [progreso]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          description: >
+            Aggregation period. Defaults to semana (the current week) per
+            PROGRESS-01.
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          description: >
+            Anchor date (ISO-8601) for the period; defaults to today in the
+            user's stored timezone. An out-of-enum periodo value is a 400,
+            not a silently-ignored filter.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Computed progress for the habit over the requested period.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgresoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/progreso:
+    get:
+      summary: List computed streaks and progress for all of the user's habits
+      operationId: verProgreso
+      tags: [progreso]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          description: >
+            Aggregation period. Defaults to semana (the current week) per
+            PROGRESS-01.
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          description: >
+            Anchor date (ISO-8601) for the period; defaults to today in the
+            user's stored timezone. An out-of-enum periodo value is a 400,
+            not a silently-ignored filter.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: >
+            Progress for each of the authenticated user's habits over the
+            requested period. An empty array means the user has no habits.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgresoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/estadisticas:
+    get:
+      summary: >
+        View filtered aggregate statistics: best streak, most-consistent
+        habits, and most-skipped habits
+      operationId: verEstadisticas
+      tags: [estadisticas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          description: >
+            Aggregation period. Defaults to semana (the current week) per
+            PROGRESS-01.
+          schema:
+            type: string
+            enum: [semana, mes]
+            default: semana
+        - name: fecha
+          in: query
+          required: false
+          description: >
+            Anchor date (ISO-8601) for the period; defaults to today in the
+            user's stored timezone. An out-of-enum periodo value is a 400,
+            not a silently-ignored filter.
+          schema:
+            type: string
+            format: date
+        - name: habitoId
+          in: query
+          required: false
+          description: >
+            Filter statistics to a single habit. Returns 404 only when
+            habitoId doesn't resolve to a habit owned by the caller. If
+            habitoId resolves to an owned habit but the categoria filter
+            (below) excludes it, the response is still 200 with an empty
+            result (insuficiente), never a 404 — the two filters are
+            evaluated independently.
+          schema:
+            type: string
+            format: uuid
+        - name: categoria
+          in: query
+          required: false
+          description: Filter statistics to habits in this category.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Filtered aggregate statistics for the requested period.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadisticasResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/comunidad/publicaciones:
+    get:
+      summary: List the authenticated community feed
+      operationId: listarPublicaciones
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 50, default: 20}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: Community posts ordered from newest to oldest
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PublicacionResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      summary: Publish a community post
+      operationId: crearPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CrearPublicacionRequest'}
+      responses:
+        '201':
+          description: Community post created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicacionResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /v1/comunidad/publicaciones/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Get a community post
+      operationId: obtenerPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Community post
+          content: {application/json: {schema: {$ref: '#/components/schemas/PublicacionResponse'}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+    patch:
+      summary: Edit the authenticated user's community post
+      operationId: editarPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EditarPublicacionRequest'}
+      responses:
+        '200':
+          description: Community post updated
+          content: {application/json: {schema: {$ref: '#/components/schemas/PublicacionResponse'}}}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      summary: Remove the authenticated user's community post
+      operationId: eliminarPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Community post removed}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/comunidad/publicaciones/{id}/comentarios:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: List comments for a community post
+      operationId: listarComentarios
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Comments ordered from oldest to newest
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ComentarioResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    post:
+      summary: Add a comment to a community post
+      operationId: crearComentario
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CrearComentarioRequest'}
+      responses:
+        '201':
+          description: Comment created
+          content: {application/json: {schema: {$ref: '#/components/schemas/ComentarioResponse'}}}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/comunidad/publicaciones/{id}/reportes:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      summary: Report a community post without exposing reporter identity
+      operationId: crearReporteComunidad
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CrearReporteRequest'}
+      responses:
+        '201':
+          description: Report registered for moderation
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ReporteResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409':
+          description: The caller already reported this publication
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ErrorResponse'}
+
+  /v1/comunidad/comentarios/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    delete:
+      summary: Remove the authenticated user's comment
+      operationId: eliminarComentario
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Comment removed}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/comunidad/publicaciones/{id}/reaccion:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      summary: React to a community post idempotently
+      operationId: reaccionarPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Reaction stored}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      summary: Remove the caller's reaction from a community post
+      operationId: quitarReaccionPublicacion
+      tags: [comunidad]
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Reaction removed}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/inspiracion:
+    get:
+      summary: List published inspiration content
+      operationId: listarInspiracion
+      tags: [inspiracion]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: tipo
+          in: query
+          schema: {type: string, enum: [articulo, video, audio]}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 50, default: 20}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: Published inspiration content ordered by featured status and recency
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ContenidoInspiracionResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /v1/inspiracion/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Get one published inspiration item
+      operationId: obtenerInspiracion
+      tags: [inspiracion]
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Published inspiration item
+          content: {application/json: {schema: {$ref: '#/components/schemas/ContenidoInspiracionResponse'}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/admin/usuarios:
+    get:
+      summary: List users for administrators
+      operationId: listarUsuariosAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: estado
+          in: query
+          schema: {type: string, enum: [activo, suspendido]}
+        - name: rol
+          in: query
+          schema: {type: string, enum: [regular, admin]}
+        - name: buscar
+          in: query
+          schema: {type: string, maxLength: 180}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 50}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: User summaries without password or consent secrets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/UsuarioAdminResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /v1/admin/usuarios/{id}/estado:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      summary: Change a user's active or suspended state
+      operationId: cambiarEstadoUsuarioAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CambiarEstadoUsuarioRequest'}
+      responses:
+        '204': {description: User state changed}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/LastAdminConflict'}
+
+  /v1/admin/usuarios/{id}/rol:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      summary: Change a user's regular or admin role
+      operationId: cambiarRolUsuarioAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CambiarRolUsuarioRequest'}
+      responses:
+        '204': {description: User role changed}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/LastAdminConflict'}
+
+  /v1/admin/reportes/uso:
+    get:
+      summary: View aggregated usage metrics for a period
+      operationId: obtenerReporteUsoAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: desde
+          in: query
+          schema: {type: string, format: date}
+        - name: hasta
+          in: query
+          schema: {type: string, format: date}
+      responses:
+        '200':
+          description: Aggregated metrics without personal activity details
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ReporteUsoAdminResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /v1/admin/moderacion/reportes:
+    get:
+      summary: List community reports for moderation
+      operationId: listarReportesModeracion
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: estado
+          in: query
+          schema: {type: string, enum: [pendiente, resuelto, descartado], default: pendiente}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 50}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: Moderation queue without reporter identity
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ReporteModeracionResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /v1/admin/moderacion/reportes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      summary: Resolve a community report by approving or hiding its post
+      operationId: resolverReporteModeracion
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ResolverReporteRequest'}
+      responses:
+        '204': {description: Report resolved}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/LastAdminConflict'}
+
+  /v1/admin/inspiracion:
+    get:
+      summary: List inspiration content for administrators
+      operationId: listarInspiracionAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: tipo
+          in: query
+          schema: {type: string, enum: [articulo, video, audio]}
+        - name: publicado
+          in: query
+          schema: {type: boolean}
+        - name: destacado
+          in: query
+          schema: {type: boolean}
+        - name: buscar
+          in: query
+          schema: {type: string, maxLength: 180}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 50, default: 50}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: Inspiration catalog including publication state
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ContenidoInspiracionAdminResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      summary: Create inspiration content
+      operationId: crearInspiracionAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContenidoInspiracionAdminRequest'}
+      responses:
+        '201':
+          description: Inspiration content created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContenidoInspiracionAdminResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /v1/admin/inspiracion/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      summary: Get inspiration content for administrators
+      operationId: obtenerInspiracionAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Inspiration content including publication state
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContenidoInspiracionAdminResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    patch:
+      summary: Update inspiration content
+      operationId: actualizarInspiracionAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContenidoInspiracionAdminRequest'}
+      responses:
+        '200':
+          description: Inspiration content updated
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContenidoInspiracionAdminResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    delete:
+      summary: Delete inspiration content
+      operationId: eliminarInspiracionAdmin
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Inspiration content deleted}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/solicitudes-administrador:
+    post:
+      summary: Request administrator access
+      operationId: crearSolicitudAdministrativa
+      tags: [administracion]
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CrearSolicitudAdministrativaRequest'}
+      responses:
+        '201':
+          description: Request created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SolicitudAdministrativaResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /v1/solicitudes-administrador/me:
+    get:
+      summary: Get the current users administrator request
+      operationId: obtenerMiSolicitudAdministrativa
+      tags: [administracion]
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Current or latest request
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SolicitudAdministrativaResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /v1/admin/solicitudes-administrador:
+    get:
+      summary: List administrator access requests
+      operationId: listarSolicitudesAdministrativas
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: estado
+          in: query
+          schema: {type: string, enum: [pendiente, aprobada, rechazada]}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 50, default: 50}
+        - name: offset
+          in: query
+          schema: {type: integer, minimum: 0, default: 0}
+      responses:
+        '200':
+          description: Administrator access requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/SolicitudAdministrativaResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /v1/admin/solicitudes-administrador/{id}:
+    patch:
+      summary: Approve or reject an administrator access request
+      operationId: resolverSolicitudAdministrativa
+      tags: [admin]
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ResolverSolicitudAdministrativaRequest'}
+      responses:
+        '200':
+          description: Request resolved
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SolicitudAdministrativaResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Conflict:
+      description: The request cannot be completed because its state conflicts with the current resource state.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid UUID, malformed JSON, or request validation failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequestError'
+    Unauthorized:
+      description: Missing, expired, or invalid bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthorizedError'
+    Forbidden:
+      description: Authenticated user lacks the required administrator role.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ForbiddenError'
+    LastAdminConflict:
+      description: The operation would remove the last active administrator.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LastAdminConflictError'
+    NotFound:
+      description: >
+        Habit or reminder not found, including a resource that is not owned
+        by the authenticated user.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundError'
+    ReminderConflict:
+      description: >
+        The reminder cannot be created or activated because its habit is
+        paused or completed. Editing or deactivating an existing reminder
+        remains valid, and one habit may own multiple reminders.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReminderConflictError'
+
+  schemas:
+    CrearSolicitudAdministrativaRequest:
+      type: object
+      required: [motivo]
+      properties:
+        motivo: {type: string, minLength: 1, maxLength: 500}
+    ResolverSolicitudAdministrativaRequest:
+      type: object
+      required: [decision, razon]
+      properties:
+        decision: {type: string, enum: [aprobar, rechazar]}
+        razon: {type: string, minLength: 1, maxLength: 500}
+    SolicitudAdministrativaResponse:
+      type: object
+      required: [id, usuarioId, motivo, estado, creadoEn, actualizadoEn]
+      properties:
+        id: {type: string, format: uuid}
+        usuarioId: {type: string, format: uuid}
+        usuarioNombre: {type: string}
+        usuarioEmail: {type: string, format: email}
+        motivo: {type: string}
+        estado: {type: string, enum: [pendiente, aprobada, rechazada]}
+        razonDecision: {type: string}
+        creadoEn: {type: string, format: date-time}
+        actualizadoEn: {type: string, format: date-time}
+        revisadoEn: {type: string, format: date-time, nullable: true}
+    RegistroUsuarioRequest:
+      type: object
+      required: [nombre, email, password, terminosAceptados]
+      properties:
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        terminosAceptados:
+          type: boolean
+
+    RegistroUsuarioResponse:
+      type: object
+      required: [usuario]
+      properties:
+        usuario:
+          type: object
+          required: [id, nombre, email, rol, estado]
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            email:
+              type: string
+              format: email
+            rol:
+              type: string
+              enum: [regular, admin]
+            estado:
+              type: string
+              enum: [activo, suspendido]
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    SesionResponse:
+      type: object
+      required: [token, expiraEn]
+      properties:
+        token:
+          type: string
+        expiraEn:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp when the token expires.
+
+    ResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    ResetConfirmRequest:
+      type: object
+      required: [token, nuevaPassword]
+      properties:
+        token:
+          type: string
+        nuevaPassword:
+          type: string
+          format: password
+
+    ErrorResponse:
+      type: object
+      required: [mensaje]
+      properties:
+        mensaje:
+          type: string
+        errores:
+          type: object
+          description: Field-level validation errors, keyed by field name.
+          additionalProperties:
+            type: string
+
+    PerfilResponse:
+      type: object
+      required: [nombre, email, zonaHoraria, accesibilidad, notificaciones]
+      properties:
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        objetivoGeneral:
+          type: string
+          nullable: true
+        zonaHoraria:
+          type: string
+          description: IANA timezone name, e.g. America/Bogota.
+        accesibilidad:
+          $ref: '#/components/schemas/AccesibilidadPrefs'
+        notificaciones:
+          $ref: '#/components/schemas/NotificacionPrefs'
+
+    PerfilUpdateRequest:
+      type: object
+      description: All fields optional — only provided fields are updated.
+      properties:
+        objetivoGeneral:
+          type: string
+          nullable: true
+        zonaHoraria:
+          type: string
+          description: IANA timezone name; validated against the tz database.
+        accesibilidad:
+          $ref: '#/components/schemas/AccesibilidadPrefs'
+        notificaciones:
+          $ref: '#/components/schemas/NotificacionPrefs'
+
+    AccesibilidadPrefs:
+      type: object
+      properties:
+        ttsHabilitado:
+          type: boolean
+          description: Whether text-to-speech is enabled.
+        tamanoTexto:
+          type: string
+          enum: [normal, grande, extra_grande]
+        contrasteAlto:
+          type: boolean
+          description: Whether high-contrast mode is enabled.
+
+    NotificacionPrefs:
+      type: object
+      properties:
+        recordatoriosHabilitados:
+          type: boolean
+          description: Whether habit reminder notifications are enabled.
+        resumenProgresoHabilitado:
+          type: boolean
+          description: Whether periodic progress-summary notifications are enabled.
+
+    CrearHabitoRequest:
+      type: object
+      description: >
+        Ownership is never accepted from the client — the owning usuario
+        comes exclusively from the authenticated JWT's sub claim.
+      required: [nombre, fechaInicio, frecuencia]
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+          nullable: true
+        fechaInicio:
+          type: string
+          format: date
+        frecuencia:
+          $ref: '#/components/schemas/FrecuenciaSchema'
+        categoria:
+          type: string
+          nullable: true
+        metaId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >
+            At most one linked goal (HABIT-03) — never an array. A habit
+            links to zero or one Meta.
+
+    HabitoResponse:
+      type: object
+      required: [id, nombre, fechaInicio, frecuencia, estado, creadoEn]
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        descripcion:
+          type: string
+          nullable: true
+        fechaInicio:
+          type: string
+          format: date
+        frecuencia:
+          $ref: '#/components/schemas/FrecuenciaSchema'
+        categoria:
+          type: string
+          nullable: true
+        metaId:
+          type: string
+          format: uuid
+          nullable: true
+        estado:
+          type: string
+          enum: [activo, pausado, completado, eliminado]
+        creadoEn:
+          type: string
+          format: date-time
+
+    EditarHabitoRequest:
+      type: object
+      description: All fields optional — only provided fields are updated.
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+          nullable: true
+        frecuencia:
+          $ref: '#/components/schemas/FrecuenciaSchema'
+        categoria:
+          type: string
+          nullable: true
+        metaId:
+          type: string
+          format: uuid
+          nullable: true
+          description: At most one linked goal — never an array.
+
+    FrecuenciaSchema:
+      type: object
+      description: >
+        Tagged shape discriminated by tipo. diaria needs no other field.
+        dias_especificos requires diasSemana (non-empty). n_veces_por_periodo
+        requires both veces and periodo.
+      required: [tipo]
+      properties:
+        tipo:
+          type: string
+          enum: [diaria, dias_especificos, n_veces_por_periodo]
+        diasSemana:
+          type: array
+          description: Required, non-empty, only when tipo = dias_especificos.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+        veces:
+          type: integer
+          minimum: 1
+          description: Required only when tipo = n_veces_por_periodo.
+        periodo:
+          type: string
+          enum: [semana, mes]
+          description: Required only when tipo = n_veces_por_periodo.
+
+    PausarHabitoRequest:
+      type: object
+      required: [inicio]
+      properties:
+        inicio:
+          type: string
+          format: date
+        fin:
+          type: string
+          format: date
+          nullable: true
+          description: Null means the pause is open-ended until reanudar is called.
+
+    EliminarHabitoResponse:
+      type: object
+      required: [habito, impacto]
+      properties:
+        habito:
+          $ref: '#/components/schemas/HabitoResponse'
+        impacto:
+          type: object
+          description: >
+            Counts of related records affected by this delete, computed
+            defensively against Reminders/Tracking tables if they exist.
+            Always zero in this phase — no reminders or tracking records
+            exist yet to reference habits.
+          required: [recordatoriosAfectados, registrosAfectados]
+          properties:
+            recordatoriosAfectados:
+              type: integer
+              minimum: 0
+            registrosAfectados:
+              type: integer
+              minimum: 0
+
+    CrearMetaRequest:
+      type: object
+      description: >
+        Ownership is never accepted from the client — the owning usuario
+        comes exclusively from the authenticated JWT's sub claim. A goal
+        needs zero linked habitos to be valid (GOAL-04).
+      required: [descripcion, fechaObjetivo]
+      properties:
+        descripcion:
+          type: string
+        fechaObjetivo:
+          type: string
+          format: date
+
+    MetaResponse:
+      type: object
+      required: [id, descripcion, fechaObjetivo, estado, creadoEn]
+      properties:
+        id:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        fechaObjetivo:
+          type: string
+          format: date
+        estado:
+          type: string
+          enum: [en_progreso, lograda, pausada, cancelada]
+          description: >
+            Caller-set state, independent of linked habitos' own states —
+            never derived from them (GOAL-03).
+        creadoEn:
+          type: string
+          format: date-time
+
+    EditarMetaRequest:
+      type: object
+      description: All fields optional — only provided fields are updated.
+      properties:
+        descripcion:
+          type: string
+        fechaObjetivo:
+          type: string
+          format: date
+
+    ActualizarEstadoMetaRequest:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          enum: [en_progreso, lograda, pausada, cancelada]
+
+    VincularHabitosRequest:
+      type: object
+      required: [habitoIds]
+      properties:
+        habitoIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+
+    RecordatorioMutableFields:
+      type: object
+      description: >
+        Provider-neutral reminder fields. Weekdays use ISO-8601 numbering:
+        Monday=1 through Sunday=7.
+      properties:
+        mensaje:
+          type: string
+          minLength: 1
+          maxLength: 280
+        hora:
+          type: string
+          pattern: '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$'
+          example: '08:30'
+          description: Local wall-clock time in strict 24-hour HH:mm form.
+        diasSemana:
+          type: array
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Unique ISO weekdays, Monday=1 through Sunday=7.
+        activo:
+          type: boolean
+
+    CrearRecordatorioRequest:
+      allOf:
+        - $ref: '#/components/schemas/RecordatorioMutableFields'
+      required: [mensaje, hora, diasSemana, activo]
+      description: >
+        All scheduling fields are required. habitoId and usuarioId are never
+        accepted in the body: the habit comes from the path and ownership
+        comes from the authenticated JWT.
+
+    EditarRecordatorioRequest:
+      allOf:
+        - $ref: '#/components/schemas/RecordatorioMutableFields'
+      required: [mensaje, hora, diasSemana, activo]
+      description: >
+        Complete replacement of the writable reminder configuration. All four
+        fields are required so edits and active-state changes preserve the
+        schedule.
+
+    RecordatorioResponse:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            habitoId:
+              type: string
+              format: uuid
+        - $ref: '#/components/schemas/RecordatorioMutableFields'
+      required: [id, habitoId, mensaje, hora, diasSemana, activo]
+
+    RegistroMutableFields:
+      type: object
+      description: >
+        Writable completion fields for one habit-day record.
+      properties:
+        estado:
+          type: string
+          enum: [hecho, parcial, omitido]
+          description: >
+            Completion status for the local day: hecho=done, parcial=partial,
+            omitido=skipped.
+        nota:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: >
+            Optional free-text note. May contain personal or health
+            information and must never be written to application logs.
+
+    RegistrarCompletitudRequest:
+      allOf:
+        - $ref: '#/components/schemas/RegistroMutableFields'
+        - type: object
+          properties:
+            fechaLocal:
+              type: string
+              format: date
+              description: >
+                The user's local calendar date (ISO-8601) this completion is
+                for. This is the idempotency key for the upsert — at most one
+                record exists per (habitoId, usuarioId, fechaLocal), and
+                re-sending a POST with the same fechaLocal overwrites (edits)
+                that day's record instead of creating a duplicate, so the
+                offline queue can safely retry. It is resolved in the user's
+                stored IANA timezone (zonaHoraria from their profile), never
+                the device's raw UTC clock. The client computes it from the
+                cached stored profile timezone and sends it explicitly so a
+                queued action replayed days later still records the day it
+                was actually taken.
+      required: [fechaLocal, estado]
+      description: >
+        habitoId and usuarioId are never accepted in the body: the habit
+        comes from the path and ownership comes from the authenticated JWT.
+
+    RegistroResponse:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            habitoId:
+              type: string
+              format: uuid
+            fechaLocal:
+              type: string
+              format: date
+            creadoEn:
+              type: string
+              format: date-time
+            actualizadoEn:
+              type: string
+              format: date-time
+        - $ref: '#/components/schemas/RegistroMutableFields'
+      required: [id, habitoId, fechaLocal, estado, creadoEn, actualizadoEn]
+
+    ProgresoResponse:
+      type: object
+      description: >
+        Computed progress for one habit over a selected period, derived
+        on-demand from RegistroHabito history — never separately stored or
+        mutable.
+      properties:
+        habitoId:
+          type: string
+          format: uuid
+        periodoDesde:
+          type: string
+          format: date
+        periodoHasta:
+          type: string
+          format: date
+        rachaActual:
+          type: integer
+          description: Current streak length, scheduled-occurrence-aware.
+        rachaMasLarga:
+          type: integer
+          description: Longest streak length on record for this habit.
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: >
+            Completion percentage computed against the habit's scheduled
+            occurrences for the period (not raw calendar days).
+        estado:
+          type: string
+          enum: [con_datos, sin_datos]
+          description: >
+            sin_datos means the habit has no completions in the period
+            (PROGRESS-05 empty state) — a contract-first field so the empty
+            state is never inferred from zeroed numbers.
+      required: [habitoId, periodoDesde, periodoHasta, rachaActual, rachaMasLarga, porcentaje, estado]
+
+    EstadisticaHabito:
+      type: object
+      description: One habit's aggregate standing within a statistics period.
+      properties:
+        habitoId:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+        rachaMasLarga:
+          type: integer
+        totalHecho:
+          type: integer
+        totalOmitido:
+          type: integer
+      required: [habitoId, nombre, porcentaje, rachaMasLarga, totalHecho, totalOmitido]
+
+    EstadisticasResponse:
+      type: object
+      description: >
+        Filtered aggregate statistics across the user's habits for a period.
+        Remains queryable for historical periods even after a related habit
+        is completed or deleted (STATS-03).
+      properties:
+        periodoDesde:
+          type: string
+          format: date
+        periodoHasta:
+          type: string
+          format: date
+        porcentaje:
+          type: number
+          minimum: 0
+          maximum: 100
+        mejorRacha:
+          type: integer
+          description: Best streak across all matching habits in the period.
+        masConsistentes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+        masOmitidos:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstadisticaHabito'
+        estado:
+          type: string
+          enum: [con_datos, insuficiente]
+          description: >
+            insuficiente means there is not enough history in the period to
+            compute meaningful statistics (STATS-04) — a contract-first
+            field so the insufficient-data message is never inferred.
+      required: [periodoDesde, periodoHasta, porcentaje, mejorRacha, masConsistentes, masOmitidos, estado]
+
+    CrearPublicacionRequest:
+      type: object
+      required: [contenido]
+      properties:
+        contenido: {type: string, minLength: 1, maxLength: 1000}
+        habitoId: {type: string, format: uuid}
+
+    EditarPublicacionRequest:
+      type: object
+      required: [contenido]
+      properties:
+        contenido: {type: string, minLength: 1, maxLength: 1000}
+
+    PublicacionResponse:
+      type: object
+      required: [id, autorNombre, contenido, creadoEn, actualizadoEn, reacciones, comentarios, reaccionada]
+      properties:
+        id: {type: string, format: uuid}
+        autorNombre: {type: string}
+        contenido: {type: string}
+        habitoId: {type: string, format: uuid}
+        creadoEn: {type: string, format: date-time}
+        actualizadoEn: {type: string, format: date-time}
+        reacciones: {type: integer, minimum: 0}
+        comentarios: {type: integer, minimum: 0}
+        reaccionada: {type: boolean}
+
+    CrearComentarioRequest:
+      type: object
+      required: [contenido]
+      properties:
+        contenido: {type: string, minLength: 1, maxLength: 500}
+
+    ComentarioResponse:
+      type: object
+      required: [id, publicacionId, autorNombre, contenido, creadoEn]
+      properties:
+        id: {type: string, format: uuid}
+        publicacionId: {type: string, format: uuid}
+        autorNombre: {type: string}
+        contenido: {type: string}
+        creadoEn: {type: string, format: date-time}
+
+    CrearReporteRequest:
+      type: object
+      required: [motivo]
+      properties:
+        motivo: {type: string, enum: [spam, acoso, inapropiado, otro]}
+        detalle: {type: string, maxLength: 500}
+
+    ReporteResponse:
+      type: object
+      required: [id, publicacionId, motivo, estado, creadoEn]
+      properties:
+        id: {type: string, format: uuid}
+        publicacionId: {type: string, format: uuid}
+        motivo: {type: string, enum: [spam, acoso, inapropiado, otro]}
+        estado: {type: string, enum: [pendiente]}
+        creadoEn: {type: string, format: date-time}
+
+    ContenidoInspiracionResponse:
+      type: object
+      required: [id, tipo, titulo, resumen, url, autor, destacado, creadoEn, actualizadoEn]
+      properties:
+        id: {type: string, format: uuid}
+        tipo: {type: string, enum: [articulo, video, audio]}
+        titulo: {type: string, minLength: 1, maxLength: 180}
+        resumen: {type: string, minLength: 1, maxLength: 500}
+        url: {type: string, minLength: 1, maxLength: 2048}
+        imagenUrl: {type: string}
+        autor: {type: string}
+        destacado: {type: boolean}
+        creadoEn: {type: string, format: date-time}
+        actualizadoEn: {type: string, format: date-time}
+
+    ContenidoInspiracionAdminResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContenidoInspiracionResponse'
+        - type: object
+          required: [publicado]
+          properties:
+            publicado: {type: boolean}
+
+    ContenidoInspiracionAdminRequest:
+      type: object
+      required: [tipo, titulo, resumen, url, autor]
+      properties:
+        tipo: {type: string, enum: [articulo, video, audio]}
+        titulo: {type: string, minLength: 1, maxLength: 180}
+        resumen: {type: string, minLength: 1, maxLength: 500}
+        url: {type: string, minLength: 1, maxLength: 2048}
+        imagenUrl: {type: string, maxLength: 2048}
+        autor: {type: string, minLength: 1, maxLength: 180}
+        destacado: {type: boolean}
+        publicado: {type: boolean}
+
+    UsuarioAdminResponse:
+      type: object
+      required: [id, nombre, email, rol, estado]
+      properties:
+        id: {type: string, format: uuid}
+        nombre: {type: string}
+        email: {type: string, format: email}
+        rol: {type: string, enum: [regular, admin]}
+        estado: {type: string, enum: [activo, suspendido]}
+
+    CambiarEstadoUsuarioRequest:
+      type: object
+      required: [estado, razon]
+      properties:
+        estado: {type: string, enum: [activo, suspendido]}
+        razon: {type: string, minLength: 1, maxLength: 500}
+
+    CambiarRolUsuarioRequest:
+      type: object
+      required: [rol, razon]
+      properties:
+        rol: {type: string, enum: [regular, admin]}
+        razon: {type: string, minLength: 1, maxLength: 500}
+
+    LastAdminConflictError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [last_admin_protection]
+
+    ReporteUsoAdminResponse:
+      type: object
+      required: [periodoDesde, periodoHasta, usuariosRegistrados, usuariosActivos, habitosCreados, registrosCreados, publicaciones]
+      properties:
+        periodoDesde: {type: string, format: date-time}
+        periodoHasta: {type: string, format: date-time}
+        usuariosRegistrados: {type: integer, minimum: 0}
+        usuariosActivos: {type: integer, minimum: 0}
+        habitosCreados: {type: integer, minimum: 0}
+        registrosCreados: {type: integer, minimum: 0}
+        publicaciones: {type: integer, minimum: 0}
+
+    ReporteModeracionResponse:
+      type: object
+      required: [id, publicacionId, motivo, estado, creadoEn]
+      properties:
+        id: {type: string, format: uuid}
+        publicacionId: {type: string, format: uuid}
+        motivo: {type: string, enum: [spam, acoso, inapropiado, otro]}
+        detalle: {type: string}
+        estado: {type: string, enum: [pendiente, resuelto, descartado]}
+        creadoEn: {type: string, format: date-time}
+
+    ResolverReporteRequest:
+      type: object
+      required: [resolucion, razon]
+      properties:
+        resolucion: {type: string, enum: [aprobar, ocultar]}
+        razon: {type: string, maxLength: 500}
+
+    BadRequestError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [invalid_request]
+
+    UnauthorizedError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [unauthorized]
+
+    ForbiddenError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [forbidden]
+
+    NotFoundError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [not_found]
+
+    ReminderConflictError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          required: [codigo]
+          properties:
+            codigo:
+              type: string
+              enum: [habit_inactive_for_reminder]

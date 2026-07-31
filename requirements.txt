@@ -1,0 +1,17 @@
+# Runtime
+Django>=5.1,<5.3
+djangorestframework>=3.15
+djangorestframework-simplejwt>=5.4
+argon2-cffi>=23.1          # Argon2id para PASSWORD_HASHERS (paridad con Go)
+psycopg[binary]>=3.2       # driver PostgreSQL (Neon)
+django-environ>=0.11
+django-cors-headers>=4.4
+drf-spectacular>=0.27      # exportar esquema y validar contra docs/openapi.yaml
+gunicorn>=22.0             # despliegue (Cloud Run)
+
+# Calidad y pruebas
+pytest>=8.2
+pytest-django>=4.8
+pytest-cov>=5.0
+factory-boy>=3.3
+ruff>=0.5
