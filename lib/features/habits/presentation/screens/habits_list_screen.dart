@@ -25,6 +25,13 @@ class HabitsListScreen extends ConsumerWidget {
           Icons.local_fire_department_rounded,
           color: AppColors.primary,
         ),
+        actions: [
+          IconButton(
+            onPressed: () => context.push(AppRoutes.community),
+            tooltip: 'Comunidad e inspiración',
+            icon: const Icon(Icons.forum_outlined),
+          ),
+        ],
       ),
       body: habits.when(
         data: (items) => items.isEmpty
