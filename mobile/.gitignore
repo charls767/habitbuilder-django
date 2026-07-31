@@ -1,0 +1,54 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Riverpod / build_runner generated code — regenerate with:
+#   dart run build_runner build
+**/*.g.dart
+**/*.freezed.dart
+
+# Platform runner build artifacts (the android/, ios/, web/, etc. runner
+# folders themselves — generated once via `flutter create`, see README.md —
+# are meant to be committed like in any other Flutter project).
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/.gradle/
+/ios/Pods/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/.last_build_id
+**/doc/api/
+
+# Tooling and local state
+*.class
+*.pyc
+*.swp
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+Thumbs.db
+.env
+app.*.symbols
+app.*.map.json
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Node (mock server tooling)
+node_modules/
+
+# Misc
+*.log
+.DS_Store

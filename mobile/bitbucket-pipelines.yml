@@ -1,0 +1,19 @@
+image: ghcr.io/cirruslabs/flutter:3.44.0
+
+pipelines:
+  default:
+    - step:
+        name: Analyze & test
+        caches:
+          - flutter
+        script:
+          - flutter pub get
+          - dart run build_runner build
+          - flutter analyze
+          - flutter test --coverage
+          - node --test scripts/check-changed-coverage.test.mjs
+          - node scripts/check-changed-coverage.mjs --base origin/main --min 80
+
+definitions:
+  caches:
+    flutter: /sdks/flutter
