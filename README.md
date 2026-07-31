@@ -134,12 +134,42 @@ flutter test
 
 ## Despliegue
 
-El backend se despliega a **Google Cloud Run** desde su `Dockerfile` de producción
-(gunicorn, migraciones automáticas al arrancar). Con las credenciales en
+El backend se empaqueta con un `Dockerfile` de producción (gunicorn, migraciones
+automáticas al arrancar) que funciona en cualquier plataforma con soporte Docker.
+
+### Render (recomendado para capa gratuita con Neon)
+
+El repositorio incluye [`render.yaml`](render.yaml), así que basta con crear un
+*Blueprint* apuntando a este repositorio: Render lee la configuración, construye la
+imagen y genera por su cuenta `DJANGO_SECRET_KEY` y `JWT_SIGNING_KEY`. Solo hay que
+pegar `DATABASE_URL` con la cadena de Neon (usa el endpoint *pooled*, que va mejor con
+instancias que se apagan por inactividad).
+
+No hace falta configurar el dominio a mano: Render inyecta `RENDER_EXTERNAL_HOSTNAME` y
+`config/settings.py` lo añade a `ALLOWED_HOSTS` automáticamente.
+
+Ten en cuenta que las instancias gratuitas se suspenden tras unos 15 minutos sin
+tráfico, y la primera petición tras la suspensión tarda cerca de un minuto.
+
+### Google Cloud Run
+
+Arranques en frío más rápidos y una capa gratuita amplia, a cambio de requerir una
+cuenta de Google Cloud con facturación activada. Con las credenciales en
 `backend/.env.deploy`:
 
 ```bash
 bash backend/scripts/deploy.sh
+```
+
+### PythonAnywhere
+
+Requiere plan de pago: las cuentas gratuitas no admiten conexiones salientes a
+PostgreSQL. Ver [la guía detallada](backend/docs/DESPLIEGUE-PYTHONANYWHERE.md).
+
+### Validar cualquier despliegue
+
+```bash
+python backend/tools/e2e_despliegue.py https://TU-DOMINIO
 ```
 
 ## Créditos

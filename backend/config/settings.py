@@ -30,6 +30,12 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
+# Render asigna el dominio en tiempo de despliegue, así que no puede conocerse
+# al configurar las variables: se añade solo si la plataforma lo inyecta.
+_host_render = env("RENDER_EXTERNAL_HOSTNAME", default="")
+if _host_render:
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, _host_render]
+
 # ---------------------------------------------------------------------------
 # Aplicaciones — una app Django por contexto acotado del monolito Go
 # ---------------------------------------------------------------------------
