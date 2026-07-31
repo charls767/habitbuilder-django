@@ -152,7 +152,7 @@ editan y consultan igual, pero sin aviso del sistema operativo.
 
 ## Pruebas
 
-El backend tiene 190 pruebas de contrato (228 casos con parametrización) que se ejecutan
+El backend tiene 203 pruebas de contrato (241 casos con parametrización) que se ejecutan
 contra un PostgreSQL real, con una puerta de cobertura del 80%. Desde `backend/`:
 
 ```bash
@@ -177,6 +177,17 @@ python backend/tools/e2e_despliegue.py https://TU-DOMINIO
 ```bash
 python backend/tools/e2e_dominios.py https://TU-DOMINIO
 ```
+
+### Integración continua
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) ejecuta en cada `push` y cada
+*pull request* sobre `main`:
+
+| Trabajo | Qué comprueba |
+|---|---|
+| Backend | `ruff`, que no falten migraciones por generar, y las pruebas contra un PostgreSQL de servicio con la puerta de cobertura |
+| Cliente | `flutter analyze` y la suite de pruebas, generando antes el código de Riverpod |
+| Contrato | La suite de integración contra el despliegue, solo tras integrar en `main` |
 
 ## Despliegue
 

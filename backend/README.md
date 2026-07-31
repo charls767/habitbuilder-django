@@ -90,7 +90,7 @@ ruff check .
 pytest
 ```
 
-La suite son 190 pruebas de contrato (228 casos con parametrización) que se ejecutan
+La suite son 203 pruebas de contrato (241 casos con parametrización) que se ejecutan
 contra un PostgreSQL real y verifican códigos de estado y payloads exactos, con una
 puerta de cobertura del 80% configurada en `pyproject.toml`.
 
@@ -104,6 +104,10 @@ python tools/e2e_despliegue.py https://TU-DOMINIO
 ```bash
 python tools/e2e_dominios.py https://TU-DOMINIO
 ```
+
+Todo esto se ejecuta automáticamente en cada cambio mediante
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml), que levanta un PostgreSQL de
+servicio y aplica las mismas comprobaciones que en local.
 
 ## Despliegue
 
