@@ -53,7 +53,7 @@ class _CommunityFeed extends ConsumerWidget {
     return AppContent(
       child: feed.when(
         data: (posts) => RefreshIndicator(
-          onRefresh: () => ref.refresh(communityFeedProvider.future),
+          onRefresh: () async => ref.refresh(communityFeedProvider.future),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
             children: [

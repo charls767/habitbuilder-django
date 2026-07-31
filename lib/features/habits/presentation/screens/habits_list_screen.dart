@@ -6,6 +6,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_chrome.dart';
+import '../../../admin/presentation/admin_providers.dart';
 import '../../domain/entities/frecuencia.dart';
 import '../../domain/entities/habito.dart';
 import '../providers/habit_providers.dart';
@@ -31,6 +32,12 @@ class HabitsListScreen extends ConsumerWidget {
             tooltip: 'Comunidad e inspiración',
             icon: const Icon(Icons.forum_outlined),
           ),
+          if (ref.watch(adminAccessProvider).valueOrNull == true)
+            IconButton(
+              onPressed: () => context.push(AppRoutes.admin),
+              tooltip: 'Administración',
+              icon: const Icon(Icons.admin_panel_settings_outlined),
+            ),
         ],
       ),
       body: habits.when(

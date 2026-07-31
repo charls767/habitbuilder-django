@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const String resetPassword = '/reset-password';
   static const String profile = '/profile';
   static const String community = '/community';
+  static const String admin = '/admin';
 
   static String habitEdit(String habitId) => '/habits/$habitId/edit';
   static String habitReminders(String habitId) =>
