@@ -21,6 +21,13 @@ The script validates Flutter 3.44.x, creates any missing native platform
 runners in a temporary directory, installs packages, runs Riverpod code
 generation, analyzes the project and executes the test suite.
 
+## Prerequisites
+
+- Flutter 3.44.x (this repo was verified against 3.44.8, Dart 3.12.2)
+- Chrome, if you want the quickest possible target (no extra install)
+- **For a real Android build:** Android Studio + Android SDK (not required just to `analyze`/`test`/web-build)
+- **For a real Windows desktop build:** Developer Mode enabled (Settings → Privacy & security → For developers) **and** the Visual Studio "Desktop development with C++" workload
+- iOS builds require a Mac — not possible from Windows
 Generated `*.g.dart` files are intentionally ignored. Regenerate them with:
 
 ```powershell
@@ -36,6 +43,13 @@ npm install
 npm run mock:api
 ```
 
+```bash
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:4010
+```
+
+Swap `-d chrome` for `-d windows` or a connected Android device/emulator once their toolchains are set up (see Prerequisites). Run `flutter doctor -v` to see exactly what's missing on your machine.
+
+## Tests
 In a second terminal:
 
 ```powershell
@@ -71,6 +85,9 @@ token returned by login, and clears the local session on HTTP 401 because the
 backend does not expose a refresh-token endpoint. Categories remain a local
 frontend catalog because the backend stores `categoria` as a free-form value.
 
+Scaffold verified working: `flutter analyze` is clean, `flutter test` passes (1/1), and `flutter build web` succeeds end-to-end. Native platform folders (`android/`, `ios/`, `web/`, `windows/`) were generated via `flutter create .` — additive only, `lib/` untouched. No real screens or logic yet; that starts with the tickets in Jira epic `HBM-1` (Identity, Profile & Contract Foundation).
+
+Note: `build_runner` is pinned to `^2.4.0` rather than the latest `2.15.x` — the newest `build_runner` and the newest `riverpod_generator` require incompatible `analyzer` versions of each other, so `pub get` fails above that if you bump it. Re-check this constraint next time you touch codegen deps.
 ## Architecture
 
 ```text
