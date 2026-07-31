@@ -42,3 +42,10 @@ final adminInspirationProvider = FutureProvider.autoDispose
       (ref, search) =>
           ref.watch(adminRepositoryProvider).inspiration(search: search),
     );
+
+final adminRequestsProvider = FutureProvider.autoDispose
+    .family<List<AdminAccessRequest>, String>(
+      (ref, status) => ref
+          .watch(adminRepositoryProvider)
+          .adminRequests(status: status.isEmpty ? null : status),
+    );

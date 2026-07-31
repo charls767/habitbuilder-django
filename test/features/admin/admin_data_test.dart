@@ -47,6 +47,53 @@ void main() {
             },
           ]);
         }
+        if (options.path == '/v1/solicitudes-administrador') {
+          return _jsonResponse({
+            'id': 'request-1',
+            'usuarioId': 'user-1',
+            'motivo': 'Apoyar la moderación',
+            'estado': 'pendiente',
+            'creadoEn': '2026-07-30T10:00:00Z',
+            'actualizadoEn': '2026-07-30T10:00:00Z',
+          });
+        }
+        if (options.path == '/v1/solicitudes-administrador/me') {
+          return _jsonResponse({
+            'id': 'request-1',
+            'usuarioId': 'user-1',
+            'motivo': 'Apoyar la moderación',
+            'estado': 'pendiente',
+            'creadoEn': '2026-07-30T10:00:00Z',
+            'actualizadoEn': '2026-07-30T10:00:00Z',
+          });
+        }
+        if (options.path.startsWith('/v1/admin/solicitudes-administrador/')) {
+          if (options.method == 'PATCH') {
+            return _jsonResponse({
+              'id': 'request-1',
+              'usuarioId': 'user-1',
+              'motivo': 'Apoyar la moderación',
+              'estado': 'aprobada',
+              'razonDecision': 'Validado',
+              'creadoEn': '2026-07-30T10:00:00Z',
+              'actualizadoEn': '2026-07-30T11:00:00Z',
+            });
+          }
+        }
+        if (options.path == '/v1/admin/solicitudes-administrador') {
+          return _jsonResponse([
+            {
+              'id': 'request-1',
+              'usuarioId': 'user-1',
+              'usuarioNombre': 'Ana',
+              'usuarioEmail': 'ana@example.com',
+              'motivo': 'Apoyar la moderación',
+              'estado': 'pendiente',
+              'creadoEn': '2026-07-30T10:00:00Z',
+              'actualizadoEn': '2026-07-30T10:00:00Z',
+            },
+          ]);
+        }
         return ResponseBody.fromString('', 204);
       });
 
@@ -57,16 +104,35 @@ void main() {
     await repository.changeUserRole('user-1', 'regular', 'delegacion');
     final reports = await repository.moderationQueue();
     await repository.resolveModeration('report-1', 'descartar', 'revisado');
+    final created = await repository.createAdminRequest('Apoyar la moderación');
+    final mine = await repository.myAdminRequest();
+    final accessRequests = await repository.adminRequests();
+    final resolved = await repository.resolveAdminRequest(
+      'request-1',
+      'aprobar',
+      'Validado',
+    );
 
     expect(usage.activeUsers, 3);
     expect(users.single.role, 'admin');
     expect(reports.single.reason, 'spam');
+    expect(created.status, 'pendiente');
+    expect(mine.id, 'request-1');
+    expect(accessRequests.single.userName, 'Ana');
+    expect(resolved.id, 'request-1');
     expect(requests, contains('GET /v1/admin/reportes/uso'));
     expect(requests, contains('GET /v1/admin/usuarios'));
     expect(requests, contains('PATCH /v1/admin/usuarios/user-1/estado'));
     expect(requests, contains('PATCH /v1/admin/usuarios/user-1/rol'));
     expect(requests, contains('GET /v1/admin/moderacion/reportes'));
     expect(requests, contains('PATCH /v1/admin/moderacion/reportes/report-1'));
+    expect(requests, contains('POST /v1/solicitudes-administrador'));
+    expect(requests, contains('GET /v1/solicitudes-administrador/me'));
+    expect(requests, contains('GET /v1/admin/solicitudes-administrador'));
+    expect(
+      requests,
+      contains('PATCH /v1/admin/solicitudes-administrador/request-1'),
+    );
   });
 }
 

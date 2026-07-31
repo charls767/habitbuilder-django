@@ -7,6 +7,7 @@ import '../../../core/widgets/app_chrome.dart';
 import '../data/admin_repository.dart';
 import '../domain/admin_entities.dart';
 import 'admin_inspiration_screen.dart';
+import 'admin_requests_screen.dart';
 import 'admin_providers.dart';
 
 class AdminScreen extends ConsumerWidget {
@@ -38,7 +39,7 @@ class _AdminTabs extends StatefulWidget {
 
 class _AdminTabsState extends State<_AdminTabs>
     with SingleTickerProviderStateMixin {
-  late final TabController _controller = TabController(length: 4, vsync: this);
+  late final TabController _controller = TabController(length: 5, vsync: this);
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _AdminTabsState extends State<_AdminTabs>
             _UsersTab(),
             _ModerationTab(),
             AdminInspirationScreen(),
+            AdminRequestsScreen(),
           ],
         ),
       );
@@ -100,6 +102,11 @@ class _AdminTabsState extends State<_AdminTabs>
                   selectedIcon: Icon(Icons.lightbulb),
                   label: Text('Inspiraci\u00F3n'),
                 ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.how_to_reg_outlined),
+                  selectedIcon: Icon(Icons.how_to_reg),
+                  label: Text('Solicitudes'),
+                ),
               ],
             ),
             const VerticalDivider(width: 1),
@@ -120,6 +127,7 @@ class _AdminTabsState extends State<_AdminTabs>
                 icon: Icon(Icons.lightbulb_outline),
                 text: 'Inspiraci\u00F3n',
               ),
+              Tab(icon: Icon(Icons.how_to_reg_outlined), text: 'Solicitudes'),
             ],
           ),
           content,
